@@ -78,7 +78,6 @@ const whatOf = (label: string) => e.budget.find((b) => label.includes(b[0].repla
       {bandas.map(([label, test], bi) => {
         const list = items.filter(test);
         if (!list.length) return null;
-        const [first, ...rest] = list;
         const what = e.budget[bi + 1]?.[1];
         return (
           <section class="band" aria-label={label}>
@@ -86,19 +85,7 @@ const whatOf = (label: string) => e.budget.find((b) => label.includes(b[0].repla
               <h2 class="band__h nums">{label}</h2>
               {what && <p class="band__what">{what}</p>}
             </header>
-            <div class="band__grid">
-              <a class="lead-pick" href={`/p/${first.id}/`}>
-                <span class="lead-pick__img"><img src={first.img} alt={first.name} width="510" height="510" loading="lazy" onerror="this.onerror=null;this.src='/img/sin-foto.svg'" /></span>
-                <span class="lead-pick__body">
-                  <span class="lead-pick__tag">Nuestra elección</span>
-                  <strong class="lead-pick__name">{first.name}</strong>
-                  <span class="lead-pick__brand">{first.brand}</span>
-                  <span class="lead-pick__price nums">{eur(first.price)} <small>en Carrefour hoy</small></span>
-                  <span class="lead-pick__go">Ver ficha y precios</span>
-                </span>
-              </a>
-              <div class="band__rest">{rest.slice(0, 6).map((p: any) => <ProductCard p={p} />)}</div>
-            </div>
+            <div class="band__grid">{list.slice(0, 8).map((p: any) => <ProductCard p={p} />)}</div>
           </section>
         );
       })}
@@ -142,18 +129,7 @@ const whatOf = (label: string) => e.budget.find((b) => label.includes(b[0].repla
   .band__head { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; }
   .band__h { font-size: var(--step-head); }
   .band__what { color: var(--muted); max-width: 50ch; }
-  .band__grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 12px; align-items: start; }
-  .lead-pick { display: grid; grid-template-rows: auto 1fr; background: #fff; border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; height: 100%; }
-  .lead-pick__img { display: block; aspect-ratio: 4 / 3; padding: 6%; }
-  .lead-pick__img img { width: 100%; height: 100%; object-fit: contain; }
-  .lead-pick__body { display: grid; gap: 0.3rem; padding: 1rem 1.4rem 1.4rem; border-top: 1px solid var(--surface); }
-  .lead-pick__tag { font-size: var(--step-small); font-weight: 700; color: var(--accent-strong); }
-  .lead-pick__name { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.4rem; font-weight: 600; line-height: 1.15; }
-  .lead-pick__brand { font-size: var(--step-small); color: var(--muted); }
-  .lead-pick__price { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.6rem; font-weight: 600; margin-top: 0.3rem; }
-  .lead-pick__price small { font-family: var(--font-text); font-size: var(--step-small); font-weight: 400; color: var(--muted); }
-  .lead-pick__go { font-size: var(--step-small); font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 0.2em; margin-top: 0.3rem; }
-  .band__rest { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .band__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
   .acards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
   @media (max-width: 1000px) { .acards { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 600px) { .acards { grid-template-columns: 1fr 1fr; gap: 8px; } }
@@ -168,6 +144,6 @@ const whatOf = (label: string) => e.budget.find((b) => label.includes(b[0].repla
   .gift__more ul { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 0.75rem; }
   .gift__more a { display: grid; gap: 0.5rem; text-decoration: none; font-weight: 600; }
   .gift__more img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 12px; }
-  @media (max-width: 900px) { .advice { grid-template-columns: 1fr; } .band__grid { grid-template-columns: 1fr; } .band__rest { grid-template-columns: 1fr 1fr; gap: 8px; } .faq__list { grid-template-columns: 1fr; } .gift__more ul { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 900px) { .advice { grid-template-columns: 1fr; } .band__grid { grid-template-columns: 1fr 1fr; gap: 8px; } .faq__list { grid-template-columns: 1fr; } .gift__more ul { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 820px) { .gift__hero-in { grid-template-columns: 1fr; } .gift__photo { max-height: 220px; aspect-ratio: 3 / 1; } }
 </style>

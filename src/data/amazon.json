@@ -172,5 +172,76 @@
   "date": "2026-11-06",
   "brand": "Hape",
   "kind": "piano"
+ },
+ "B07RZH5YW6": {
+  "name": "Maxi-Cosi Iora, cuna de colecho",
+  "brand": "Maxi-Cosi",
+  "kind": "cuna",
+  "price": null,
+  "date": "2026-11-06"
+ },
+ "B07RRYDPF5": {
+  "name": "Babybay Maxi, cuna de colecho de haya",
+  "brand": "Babybay",
+  "kind": "cuna",
+  "price": null,
+  "date": "2026-11-06"
+ },
+ "B0F3P556CQ": {
+  "name": "Lillydoo pañales talla 1, 72 ud.",
+  "brand": "Lillydoo",
+  "kind": "panal",
+  "price": null,
+  "date": "2026-11-06"
+ },
+ "B0DDV1RYTG": {
+  "name": "Moltex Pure & Nature, pañales ecológicos",
+  "brand": "Moltex",
+  "kind": "panal",
+  "price": null,
+  "date": "2026-11-06"
+ },
+ "B07FMFJ3S6": {
+  "name": "Mustela crema bálsamo 1-2-3, 150 ml",
+  "brand": "Mustela",
+  "kind": "crema",
+  "price": null,
+  "date": "2026-11-06"
+ },
+ "B00BN8JUCC": {
+  "name": "Weleda crema de pañal de caléndula, 75 ml",
+  "brand": "Weleda",
+  "kind": "crema",
+  "price": null,
+  "date": "2026-11-06"
+ },
+ "B005YNOXW4": {
+  "name": "Bepanthol Baby pomada protectora, 100 g",
+  "brand": "Bepanthol",
+  "kind": "crema",
+  "price": null,
+  "date": "2026-11-06"
+ },
+ "B009M4MKDU": {
+  "name": "Mitosyl pomada protectora, 65 g",
+  "brand": "Mitosyl",
+  "kind": "crema",
+  "price": null,
+  "date": "2026-11-06"
+ },
+ "B07H98NP4F": {
+  "name": "Suavinex pomada intensiva del pañal, 75 ml",
+  "brand": "Suavinex",
+  "kind": "crema",
+  "price": null,
+  "date": "2026-11-06"
+ },
+ "B0BMM7S59J": {
+  "name": "Chicco Next2Me Essential, cuna de colecho",
+  "price": null,
+  "date": "2026-11-06",
+  "brand": "Chicco",
+  "kind": "cuna",
+  "carrefour": "40931925729"
  }
 }

@@ -19,7 +19,6 @@ export async function getStaticPaths() {
 }
 const { c, products } = Astro.props;
 const cat = index.find((x) => x.slug === c.catalog);
-const amz = (q: string) => `https://www.amazon.es/s?k=${encodeURIComponent(q)}&tag=acurruco-21`;
 const others = comparativas.filter((x) => x.slug !== c.slug);
 const picks = c.rows.filter((r) => r.carrefour && products[r.carrefour]).map((r) => products[r.carrefour!]);
 const description = c.tldr[0] + " " + c.intro.slice(0, 120) + "…";
@@ -53,6 +52,7 @@ const description = c.tldr[0] + " " + c.intro.slice(0, 120) + "…";
 
     <section aria-labelledby="table-title">
       <h2 id="table-title" class="head cmpp__h2">La tabla</h2>
+      <p class="table-hint">Desliza la tabla hacia los lados para ver todas las columnas.</p>
       <div class="table-wrap">
         <table class="cmp">
           <thead><tr><th><span class="sr-only">Foto</span></th>{c.columns.map((col) => <th>{col}</th>)}<th>Dónde</th></tr></thead>
@@ -64,10 +64,7 @@ const description = c.tldr[0] + " " + c.intro.slice(0, 120) + "…";
                 {r.cells.map((cell, i) => <td class="nums">{c.columns[i + 1] === "Nota ADAC" ? <span class:list={["grade", { "grade--good": r.grade && Number(r.grade.replace(",", ".")) <= 2.5, "grade--none": /sin test/i.test(cell) }]}>{cell}</span> : cell}</td>)}
                 <td class="cmp__where">
                   {r.carrefour && products[r.carrefour] && <a class="offer offer--cf" href={`/p/${r.carrefour}/`}><span>Carrefour</span><strong class="nums">{eurN(products[r.carrefour].price)}</strong></a>}
-                  {r.asin && A[r.asin]?.price && <a class="offer" href={`https://www.amazon.es/dp/${r.asin}?tag=acurruco-21`} rel="sponsored nofollow noopener" target="_blank"><span>Amazon</span><strong class="nums">{eurN(A[r.asin].price!)}</strong></a>}
-                  {r.asin && !A[r.asin]?.price && <a class="offer" href={`https://www.amazon.es/dp/${r.asin}?tag=acurruco-21`} rel="sponsored nofollow noopener" target="_blank"><span>Amazon</span><strong>ver precio</strong></a>}
-                  {!r.asin && r.amazon && <a class="offer" href={amz(r.amazon)} rel="sponsored nofollow noopener" target="_blank"><span>Amazon</span><strong>buscar</strong></a>}
-                  {!r.carrefour && !r.asin && !r.amazon && <span class="cmp__nostore">Sólo en tiendas físicas</span>}
+                  {r.asin && !(r.carrefour && products[r.carrefour]) && <a class="offer" href={fichaAmazon(r.asin)}><span>Amazon</span><strong>Ver ficha</strong></a>}
                 </td>
               </tr>
             ))}
@@ -113,7 +110,11 @@ const description = c.tldr[0] + " " + c.intro.slice(0, 120) + "…";
   .tldr ul { display: grid; gap: 0.6rem; }
   .tldr li { padding-left: 1rem; border-left: 3px solid var(--accent); }
   .cmpp__h2 { margin-bottom: 1.25rem; }
-  .table-wrap { overflow-x: auto; background: #fff; border-radius: 14px; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; background: #fff; border-radius: 14px; max-width: 100%; }
+  .cmpp, .cmpp > * { min-width: 0; }
+  .cmp { min-width: 720px; }
+  .table-hint { display: none; font-size: var(--step-small); color: var(--muted); margin: 0 0 0.5rem; }
+  @media (max-width: 820px) { .table-hint { display: block; } }
   .cmp { width: 100%; border-collapse: collapse; min-width: 820px; }
   .cmp__img { width: 88px; }
   .cmp__img img { width: 72px; height: 72px; object-fit: contain; background: #fff; border-radius: 8px; }
