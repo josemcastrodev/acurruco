@@ -1,0 +1,49 @@
+name: Actualizar catálogo
+
+# Cada madrugada baja los feeds de Carrefour (Awin), reconstruye el catálogo y las selecciones de regalos
+# y, si algo ha cambiado, lo sube. Ese push dispara el despliegue en Cloudflare Pages.
+on:
+  schedule:
+    - cron: "15 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  catalogo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Descargar feeds de Awin
+        env:
+          AWIN_API_KEY: ${{ secrets.AWIN_API_KEY }}
+        run: |
+          set -e
+          test -n "$AWIN_API_KEY" || { echo "Falta el secreto AWIN_API_KEY"; exit 1; }
+          mkdir -p feeds
+          COLS="aw_product_id,aw_deep_link,merchant_image_url,large_image,brand_name,product_name,merchant_category,merchant_product_category_path,search_price,product_price_old,in_stock,ean,merchant_deep_link,description"
+          for fid in 76395 84214 98228; do
+            curl -sSL --retry 3 "https://productdata.awin.com/datafeed/download/apikey/${AWIN_API_KEY}/fid/${fid}/format/csv/language/es/delimiter/%2C/compression/gzip/columns/${COLS}" -o "feeds/feed_${fid}.csv.gz"
+            gunzip -f "feeds/feed_${fid}.csv.gz"
+            echo "feed ${fid}: $(wc -l < feeds/feed_${fid}.csv) líneas"
+          done
+
+      - name: Reconstruir catálogo y regalos
+        run: |
+          python scripts/build-catalog.py feeds
+          python scripts/build-regalos.py
+
+      - name: Subir cambios
+        run: |
+          git config user.name "acurruco-bot"
+          git config user.email "bot@acurruco.com"
+          git add src/data public/data public/img/catalog
+          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
+          git commit -m "Catálogo: actualización automática $(date -u +%F)"
+          git push

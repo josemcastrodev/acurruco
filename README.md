@@ -1,43 +1,26 @@
-# Astro Starter Kit: Minimal
+# Acurruco
+
+Guías, comparativas y catálogo para el primer año del bebé. Sitio estático hecho con Astro y publicado en Cloudflare Pages en https://acurruco.com.
+
+## Desarrollo
 
 ```sh
-npm create astro@latest -- --template minimal
+npm install
+npm run dev      # http://localhost:4321
+npm run build    # genera dist/
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Datos
 
-## 🚀 Project Structure
+- `src/data/catalog/*.json`: catálogo de Carrefour (feeds de Awin), generado por `scripts/build-catalog.py <carpeta con feed_*.csv>`. El script limpia el feed por reglas de nombre y marca, descarga las imágenes que Carrefour no deja enlazar a `public/img/catalog/` y escribe las versiones ligeras de `public/data/catalogo/` para los filtros.
+- `src/data/regalos.json`: selección de regalos por edad, generada por `scripts/build-regalos.py`.
+- `src/data/amazon.json`: ASIN de los productos de Amazon. Los precios van a `null` hasta que la Creators API esté aprobada: el acuerdo de Afiliados sólo permite mostrar precios obtenidos por su API.
+- `src/data/guias.ts`, `comparativas.ts`, `regalos-guia.ts`: textos de guías, comparativas y guías de regalo.
 
-Inside of your Astro project, you'll see the following folders and files:
+## Actualización automática
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+`.github/workflows/catalogo.yml` baja los feeds cada madrugada, reconstruye el catálogo y sube los cambios; ese push dispara el despliegue. Necesita el secreto `AWIN_API_KEY` del repositorio (la clave de la URL de feeds de Awin).
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Comprobaciones
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+`python scripts/seo-audit.py` revisa títulos, descripciones, canónicas, encabezados y datos estructurados de `dist/`.
