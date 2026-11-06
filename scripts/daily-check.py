@@ -27,7 +27,9 @@ if st != 404: fails.append(f"una URL inexistente devuelve {st} en vez de 404")
 # 2. Enlaces a fichas en las páginas que muestran productos
 pages = ["/", "/comparativas/sillas-de-coche-i-size/", "/comparativas/cunas-de-colecho/", "/comparativas/panales/", "/comparativas/cremas-de-panal/",
          "/regalos/recien-nacido/", "/regalos/3-6-meses/", "/regalos/6-12-meses/", "/regalos/1-ano/", "/regalos/navidad/",
-         "/guias/que-necesita-un-recien-nacido/", "/guias/bolsa-del-hospital/", "/guias/elegir-carrito/", "/guias/juguetes-sensoriales/", "/guias/juguetes-montessori/"]
+         "/guias/que-necesita-un-recien-nacido/", "/guias/bolsa-del-hospital/", "/guias/elegir-carrito/", "/guias/juguetes-sensoriales/", "/guias/juguetes-montessori/",
+         "/herramientas/", "/lista-de-nacimiento/", "/herramientas/presupuesto-primer-ano/", "/herramientas/cuanto-biberon/", "/herramientas/que-silla-de-coche/", "/herramientas/que-saco-tog/",
+         "/herramientas/semana-de-embarazo/", "/herramientas/percentiles/", "/herramientas/ventanas-de-sueno/", "/herramientas/talla-de-panal-y-ropa/", "/herramientas/calendario-de-vacunas/", "/herramientas/calculadora-de-panales/"]
 fichas = set(); searches = 0
 for p in pages:
     st, body = get(SITE + p)

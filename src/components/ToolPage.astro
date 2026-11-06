@@ -1,0 +1,146 @@
+---
+/* Página de herramienta: cabecera con foto, la herramienta en un panel ancho, el texto que explica cómo funciona,
+   las preguntas y el resto de herramientas. Los datos vienen de src/data/herramientas.ts. */
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { tools, type Tool } from "../data/herramientas";
+interface Props { tool: Tool; dark?: boolean }
+const { tool: t } = Astro.props;
+const others = tools.filter((x) => x.href !== t.href);
+const url = `https://acurruco.com${t.href}`;
+const graph: any[] = [
+  { "@type": "WebApplication", name: t.h1, url, description: t.description, applicationCategory: "UtilitiesApplication", operatingSystem: "Web", browserRequirements: "Requiere JavaScript", offers: { "@type": "Offer", price: 0, priceCurrency: "EUR" }, inLanguage: "es-ES", image: `https://acurruco.com${t.photo}`, publisher: { "@type": "Organization", name: "Acurruco", logo: { "@type": "ImageObject", url: "https://acurruco.com/img/logo.png" } } },
+  { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Inicio", item: "https://acurruco.com/" }, { "@type": "ListItem", position: 2, name: "Herramientas", item: "https://acurruco.com/herramientas/" }, { "@type": "ListItem", position: 3, name: t.name }] },
+];
+if (t.faq.length) graph.push({ "@type": "FAQPage", mainEntity: t.faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) });
+---
+<Base title={t.title} description={t.description} canonical={url} ogImage={`https://acurruco.com${t.photo}`}>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({ "@context": "https://schema.org", "@graph": graph })} />
+    <slot name="head" />
+  </Fragment>
+  <Header />
+  <main class="tp">
+    <header class="tp__hero">
+      <div class="tp__hero-in wrap">
+        <div class="tp__text">
+          <nav class="crumbs small" aria-label="Estás en"><a href="/">Inicio</a> › <a href="/herramientas/">Herramientas</a> › <span>{t.name}</span></nav>
+          <h1 class="head">{t.h1}</h1>
+          <p class="lead">{t.lead}</p>
+          {t.saves && <p class="small muted tp__saves">Lo que metas se guarda en este navegador y en el enlace de la página: cópialo para abrirlo en otro móvil o compartirlo. Sin registro.</p>}
+        </div>
+        <figure class="tp__photo"><img src={t.photo} alt={t.alt} width="1536" height="1024" fetchpriority="high" /></figure>
+      </div>
+    </header>
+    <section class="tp__tool wrap" aria-label={t.name}>
+      <slot />
+    </section>
+    {t.sections.length > 0 && (
+      <section class="tp__body wrap">
+        <article class="tp__art">
+          {t.sections.map((s) => (
+            <section class="tp__sec"><h2>{s.h}</h2>{s.p.map((p) => <p>{p}</p>)}</section>
+          ))}
+          {t.links.length > 0 && (
+            <section class="tp__sec tp__links"><h2>Para seguir</h2><ul role="list">{t.links.map(([l, h]) => <li><a href={h}>{l}</a></li>)}</ul></section>
+          )}
+          {t.faq.length > 0 && (
+            <section class="tp__sec"><h2>Dudas habituales</h2>
+              <div class="faq__list">{t.faq.map(([q, a]) => <details class="qa"><summary class="qa__q">{q}</summary><p class="qa__a">{a}</p></details>)}</div>
+            </section>
+          )}
+        </article>
+        <aside class="tp__side"><slot name="side" /></aside>
+      </section>
+    )}
+    <section class="tp__more wrap" aria-labelledby="more-title">
+      <h2 id="more-title" class="head">Más herramientas</h2>
+      <ul class="tp__grid" role="list">
+        {others.map((o) => (
+          <li><a class="tcard" href={o.href}>
+            <img src={o.photo.replace(".jpg", "-43.jpg")} alt="" width="960" height="720" loading="lazy" />
+            <span class="tcard__body"><strong>{o.name}</strong><span>{o.teaser}</span></span>
+          </a></li>
+        ))}
+      </ul>
+    </section>
+  </main>
+  <Footer />
+</Base>
+<style is:global>
+  /* Estilos comunes a todas las herramientas (globales, porque las interfaces se pintan con JavaScript). */
+  .tp { display: grid; gap: clamp(2rem, 4vw, 3.5rem); }
+  .tp__hero { background: #fff; }
+  .tp__hero-in { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 3rem; align-items: center; padding-block: 1.5rem; }
+  .tp__text { display: grid; gap: 1rem; max-width: 66ch; }
+  .tp__text .crumbs a { text-decoration: none; }
+  .tp__saves { max-width: 60ch; }
+  .tp__photo { margin: 0; border-radius: 14px; overflow: hidden; aspect-ratio: 3 / 2; max-height: 360px; }
+  .tp__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .tp__tool > * { min-width: 0; }
+  .panel { background: #fff; border-radius: 16px; padding: clamp(1.25rem, 3vw, 2.25rem); display: grid; gap: 1.25rem; }
+  .panel--ink { background: var(--field); color: var(--field-ink); }
+  .panel--ink .muted { color: var(--field-muted); }
+  .panel h2 { font-size: var(--step-lead); }
+  .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.9rem 1rem; align-items: end; }
+  .f { display: grid; gap: 0.3rem; font-weight: 600; font-size: var(--step-small); min-width: 0; }
+  .f .field { font-weight: 400; min-width: 0; }
+  .f--range { grid-column: 1 / -1; }
+  .f__val { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.25rem; font-weight: 600; }
+  .f input[type=range] { width: 100%; accent-color: var(--ink); min-height: 2rem; }
+  .seg { display: inline-flex; flex-wrap: wrap; background: var(--bg); border-radius: 10px; padding: 3px; gap: 2px; }
+  .seg span { white-space: nowrap; }
+  .seg label { position: relative; cursor: pointer; }
+  .seg input { position: absolute; opacity: 0; inset: 0; }
+  .seg span { display: block; padding: 0.45rem 0.9rem; border-radius: 8px; font-weight: 600; font-size: var(--step-small); }
+  .seg input:checked + span { background: var(--ink); color: var(--field-ink); }
+  .seg input:focus-visible + span { outline: 3px solid var(--accent); }
+  .big { display: grid; gap: 0.2rem; padding: 1.1rem 1.3rem; background: var(--accent); color: var(--accent-ink); border-radius: 12px; align-content: start; }
+  .big strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 72; font-size: clamp(1.9rem, 1.4rem + 2vw, 2.8rem); line-height: 1; font-weight: 600; }
+  .big span { font-size: var(--step-small); }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 8px; }
+  .facts > div { display: grid; gap: 0.1rem; padding: 0.8rem 1rem; background: var(--bg); border-radius: 10px; }
+  .facts strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 72; font-size: 1.6rem; line-height: 1; font-weight: 600; }
+  .facts span { font-size: var(--step-small); color: var(--muted); }
+  .panel--ink .facts > div { background: rgba(255,255,255,0.08); }
+  .panel--ink .facts span { color: var(--field-muted); }
+  .note { font-size: var(--step-small); color: var(--muted); max-width: 70ch; }
+  .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+  .button--sm { min-height: 2.6rem; padding-inline: 1.1rem; font-size: var(--step-small); }
+  .tp__body { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 3rem; align-items: start; }
+  .tp__art { display: grid; gap: 2.5rem; max-width: 72ch; }
+  .tp__sec { display: grid; gap: 0.9rem; }
+  .tp__sec h2 { font-size: var(--step-head); line-height: 1.05; margin-bottom: 0.25rem; }
+  .tp__sec p { font-size: var(--step-body); line-height: 1.6; }
+  .tp__links ul { display: grid; gap: 0.4rem; }
+  .tp__links a { font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+  .tp__side { position: sticky; top: 1.5rem; display: grid; gap: 1rem; }
+  .faq__list { display: grid; gap: 8px; }
+  .qa { background: #fff; border-radius: 12px; padding: 0 1.5rem; }
+  .qa__q { cursor: pointer; list-style: none; padding: 1rem 0; font-weight: 600; display: flex; justify-content: space-between; gap: 1rem; }
+  .qa__q::-webkit-details-marker { display: none; }
+  .qa__q::after { content: "+"; color: var(--muted); font-size: 1.4rem; line-height: 1; }
+  .qa[open] .qa__q::after { content: "–"; }
+  .qa__a { padding-bottom: 1.1rem; color: var(--muted); }
+  .tp__more { display: grid; gap: 1.25rem; }
+  .tp__grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .tcard { display: grid; gap: 0.6rem; text-decoration: none; color: inherit; background: #fff; border-radius: 12px; overflow: hidden; height: 100%; }
+  .tcard img { aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
+  .tcard__body { display: grid; gap: 0.15rem; padding: 0 0.9rem 0.9rem; font-size: var(--step-small); color: var(--muted); }
+  .tcard strong { color: var(--ink); font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.05rem; font-weight: 600; line-height: 1.2; }
+  /* enlaces a productos dentro de las herramientas */
+  .picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 8px; }
+  .pick { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 0.8rem; align-items: center; background: var(--bg); border-radius: 10px; padding: 0.6rem 0.8rem 0.6rem 0.6rem; text-decoration: none; color: inherit; }
+  .pick img { aspect-ratio: 1; object-fit: contain; mix-blend-mode: multiply; width: 100%; }
+  .pick span { display: grid; gap: 0.1rem; font-size: var(--step-small); }
+  .pick strong { font-weight: 600; line-height: 1.25; }
+  .pick em { font-style: normal; color: var(--muted); }
+  @media (max-width: 1100px) { .tp__grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 900px) {
+    .tp__hero-in { grid-template-columns: 1fr; gap: 1.25rem; } .tp__photo { max-height: 240px; aspect-ratio: 2 / 1; }
+    .tp__body { grid-template-columns: 1fr; } .tp__side { position: static; }
+  }
+  @media (max-width: 640px) { .tp__grid { grid-template-columns: 1fr 1fr; } .panel { border-radius: 12px; } }
+  @media print { .top, .foot, .tp__more, .tp__body, .actions, .tp__saves { display: none !important; } .tp__photo { display: none; } .panel { padding: 0; } }
+</style>

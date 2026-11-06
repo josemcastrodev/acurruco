@@ -1,0 +1,69 @@
+---
+import ToolPage from "../../components/ToolPage.astro";
+import { byHref } from "../../data/herramientas";
+const t = byHref("/herramientas/calendario-de-vacunas/");
+/* Calendario común de vacunación e inmunización a lo largo de toda la vida 2026 (CISNS, 12 de diciembre de 2025), 0 a 24 meses. */
+const visitas = [
+  { m: 0, h: "Al nacer", v: [["VRS (nirsevimab)", "Anticuerpo frente al virus respiratorio sincitial, la causa de la bronquiolitis. Para todos los nacidos entre abril y marzo de la temporada: en el hospital si nace entre octubre y marzo, y en octubre si nació antes.", "vrs"], ["Hepatitis B", "Solo si la madre es portadora o no se hizo la prueba en el embarazo. En las primeras 24 horas.", "si"]] },
+  { m: 2, h: "2 meses", v: [["Hexavalente", "Difteria, tétanos, tosferina, polio, Haemophilus influenzae b y hepatitis B, en un solo pinchazo."], ["Neumococo", "Frente a las neumonías, otitis y meningitis por neumococo."], ["Meningococo B", "Puede dar fiebre: el pediatra suele indicar paracetamol."], ["Rotavirus", "Por boca, desde las 6 semanas. Frente a las gastroenteritis graves."]] },
+  { m: 4, h: "4 meses", v: [["Hexavalente", "Segunda dosis."], ["Neumococo", "Segunda dosis."], ["Meningococo B", "Segunda dosis."], ["Meningococo C", "Primera dosis."], ["Rotavirus", "Segunda dosis (tercera a los 6 meses según la vacuna)."]] },
+  { m: 6, h: "6 meses", v: [["Gripe", "Cada otoño, de los 6 meses a los 5 años. Si cumple 6 meses fuera de la campaña (octubre a diciembre), en la siguiente.", "gripe"], ["Rotavirus", "Tercera dosis, solo con la vacuna de tres dosis.", "si"]] },
+  { m: 11, h: "11 meses", v: [["Hexavalente", "Tercera dosis, de recuerdo."], ["Neumococo", "Tercera dosis, de recuerdo."]] },
+  { m: 12, h: "12 meses", v: [["Triple vírica", "Sarampión, rubeola y parotiditis. Puede dar fiebre y manchitas entre 5 y 12 días después."], ["Meningococo B", "Tercera dosis."], ["Meningococo C", "Segunda dosis."]] },
+  { m: 15, h: "15 meses", v: [["Varicela", "Primera dosis; la segunda, a los 3 o 4 años."]] },
+];
+---
+<ToolPage tool={t}>
+  <form class="panel panel--ink vac" id="vac">
+    <div class="vac__in">
+      <label class="f" for="nac">Fecha de nacimiento <input class="field" type="date" id="nac" name="nac" required /></label>
+      <div class="big"><strong id="v-next"></strong><span id="v-next-l">mete la fecha para ver el calendario con días</span></div>
+    </div>
+    <p class="muted small">Calendario común de vacunación e inmunización 2026 del Consejo Interterritorial del SNS (aprobado el 12 de diciembre de 2025). Tu comunidad puede añadir alguna vacuna o adelantar dosis; el centro de salud te cita. Las fechas son el día que cumple los meses: la visita puede ser días después, sin problema.</p>
+  </form>
+  <ol class="visits" role="list" id="visits">
+    {visitas.map((vi) => (
+      <li class="visit panel" data-m={vi.m}>
+        <div class="visit__head"><h2>{vi.h}</h2><span class="visit__date nums" data-date></span><span class="visit__state small" data-state></span></div>
+        <ul class="visit__list" role="list">
+          {vi.v.map(([n, d, k]) => <li class:list={["vx", { "vx--cond": k === "si", "vx--season": k === "vrs" || k === "gripe" }]}><strong>{n}</strong><span class="small muted">{d}</span></li>)}
+        </ul>
+      </li>
+    ))}
+  </ol>
+</ToolPage>
+<style is:global>
+  .vac__in { display: grid; grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr); gap: 1rem 2rem; align-items: end; }
+  .vac .f { color: var(--field-ink); } .vac .field { color: var(--ink); min-height: 2.8rem; }
+  .visits { display: grid; gap: 10px; }
+  .visit { gap: 0.9rem; }
+  .visit--past { opacity: 0.6; }
+  .visit--next { outline: 3px solid var(--accent); }
+  .visit__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 1rem; }
+  .visit__head h2 { font-size: var(--step-lead); }
+  .visit__date { font-weight: 600; color: var(--muted); }
+  .visit__state { padding: 0.15rem 0.6rem; border-radius: 6px; background: var(--bg); font-weight: 600; }
+  .visit--next .visit__state { background: var(--accent); }
+  .visit__list { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 8px; }
+  .vx { display: grid; gap: 0.15rem; padding: 0.7rem 0.9rem; border-radius: 10px; background: var(--bg); }
+  .vx--cond { background: color-mix(in oklab, #fff 55%, var(--bg)); } .vx--cond strong::after { content: " · solo en algunos casos"; font-weight: 400; color: var(--muted); font-size: 0.8rem; }
+  .vx--season strong::after { content: " · según temporada"; font-weight: 400; color: var(--muted); font-size: 0.8rem; }
+  @media (max-width: 640px) { .vac__in { grid-template-columns: 1fr; } }
+</style>
+<script>
+  import { loadState, saveState, fecha, fechaCorta, addMonths, fromISO } from "../../scripts/state";
+  const $ = (id: string) => document.getElementById(id)!, nac = $("nac") as HTMLInputElement;
+  const paint = () => {
+    const vs = [...document.querySelectorAll<HTMLElement>(".visit")];
+    if (!nac.value) { vs.forEach((v) => { v.querySelector("[data-date]")!.textContent = ""; v.querySelector("[data-state]")!.textContent = ""; v.className = "visit panel"; }); $("v-next").textContent = "—"; $("v-next-l").textContent = "mete la fecha para ver el calendario con días"; return; }
+    const b = fromISO(nac.value), hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    let next: HTMLElement | null = null;
+    vs.forEach((v) => { const d = addMonths(b, Number(v.dataset.m)); v.querySelector("[data-date]")!.textContent = `${fecha(d)}`; const past = d < hoy; v.classList.toggle("visit--past", past); v.querySelector("[data-state]")!.textContent = past ? "ya tocaba" : `en ${Math.ceil((d.getTime() - hoy.getTime()) / 864e5)} días`; if (!past && !next) next = v; });
+    vs.forEach((v) => v.classList.toggle("visit--next", v === next));
+    if (next) { const n = next as HTMLElement; const d = addMonths(b, Number(n.dataset.m)); $("v-next").textContent = `${n.querySelector("h2")!.textContent}: ${fechaCorta(d)}`; $("v-next-l").textContent = `la próxima: ${[...n.querySelectorAll(".vx strong")].map((s) => s.textContent).join(", ")}`; }
+    else { $("v-next").textContent = "Completo hasta los 2 años"; $("v-next-l").textContent = "la siguiente es la segunda dosis de triple vírica y varicela a los 3 o 4 años"; }
+    saveState("vacunas", { nac: nac.value });
+  };
+  const s = loadState<any>("vacunas", null).value; if (s && s.nac) nac.value = s.nac;
+  nac.addEventListener("input", paint); nac.addEventListener("change", paint); paint();
+</script>

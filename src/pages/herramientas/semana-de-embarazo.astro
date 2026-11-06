@@ -1,0 +1,105 @@
+---
+import ToolPage from "../../components/ToolPage.astro";
+import { byHref } from "../../data/herramientas";
+const t = byHref("/herramientas/semana-de-embarazo/");
+/* Qué va tocando en cada tramo: semana desde la que aparece, texto y enlace. */
+const hitos = [
+  { w: 8, h: "Primera ecografía y analíticas", p: "Entre la semana 8 y la 12. En la de las 12 semanas te afinarán la fecha probable de parto: si cambia, cámbiala aquí." },
+  { w: 16, h: "Empieza a mirar lo grande", p: "Silla de coche, carrito y cuna se eligen con calma y se prueban. No hace falta comprarlos aún, pero sí saber cuáles.", href: "/comparativas/sillas-de-coche-i-size/", l: "Comparativa de sillas de coche" },
+  { w: 20, h: "Ecografía morfológica", p: "La de la semana 20. Es cuando muchas familias abren la lista de nacimiento para la familia.", href: "/lista-de-nacimiento/", l: "La lista de nacimiento" },
+  { w: 26, h: "Curva de glucosa y vacuna de la tosferina", p: "La vacuna dTpa se pone entre la semana 27 y la 36, en cada embarazo, para proteger al bebé los primeros meses." },
+  { w: 28, h: "Compra lo grande", p: "Silla de coche, carrito y cuna en casa antes de la semana 34, por si llega antes de tiempo. Prueba a anclar la silla en el coche.", href: "/guias/elegir-carrito/", l: "Cómo elegir el carrito" },
+  { w: 32, h: "Lo pequeño de la lista", p: "Pañales talla 1 (un paquete), ropa 50 y 56, muselinas, cremas, termómetro. Y el presupuesto del primer año, para que no te pille de sorpresa.", href: "/herramientas/presupuesto-primer-ano/", l: "Presupuesto del primer año" },
+  { w: 34, h: "La bolsa del hospital", p: "Preparada y en la entrada desde la semana 35. Lo que te pone el hospital y lo que no.", href: "/guias/bolsa-del-hospital/", l: "Qué llevar al hospital" },
+  { w: 37, h: "A término", p: "A partir de aquí el parto puede llegar cualquier día. Silla instalada, bolsa hecha, cuna montada y el teléfono del hospital a mano." },
+  { w: 41, h: "Semana 41", p: "La mayoría de hospitales en España proponen inducir el parto entre la semana 41 y la 42 si no ha empezado solo." },
+];
+---
+<ToolPage tool={t}>
+  <form class="panel panel--ink emb" id="emb">
+    <div class="emb__in">
+      <div class="f"><span>¿Qué fecha tienes?</span>
+        <div class="seg" role="group"><label><input type="radio" name="modo" value="fur" checked /><span>Última regla</span></label><label><input type="radio" name="modo" value="fpp" /><span>Fecha probable de parto</span></label></div>
+      </div>
+      <label class="f" for="fecha">Fecha <input class="field" type="date" id="fecha" name="fecha" required /></label>
+      <label class="f" for="ciclo" data-only="fur">Duración de tu ciclo <span class="muted small">(días; 28 si no lo sabes)</span><input class="field nums" type="number" id="ciclo" name="ciclo" min="20" max="45" value="28" /></label>
+    </div>
+    <div class="emb__out" id="out" hidden>
+      <div class="emb__sum">
+        <div class="big"><strong id="e-sem"></strong><span id="e-dia"></span></div>
+        <div class="facts nums">
+          <div><strong id="e-fpp"></strong><span>fecha probable de parto</span></div>
+          <div><strong id="e-falta"></strong><span>días para la fecha</span></div>
+          <div><strong id="e-tri"></strong><span>trimestre</span></div>
+          <div><strong id="e-vent"></strong><span>ventana a término (37 a 42)</span></div>
+        </div>
+      </div>
+      <div class="emb__bar" aria-hidden="true"><span class="emb__fill" id="e-fill"></span><span class="emb__mark" style="left:30%">13</span><span class="emb__mark" style="left:65%">27</span><span class="emb__mark" style="left:92.5%">37</span></div>
+      <p class="muted small">Cuenta desde el primer día de la última regla, 280 días hasta la fecha probable de parto (regla de Naegele), corregida por la duración del ciclo. Solo un 4 % nace el día exacto; lo normal es entre la 37 y la 42.</p>
+    </div>
+    <p class="muted small" id="empty">Mete la fecha para ver la semana, el trimestre y lo que va tocando.</p>
+  </form>
+  <section class="panel hitos" id="hitos" hidden aria-labelledby="hitos-t">
+    <h2 id="hitos-t">Lo que va tocando</h2>
+    <ol class="hitos__list" role="list">
+      {hitos.map((h) => (
+        <li class="hito" data-w={h.w}>
+          <span class="hito__when nums"><strong>Semana {h.w}</strong><span class="small muted" data-date></span></span>
+          <span class="hito__body"><strong>{h.h}</strong><span class="small muted">{h.p}</span>{h.href && <a class="link-plain small" href={h.href}>{h.l}</a>}</span>
+        </li>
+      ))}
+    </ol>
+  </section>
+</ToolPage>
+<style is:global>
+  .emb__in { display: grid; grid-template-columns: auto minmax(10rem, 14rem) minmax(8rem, 12rem); gap: 1rem 1.5rem; align-items: end; }
+  .emb .f > span:first-child, .emb label.f { color: var(--field-ink); }
+  .emb .seg { background: rgba(255,255,255,0.08); } .emb .seg input:checked + span { background: var(--accent); color: var(--accent-ink); }
+  .emb .field { color: var(--ink); min-height: 2.8rem; }
+  .emb__out { display: grid; gap: 1rem; }
+  .emb__sum { display: grid; grid-template-columns: minmax(14rem, 1fr) 2fr; gap: 1rem; }
+  .emb__bar { position: relative; height: 14px; background: rgba(255,255,255,0.1); border-radius: 7px; margin-top: 0.75rem; }
+  .emb__fill { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 7px; transition: width 500ms var(--ease-out); }
+  .emb__mark { position: absolute; top: 100%; transform: translateX(-50%); font-size: 0.72rem; color: var(--field-muted); padding-top: 2px; }
+  .emb__mark::before { content: ""; position: absolute; left: 50%; top: -14px; width: 2px; height: 14px; background: rgba(255,255,255,0.35); }
+  .hitos { gap: 1rem; }
+  .hitos__list { display: grid; gap: 8px; }
+  .hito { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1rem; background: var(--bg); border-radius: 12px; padding: 0.8rem 1rem; }
+  .hito--past { opacity: 0.55; }
+  .hito--now { background: var(--accent); }
+  .hito--now .muted { color: var(--accent-ink); }
+  .hito__when, .hito__body { display: grid; gap: 0.15rem; align-content: start; }
+  @media (max-width: 760px) { .emb__in { grid-template-columns: 1fr; } .emb__sum { grid-template-columns: 1fr; } .hito { grid-template-columns: 1fr; gap: 0.3rem; } }
+</style>
+<script>
+  import { loadState, saveState, fecha, fechaCorta, addDays, toISO, fromISO } from "../../scripts/state";
+  const form = document.getElementById("emb") as HTMLFormElement;
+  const $ = (id: string) => document.getElementById(id)!;
+  const fechaEl = $("fecha") as HTMLInputElement, cicloEl = $("ciclo") as HTMLInputElement;
+  const modo = () => form.querySelector<HTMLInputElement>("input[name=modo]:checked")!.value;
+  const paint = () => {
+    const only = form.querySelector<HTMLElement>("[data-only=fur]")!; only.hidden = modo() !== "fur";
+    if (!fechaEl.value) { $("out").hidden = true; $("hitos").hidden = true; $("empty").hidden = false; return; }
+    const d = fromISO(fechaEl.value), ciclo = Math.min(45, Math.max(20, Number(cicloEl.value) || 28));
+    const fpp = modo() === "fur" ? addDays(d, 280 + (ciclo - 28)) : d;
+    const inicio = addDays(fpp, -280);
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const dias = Math.floor((hoy.getTime() - inicio.getTime()) / 864e5);
+    const sem = Math.floor(dias / 7), dsem = dias % 7;
+    const falta = Math.round((fpp.getTime() - hoy.getTime()) / 864e5);
+    $("out").hidden = false; $("hitos").hidden = false; $("empty").hidden = true;
+    if (dias < 0) { $("e-sem").textContent = "Aún no"; $("e-dia").textContent = "la fecha es posterior a hoy"; }
+    else if (sem > 44) { $("e-sem").textContent = "Ya habrá nacido"; $("e-dia").textContent = `la fecha probable fue el ${fecha(fpp)}`; }
+    else { $("e-sem").textContent = `Semana ${sem}`; $("e-dia").textContent = `y ${dsem} ${dsem === 1 ? "día" : "días"} · ${sem < 13 ? "primer" : sem < 27 ? "segundo" : "tercer"} trimestre`; }
+    $("e-fpp").textContent = fechaCorta(fpp) + " " + fpp.getFullYear();
+    $("e-falta").textContent = falta >= 0 ? String(falta) : `hace ${-falta}`;
+    $("e-tri").textContent = sem < 13 ? "1.º" : sem < 27 ? "2.º" : "3.º";
+    $("e-vent").textContent = `${fechaCorta(addDays(fpp, -21))} – ${fechaCorta(addDays(fpp, 14))}`;
+    ($("e-fill") as HTMLElement).style.width = Math.min(100, Math.max(0, (dias / 280) * 100)) + "%";
+    document.querySelectorAll<HTMLElement>(".hito").forEach((h, i, all) => { const w = Number(h.dataset.w), next = all[i + 1] ? Number(all[i + 1].dataset.w) : 99; h.querySelector("[data-date]")!.textContent = fechaCorta(addDays(inicio, w * 7)); h.classList.toggle("hito--past", sem >= next); h.classList.toggle("hito--now", sem >= w && sem < next); });
+    saveState("embarazo", { fpp: toISO(fpp), modo: modo(), f: fechaEl.value, c: ciclo });
+  };
+  const s = loadState<any>("embarazo", null).value;
+  if (s && s.fpp) { const r = form.querySelector<HTMLInputElement>(`input[name=modo][value=${s.modo || "fpp"}]`); if (r) r.checked = true; fechaEl.value = s.f || s.fpp; cicloEl.value = String(s.c || 28); }
+  form.addEventListener("input", paint); form.addEventListener("change", paint); paint();
+</script>

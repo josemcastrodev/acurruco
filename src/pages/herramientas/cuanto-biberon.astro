@@ -1,0 +1,74 @@
+---
+import ToolPage from "../../components/ToolPage.astro";
+import { byHref } from "../../data/herramientas";
+const t = byHref("/herramientas/cuanto-biberon/");
+const all = import.meta.glob("../../data/catalog/*.json", { eager: true });
+const byId = new Map<string, any>(); for (const k in all) if (!k.endsWith("index.json")) for (const p of (all[k] as any).default) byId.set(p.id, p);
+const picks = ["42395281061", "44415325438", "35556769831", "45391647463", "45391648081"].map((id) => byId.get(id)).filter((p) => p && p.stock);
+const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+---
+<ToolPage tool={t}>
+  <form class="panel panel--ink bib" id="bib">
+    <div class="bib__in">
+      <label class="f" for="peso">Peso (kg) <input class="field nums" type="number" id="peso" name="peso" min="1" max="15" step="0.1" value="5" inputmode="decimal" /></label>
+      <label class="f" for="edad">Edad <select class="field" id="edad" name="edad">
+        <option value="d1">1 a 3 días</option><option value="d4">4 a 7 días</option><option value="s2">2 a 4 semanas</option>
+        <option value="1" selected>1 mes</option><option value="2">2 meses</option><option value="3">3 meses</option><option value="4">4 meses</option><option value="5">5 meses</option>
+        <option value="6">6 a 8 meses</option><option value="9">9 a 12 meses</option>
+      </select></label>
+      <div class="f"><span>Qué toma</span><div class="seg" role="group"><label><input type="radio" name="tipo" value="formula" checked /><span>Fórmula</span></label><label><input type="radio" name="tipo" value="materna" /><span>Leche materna extraída</span></label></div></div>
+    </div>
+    <div class="bib__sum">
+      <div class="big"><strong id="b-toma"></strong><span id="b-toma-l">por biberón</span></div>
+      <div class="facts nums">
+        <div><strong id="b-dia"></strong><span>al día, en total</span></div>
+        <div><strong id="b-n"></strong><span>tomas al día</span></div>
+        <div><strong id="b-cada"></strong><span>más o menos cada</span></div>
+        <div><strong id="b-prep"></strong><span>prepara el biberón con</span></div>
+      </div>
+    </div>
+    <p class="muted small" id="b-txt"></p>
+    <p class="muted small">Regla de 150 ml por kilo y día (margen de 120 a 180), tope de un litro, y menos a partir de los 6 meses con la alimentación complementaria. Con leche materna extraída, de 90 a 150 ml por kilo. Son cantidades orientativas: manda el hambre del bebé y lo que diga tu pediatra.</p>
+  </form>
+  {picks.length > 0 && (
+    <section class="panel" aria-labelledby="picks-t">
+      <h2 id="picks-t">Lo que hace falta para prepararlo</h2>
+      <ol class="picks" role="list">{picks.map((p) => <li><a class="pick" href={`/p/${p.id}/`}><img src={p.img} alt="" width="64" height="64" loading="lazy" /><span><strong>{p.name.length > 56 ? p.name.slice(0, 54) + "…" : p.name}</strong><em class="nums">{eur(p.price)} en Carrefour</em></span></a></li>)}</ol>
+      <p class="note">Precios de hoy. Una lata de 800 g da unos 6 litros de leche: a 900 ml al día, una semana. <a class="link-plain" href="/catalogo/alimentacion-infantil/">Todas las leches de fórmula</a> · <a class="link-plain" href="/catalogo/biberones-y-menaje/">biberones y tetinas</a>.</p>
+    </section>
+  )}
+</ToolPage>
+<style is:global>
+  .bib__in { display: grid; grid-template-columns: minmax(8rem, 10rem) minmax(10rem, 13rem) auto; gap: 1rem 1.5rem; align-items: end; }
+  .bib .f, .bib .f > span:first-child { color: var(--field-ink); } .bib .field { color: var(--ink); min-height: 2.8rem; }
+  .bib .seg { background: rgba(255,255,255,0.08); } .bib .seg input:checked + span { background: var(--accent); color: var(--accent-ink); }
+  .bib__sum { display: grid; grid-template-columns: minmax(12rem, 1fr) 2fr; gap: 1rem; }
+  @media (max-width: 700px) { .bib__in, .bib__sum { grid-template-columns: 1fr; } }
+</style>
+<script>
+  const form = document.getElementById("bib") as HTMLFormElement;
+  const $ = (id: string) => document.getElementById(id)!;
+  const r30 = (n: number) => Math.round(n / 30) * 30;
+  const paint = () => {
+    const kg = Math.min(15, Math.max(1, Number(($("peso") as HTMLInputElement).value) || 5));
+    const e = ($("edad") as HTMLSelectElement).value;
+    const materna = form.querySelector<HTMLInputElement>("input[name=tipo]:checked")!.value === "materna";
+    let dia: number, n: number, txt: string, toma: number;
+    if (e === "d1") { n = 10; toma = 20; dia = n * toma; txt = "Los primeros días el estómago es del tamaño de una cereza: de 10 a 30 ml por toma, 8 a 12 veces al día. Con calostro o fórmula, poco y a menudo."; }
+    else if (e === "d4") { n = 9; toma = 50; dia = n * toma; txt = "De 30 a 60 ml por toma, cada dos o tres horas. Si se queda con hambre, 15 ml más la siguiente vez."; }
+    else {
+      const perKg = materna ? 125 : 150;
+      dia = Math.min(1000, kg * perKg);
+      const meses = e === "s2" ? 0.5 : Number(e);
+      n = meses < 1 ? 8 : meses < 2 ? 7 : meses < 4 ? 6 : meses < 6 ? 5 : meses < 9 ? 4 : 3;
+      if (meses >= 6) dia = Math.min(dia, meses >= 9 ? 600 : 800);
+      toma = r30(dia / n);
+      txt = meses >= 6 ? "Con la alimentación complementaria la leche baja poco a poco; sigue siendo el alimento principal hasta el año, unos 500 ml al día como mínimo." : materna ? "La leche materna se digiere más rápido y la cantidad por toma suele ser menor que con fórmula; no la fuerces a terminar el biberón." : `A ${perKg} ml por kilo, con un margen entre ${Math.round(kg * 120)} y ${Math.min(1000, Math.round(kg * 180))} ml al día. Si deja leche en todos los biberones, prepara 30 ml menos; si los acaba y busca más, 30 ml más.`;
+    }
+    $("b-toma").textContent = `${toma} ml`; $("b-dia").textContent = `${Math.round(dia)} ml`; $("b-n").textContent = String(n);
+    $("b-cada").textContent = n >= 8 ? "2–3 h" : n >= 6 ? "3–4 h" : n >= 4 ? "4–5 h" : "5–6 h";
+    $("b-prep").textContent = e === "d1" || e === "d4" ? `${toma} ml` : `${Math.round(toma / 30)} ${Math.round(toma / 30) === 1 ? "cacito" : "cacitos"} + ${toma} ml agua`;
+    $("b-txt").textContent = txt;
+  };
+  form.addEventListener("input", paint); form.addEventListener("change", paint); paint();
+</script>

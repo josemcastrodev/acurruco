@@ -2,78 +2,100 @@
 import Base from "../../layouts/Base.astro";
 import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
+import { tools, byHref } from "../../data/herramientas";
+
+/* Las herramientas, agrupadas por el momento en que hacen falta. */
+const grupos = [
+  { h: "Antes de nacer", t: "Para saber en qué punto estás y qué va tocando.", items: ["/herramientas/semana-de-embarazo/", "/lista-de-nacimiento/", "/herramientas/presupuesto-primer-ano/"] },
+  { h: "Cada día", t: "Lo que se calcula mal a ojo: tomas, siestas, abrigo y pañales.", items: ["/herramientas/cuanto-biberon/", "/herramientas/ventanas-de-sueno/", "/herramientas/que-saco-tog/", "/herramientas/calculadora-de-panales/"] },
+  { h: "Según crece", t: "Con las tablas de la OMS y el calendario oficial de 2026.", items: ["/herramientas/percentiles/", "/herramientas/talla-de-panal-y-ropa/", "/herramientas/que-silla-de-coche/", "/herramientas/calendario-de-vacunas/"] },
+].map((g) => ({ ...g, items: g.items.map(byHref) }));
+const n = tools.length;
 ---
-<Base title="Herramientas para padres: calculadora de pañales, lista de nacimiento y presupuesto · Acurruco" description="Calcula cuántos pañales gasta tu bebé y cuánto cuesta cada marca, marca tu lista de nacimiento y estima el presupuesto del primer año." canonical="https://acurruco.com/herramientas/">
+<Base title={`${n} herramientas para padres: embarazo, percentiles, biberón, sueño, vacunas, pañales · Acurruco`} description="Semana de embarazo, percentiles de la OMS, cuánto biberón, ventanas de sueño, qué saco y qué silla le toca, calendario de vacunas 2026, talla de pañal, lista de nacimiento y presupuesto. Gratis, sin registro." canonical="https://acurruco.com/herramientas/" ogImage="https://acurruco.com/img/photos/herramientas.jpg">
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: "Herramientas de Acurruco", itemListElement: tools.map((t, i) => ({ "@type": "ListItem", position: i + 1, name: t.h1, url: `https://acurruco.com${t.href}` })) })} />
+  </Fragment>
   <Header />
-  <main class="wrap tools">
-    <header class="tools__head">
-      <h1 class="head">Herramientas</h1>
-      <p class="lead">Cosas que se calculan mal a ojo. Todas gratis, sin registro y con los precios de hoy.</p>
+  <main class="hub">
+    <header class="hub__hero">
+      <div class="hub__hero-in wrap">
+        <div class="hub__text">
+          <h1 class="head">{n} herramientas que se calculan mal a ojo</h1>
+          <p class="lead">Semana de embarazo, percentiles, biberón, siestas, vacunas, pañales. Con las tablas de la OMS, el calendario oficial y los precios de hoy. Gratis, sin registro, y lo que metas se guarda en el enlace para abrirlo en otro móvil.</p>
+          <nav class="hub__jump" aria-label="Ir al grupo"><ul role="list">{grupos.map((g, i) => <li><a href={`#g${i}`}>{g.h}</a></li>)}</ul></nav>
+        </div>
+        <figure class="hub__photo"><img src="/img/photos/herramientas.jpg" alt="Cinta métrica, báscula de bebé, biberón y calendario sobre una mesa clara" width="1536" height="1024" fetchpriority="high" /></figure>
+      </div>
     </header>
-    <div class="tools__grid">
-      <form class="tool tool--calc" id="calc" aria-labelledby="calc-title">
-        <h2 id="calc-title">Calculadora de pañales</h2>
-        <p>Un recién nacido moja unos ocho al día; con un año, cuatro o cinco. Mueve la edad y mira qué supone al mes en las dos marcas que más se compran en España.</p>
-        <label class="calc__label" for="edad">Edad: <output id="edad-out" for="edad">1 mes</output></label>
-        <input class="calc__range" type="range" id="edad" name="edad" min="0" max="24" step="1" value="1" />
-        <ul class="calc__out nums" role="list">
-          <li><strong id="c-dia">8</strong> pañales al día, talla <strong id="c-talla">1</strong></li>
-          <li><strong id="c-mes">240</strong> pañales al mes</li>
-          <li><strong id="c-dodot">96 €</strong> al mes con Dodot Sensitive</li>
-          <li><strong id="c-crf">55 €</strong> al mes con Carrefour Baby</li>
-          <li class="calc__save"><strong id="c-ahorro">492 €</strong> de diferencia al año</li>
-        </ul>
-        <p class="small">Precios por pañal en carrefour.es el 6 de noviembre de 2026: Dodot Sensitive 0,40 € (T1), 0,35 € (T2), 0,41 € (T3); Carrefour Baby 0,23 € (T1), 0,17 € (T2), 0,15 € (T3), 0,17 € (T4). Es una estimación: cada bebé es un mundo.</p>
-        <a class="link-plain" href="/comparativas/panales/">Ver la comparativa de pañales</a>
-      </form>
-      <a class="tool" href="/lista-de-nacimiento/">
-        <h2>Lista de nacimiento</h2>
-        <p>Treinta cosas, de las que la mitad pueden esperar. Marca lo que ya tienes; se guarda en tu navegador.</p>
-        <span class="tool__go">Abrir la lista</span>
-      </a>
-      <a class="tool" href="/herramientas/presupuesto-primer-ano/">
-        <h2>Presupuesto del primer año</h2>
-        <p>Cuánto cuesta un bebé el primer año según cómo compres: ahorro, medio o premium, partida por partida y ajustable a tu caso.</p>
-        <span class="tool__go">Calcular</span>
-      </a>
-    </div>
+    {grupos.map((g, i) => (
+      <section class="hub__group wrap" id={`g${i}`} aria-labelledby={`g${i}-t`}>
+        <div class="hub__ghead"><h2 id={`g${i}-t`} class="head">{g.h}</h2><p class="lead">{g.t}</p></div>
+        <ol class="hub__cards" role="list">
+          {g.items.map((t) => (
+            <li><a class="hcard" href={t.href}>
+              <img src={t.photo.replace(".jpg", "-43.jpg")} alt={t.alt} width="960" height="720" loading="lazy" />
+              <span class="hcard__body">
+                <strong class="hcard__name">{t.h1}</strong>
+                <span class="hcard__teaser">{t.teaser}</span>
+                <span class="hcard__sample nums" data-sample={t.href}>{t.sample}</span>
+              </span>
+            </a></li>
+          ))}
+        </ol>
+      </section>
+    ))}
+    <section class="hub__foot wrap">
+      <div class="hub__foot-in">
+        <h2 class="lead">Cómo están hechas</h2>
+        <p>Los percentiles usan los parámetros LMS de los patrones de crecimiento de la OMS de 2006, mes a mes. El calendario de vacunas es el común del Consejo Interterritorial para 2026. Las ventanas de sueño y las cantidades de biberón siguen los rangos de la AEP y de la Academia Americana de Pediatría. Los precios son los del catálogo, actualizados cada día. Ninguna sustituye a tu pediatra: son para orientarte entre visita y visita.</p>
+      </div>
+    </section>
   </main>
   <Footer />
 </Base>
 <style>
-  .tools { padding-block: 2rem 0; display: grid; gap: 2.5rem; }
-  .tools__head { display: grid; gap: 1rem; max-width: 64ch; }
-  .tools__grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 16px; align-items: start; }
-  .tool { display: grid; gap: 0.75rem; align-content: start; padding: 1.75rem; background: #fff; border-radius: 14px; text-decoration: none; color: inherit; }
-  .tool h2 { font-size: var(--step-lead); }
-  .tool p { font-size: var(--step-small); color: var(--muted); max-width: 44ch; }
-  .tool__go { font-weight: 700; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
-  .tool--calc { background: var(--accent); color: var(--accent-ink); }
-  .tool--calc p { color: var(--accent-ink); }
-  .calc__label { font-weight: 600; }
-  .calc__range { width: 100%; accent-color: var(--ink); }
-  .calc__out { display: grid; gap: 0.35rem; }
-  .calc__out strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 72; font-size: 1.6rem; font-weight: 600; margin-right: 0.1em; }
-  .calc__save strong { background: var(--ink); color: var(--field-ink); padding: 0.05em 0.35em 0.1em; border-radius: 6px; }
-  @media (max-width: 900px) { .tools__grid { grid-template-columns: 1fr; } }
+  .hub { display: grid; gap: clamp(2.5rem, 5vw, 4.5rem); }
+  .hub__hero { background: #fff; }
+  .hub__hero-in { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 3rem; align-items: center; padding-block: 1.5rem; }
+  .hub__text { display: grid; gap: 1.1rem; max-width: 66ch; }
+  .hub__text .lead { max-width: 52ch; }
+  .hub__jump ul { display: flex; flex-wrap: wrap; gap: 6px; }
+  .hub__jump a { display: inline-block; padding: 0.4rem 0.9rem; background: var(--bg); border-radius: 999px; text-decoration: none; font-weight: 600; font-size: var(--step-small); }
+  .hub__photo { margin: 0; border-radius: 14px; overflow: hidden; aspect-ratio: 3 / 2; max-height: 380px; }
+  .hub__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .hub__group { display: grid; gap: 1.25rem; }
+  .hub__ghead { display: grid; gap: 0.4rem; }
+  .hub__ghead .lead { max-width: 52ch; }
+  .hub__cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .hub__cards > li { min-width: 0; }
+  .hcard { display: grid; grid-template-rows: auto 1fr; background: #fff; border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; height: 100%; transition: transform var(--t-ui) var(--ease-out); }
+  .hcard img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .hcard__body { display: grid; gap: 0.35rem; padding: 1rem 1.1rem 1.2rem; align-content: start; }
+  .hcard__name { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.25rem; font-weight: 600; line-height: 1.15; }
+  .hcard__teaser { font-size: var(--step-small); color: var(--muted); }
+  .hcard__sample { margin-top: 0.4rem; justify-self: start; font-size: var(--step-small); font-weight: 600; padding: 0.3rem 0.7rem; background: var(--accent); color: var(--accent-ink); border-radius: 8px; }
+  .hcard__sample.is-mine { background: var(--ink); color: var(--field-ink); }
+  .hub__foot-in { background: var(--field); color: var(--field-ink); border-radius: 16px; padding: clamp(1.5rem, 3vw, 2.5rem); display: grid; gap: 0.6rem; }
+  .hub__foot-in p { max-width: 80ch; color: var(--field-muted); }
+  @media (hover: hover) and (pointer: fine) { .hcard:hover { transform: translateY(-3px); } }
+  @media (max-width: 1000px) { .hub__cards { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 900px) { .hub__hero-in { grid-template-columns: 1fr; gap: 1.25rem; } .hub__photo { max-height: 240px; aspect-ratio: 2 / 1; } }
+  @media (max-width: 520px) { .hub__cards { grid-template-columns: 1fr; } }
 </style>
 <script>
-  (() => {
-    const range = document.getElementById("edad") as HTMLInputElement | null;
-    if (!range) return;
-    const out = document.getElementById("edad-out")!;
-    const $ = (id: string) => document.getElementById(id)!;
-    const tramos = [{ hasta: 1, dia: 8, talla: 1 }, { hasta: 3, dia: 7, talla: 2 }, { hasta: 6, dia: 6, talla: 3 }, { hasta: 12, dia: 5, talla: 4 }, { hasta: 24, dia: 4, talla: 5 }];
-    const precio: Record<number, [number, number]> = { 1: [0.40, 0.23], 2: [0.35, 0.17], 3: [0.41, 0.15], 4: [0.38, 0.17], 5: [0.42, 0.19] };
-    const eur = (n: number) => Math.round(n).toLocaleString("es-ES") + " €";
-    const paint = () => {
-      const m = Number(range.value);
-      const t = tramos.find((x) => m <= x.hasta) ?? tramos[tramos.length - 1];
-      const mes = t.dia * 30; const [dodot, crf] = precio[t.talla];
-      out.textContent = m === 0 ? "recién nacido" : m === 1 ? "1 mes" : `${m} meses`;
-      $("c-dia").textContent = String(t.dia); $("c-mes").textContent = String(mes); $("c-talla").textContent = String(t.talla);
-      $("c-dodot").textContent = eur(mes * dodot); $("c-crf").textContent = eur(mes * crf); $("c-ahorro").textContent = eur(mes * (dodot - crf) * 12);
-    };
-    range.addEventListener("input", paint); paint();
-  })();
+  // La muestra viva: si el navegador tiene algo guardado de una herramienta, la tarjeta lo enseña en vez del ejemplo.
+  import { eur } from "../../scripts/state";
+  const get = (k: string) => { try { return JSON.parse(localStorage.getItem("acurruco-" + k) || "null"); } catch { return null; } };
+  const set = (href: string, text: string) => { const el = document.querySelector<HTMLElement>(`[data-sample="${href}"]`); if (el) { el.textContent = text; el.classList.add("is-mine"); } };
+  const lista = get("lista");
+  if (lista && typeof lista === "object") { const v = Object.values(lista as Record<string, number>); const falta = v.filter((x) => x === 0).length; const total = Number(document.querySelector('[data-sample="/lista-de-nacimiento/"]')?.textContent?.match(/de (\d+)/)?.[1] || 31); set("/lista-de-nacimiento/", `Tu lista: faltan ${Math.max(0, total - v.filter((x) => x > 0).length)} de ${total}`); void falta; }
+  const bud = get("presupuesto");
+  if (bud && bud.v) { const t = Object.values(bud.v as Record<string, number>).reduce((a, b) => a + (Number(b) || 0), 0); set("/herramientas/presupuesto-primer-ano/", `Tu presupuesto: ${eur(t)}`); }
+  const emb = get("embarazo");
+  if (emb && emb.fpp) { const d = (new Date(emb.fpp).getTime() - Date.now()) / 864e5; const sem = Math.min(42, Math.max(0, Math.floor(40 - d / 7))); if (d > -14) set("/herramientas/semana-de-embarazo/", d > 0 ? `Semana ${sem} · faltan ${Math.ceil(d)} días` : "Fecha probable de parto pasada"); }
+  const nac = get("vacunas");
+  if (nac && nac.nac) { const b = new Date(nac.nac); const meses = (Date.now() - b.getTime()) / (864e5 * 30.4375); const next = [2, 4, 11, 12, 15].find((m) => m > meses); set("/herramientas/calendario-de-vacunas/", next ? `Próxima visita: a los ${next} meses` : "Calendario de los 2 años completo"); }
+  const pct = get("percentiles");
+  if (pct && pct.ultimo) set("/herramientas/percentiles/", pct.ultimo);
 </script>

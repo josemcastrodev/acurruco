@@ -11,7 +11,19 @@ Acurruco explica qué necesita un bebé de 0 a 24 meses en cada etapa (embarazo,
 - [Juguetes sensoriales](https://acurruco.com/guias/juguetes-sensoriales/): cuáles sirven y a qué edad.
 - [Juguetes Montessori](https://acurruco.com/guias/juguetes-montessori/): los que tienen sentido de 0 a 2 años.
 - [Lista de nacimiento](https://acurruco.com/lista-de-nacimiento/): 31 cosas, 19 imprescindibles.
-- [Cuánto cuesta un bebé el primer año](https://acurruco.com/herramientas/presupuesto-primer-ano/): presupuesto por partidas.
+- [Cuánto cuesta un bebé el primer año](https://acurruco.com/herramientas/presupuesto-primer-ano/): presupuesto por partidas y mes a mes, ajustable y compartible.
+
+## Herramientas (gratis, sin registro; lo que metes se guarda en el enlace)
+- [Todas las herramientas](https://acurruco.com/herramientas/): 11 calculadoras para padres de bebés de 0 a 24 meses.
+- [Semana de embarazo y fecha probable de parto](https://acurruco.com/herramientas/semana-de-embarazo/): regla de Naegele corregida por ciclo, trimestre y qué comprar en cada tramo.
+- [Percentiles OMS](https://acurruco.com/herramientas/percentiles/): peso, talla y perímetro cefálico de 0 a 24 meses con los parámetros LMS de la OMS, edad corregida para prematuros, con curva.
+- [Ventanas de sueño](https://acurruco.com/herramientas/ventanas-de-sueno/): siestas y hora de acostar por edad y hora de despertar.
+- [Cuánto biberón](https://acurruco.com/herramientas/cuanto-biberon/): ml por toma y tomas al día por peso y edad (150 ml/kg/día).
+- [Qué silla de coche le toca](https://acurruco.com/herramientas/que-silla-de-coche/): tramo i-Size por altura y peso, cuándo cambiar, sillas del catálogo.
+- [Qué saco (TOG)](https://acurruco.com/herramientas/que-saco-tog/): TOG del saco y capas según la temperatura de la habitación.
+- [Talla de pañal y de ropa](https://acurruco.com/herramientas/talla-de-panal-y-ropa/): talla por peso en Dodot, Carrefour Baby, Huggies y Deliplus; talla de ropa por altura.
+- [Calendario de vacunas 2026](https://acurruco.com/herramientas/calendario-de-vacunas/): fechas de cada vacuna de 0 a 24 meses según el calendario común del CISNS 2026.
+- [Calculadora de pañales](https://acurruco.com/herramientas/calculadora-de-panales/): pañales al mes y coste por marca con precios de Carrefour de hoy.
 
 ## Comparativas
 - [Sillas de coche i-Size para recién nacido](https://acurruco.com/comparativas/sillas-de-coche-i-size/): con las notas de ADAC.

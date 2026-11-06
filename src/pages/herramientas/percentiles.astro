@@ -1,0 +1,107 @@
+---
+import ToolPage from "../../components/ToolPage.astro";
+import { byHref } from "../../data/herramientas";
+import oms from "../../data/oms.json";
+const t = byHref("/herramientas/percentiles/");
+---
+<ToolPage tool={t}>
+  <form class="panel pct" id="pct">
+    <div class="fields">
+      <div class="f"><span>Sexo</span><div class="seg" role="group"><label><input type="radio" name="sexo" value="m" checked /><span>Niño</span></label><label><input type="radio" name="sexo" value="f" /><span>Niña</span></label></div></div>
+      <label class="f" for="nac">Fecha de nacimiento <input class="field" type="date" id="nac" name="nac" required /></label>
+      <label class="f" for="fm">Fecha de la medida <input class="field" type="date" id="fm" name="fm" /></label>
+      <label class="f" for="sg">Semanas de gestación al nacer <input class="field nums" type="number" id="sg" name="sg" min="24" max="43" value="40" /></label>
+      <label class="f" for="peso">Peso (kg) <input class="field nums" type="number" id="peso" name="peso" min="0.5" max="25" step="0.01" placeholder="6,4" inputmode="decimal" /></label>
+      <label class="f" for="talla">Talla (cm) <input class="field nums" type="number" id="talla" name="talla" min="30" max="110" step="0.1" placeholder="62" inputmode="decimal" /></label>
+      <label class="f" for="pc">Perímetro cefálico (cm) <input class="field nums" type="number" id="pc" name="pc" min="25" max="60" step="0.1" placeholder="41" inputmode="decimal" /></label>
+    </div>
+    <p class="note" id="empty">Mete la fecha de nacimiento y al menos una medida. La fecha de la medida, si no la cambias, es hoy.</p>
+    <div class="pct__out" id="out" hidden>
+      <p class="pct__age" id="edad"></p>
+      <div class="pct__cards" id="cards"></div>
+      <div class="pct__chart">
+        <div class="seg pct__which" role="group" aria-label="Curva"><label><input type="radio" name="curva" value="peso" checked /><span>Peso</span></label><label><input type="radio" name="curva" value="talla" /><span>Talla</span></label><label><input type="radio" name="curva" value="pc" /><span>Cabeza</span></label></div>
+        <svg id="chart" viewBox="0 0 720 360" role="img" aria-label="Curva de percentiles de la OMS con la medida del bebé"></svg>
+        <p class="small muted">Líneas: percentiles 3, 15, 50, 85 y 97 de la OMS (2006) de 0 a 24 meses. El punto es tu bebé. Los percentiles se calculan con los parámetros LMS oficiales, no leyendo la gráfica.</p>
+      </div>
+    </div>
+  </form>
+</ToolPage>
+<style is:global>
+  .pct__out { display: grid; gap: 1rem; }
+  .pct__age { font-weight: 600; }
+  .pct__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 8px; }
+  .pcard { display: grid; gap: 0.3rem; padding: 1rem 1.2rem; border-radius: 12px; background: var(--bg); }
+  .pcard--main { background: var(--accent); }
+  .pcard strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 72; font-size: 2rem; line-height: 1; font-weight: 600; }
+  .pcard span { font-size: var(--step-small); }
+  .pcard .pcard__t { font-weight: 600; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pcard--main .pcard__t, .pcard--main .muted { color: var(--accent-ink); }
+  .pct__chart { display: grid; gap: 0.75rem; }
+  #chart { width: 100%; height: auto; background: var(--bg); border-radius: 12px; }
+  #chart .grid { stroke: #fff; stroke-width: 1; }
+  #chart .p { fill: none; stroke: var(--surface-2); stroke-width: 1.5; }
+  #chart .p50 { stroke: var(--muted); stroke-width: 2; }
+  #chart .lab { font: 600 11px var(--font-text); fill: var(--muted); }
+  #chart .ax { font: 11px var(--font-text); fill: var(--muted); }
+  #chart .dot { fill: var(--accent-strong); stroke: #fff; stroke-width: 3; }
+  #chart .dotl { font: 700 13px var(--font-text); fill: var(--ink); }
+</style>
+<script>
+  import { loadState, saveState, toISO, fromISO } from "../../scripts/state";
+  const oms = JSON.parse(document.getElementById("oms")!.textContent!) as Record<string, Record<string, number[][]>>;
+  const form = document.getElementById("pct") as HTMLFormElement;
+  const $ = (id: string) => document.getElementById(id)!;
+  const val = (id: string) => Number(($(id) as HTMLInputElement).value.replace(",", ".")) || 0;
+  const radio = (n: string) => form.querySelector<HTMLInputElement>(`input[name=${n}]:checked`)!.value;
+  // LMS: interpolamos entre meses; z = ((x/M)^L − 1) / (L·S); percentil = Φ(z)
+  const lms = (ind: string, sexo: string, m: number) => { const tb = oms[ind][sexo]; const i = Math.min(tb.length - 2, Math.max(0, Math.floor(m))); const f = Math.min(1, Math.max(0, m - i)); return [0, 1, 2].map((k) => tb[i][k] + (tb[i + 1][k] - tb[i][k]) * f); };
+  const z = (x: number, [L, M, S]: number[]) => (L !== 0 ? (Math.pow(x / M, L) - 1) / (L * S) : Math.log(x / M) / S);
+  const fromZ = (zz: number, [L, M, S]: number[]) => (L !== 0 ? M * Math.pow(1 + L * S * zz, 1 / L) : M * Math.exp(S * zz));
+  const phi = (zz: number) => { const t = 1 / (1 + 0.2316419 * Math.abs(zz)); const d = 0.3989423 * Math.exp(-zz * zz / 2); const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return zz > 0 ? 1 - p : p; };
+  const Z = { 3: -1.8808, 15: -1.0364, 50: 0, 85: 1.0364, 97: 1.8808 } as Record<number, number>;
+  const names = { peso: ["Peso", "kg"], talla: ["Talla", "cm"], pc: ["Perímetro cefálico", "cm"] } as Record<string, string[]>;
+  const fmt = (n: number, d = 1) => n.toLocaleString("es-ES", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const paint = () => {
+    const nac = ($("nac") as HTMLInputElement).value; if (!nac) { $("out").hidden = true; $("empty").hidden = false; return; }
+    const fm = ($("fm") as HTMLInputElement).value || toISO(new Date());
+    const sg = val("sg") || 40;
+    let meses = (fromISO(fm).getTime() - fromISO(nac).getTime()) / (864e5 * 30.4375);
+    let corr = ""; if (sg < 37) { meses -= (40 - sg) * 7 / 30.4375; corr = ` (edad corregida por ${40 - sg} semanas de prematuridad)`; }
+    if (meses < 0 || meses > 24) { $("out").hidden = false; $("empty").hidden = true; $("edad").textContent = meses < 0 ? "La fecha de la medida es anterior al nacimiento." : "Las tablas de esta calculadora llegan hasta los 24 meses."; $("cards").replaceChildren(); return; }
+    const sexo = radio("sexo");
+    const mm = Math.floor(meses), dd = Math.round((meses - mm) * 30.4375);
+    $("edad").textContent = `Edad en la medida: ${mm} ${mm === 1 ? "mes" : "meses"} y ${dd} ${dd === 1 ? "día" : "días"}${corr}.`;
+    const res: { k: string; x: number; p: number; zz: number; med: number }[] = [];
+    for (const k of ["peso", "talla", "pc"]) { const x = val(k); if (!x) continue; const l = lms(k, sexo, meses); const zz = z(x, l); res.push({ k, x, p: Math.round(phi(zz) * 100), zz, med: l[1] }); }
+    if (!res.length) { $("out").hidden = true; $("empty").hidden = false; return; }
+    $("out").hidden = false; $("empty").hidden = true;
+    $("cards").replaceChildren(...res.map((r, i) => {
+      const d = document.createElement("div"); d.className = "pcard" + (i === 0 ? " pcard--main" : "");
+      const p = Math.min(99, Math.max(1, r.p));
+      const txt = r.zz < -2 ? "Por debajo del percentil 3: coméntalo con el pediatra." : r.zz > 2 ? "Por encima del percentil 97: coméntalo con el pediatra." : r.p < 15 ? "En la parte baja de lo normal." : r.p > 85 ? "En la parte alta de lo normal." : "En la zona central: la mitad de los bebés está por aquí.";
+      d.innerHTML = `<span class="pcard__t">${names[r.k][0]}</span><strong>P${p}</strong><span>${fmt(r.x, r.k === "peso" ? 2 : 1)} ${names[r.k][1]} · la mediana a su edad es ${fmt(r.med, 1)} ${names[r.k][1]}</span><span class="muted">${txt}</span>`;
+      return d;
+    }));
+    // curva
+    const which = (form.querySelector<HTMLInputElement>("input[name=curva]:checked") || { value: res[0].k }).value as string;
+    const cur = res.find((r) => r.k === which) || res[0];
+    const tb = oms[cur.k][sexo]; const W = 720, H = 360, L = 48, R = 16, T = 16, B = 32;
+    const ys = [3, 97].map((p) => [0, 24].map((m) => fromZ(Z[p], tb[m])));
+    const ymin = Math.floor(ys[0][0] * 0.9), ymax = Math.ceil(ys[1][1] * 1.05);
+    const X = (m: number) => L + (m / 24) * (W - L - R), Y = (v: number) => T + (1 - (v - ymin) / (ymax - ymin)) * (H - T - B);
+    let s = "";
+    for (let m = 0; m <= 24; m += 3) s += `<line class="grid" x1="${X(m)}" y1="${T}" x2="${X(m)}" y2="${H - B}"/><text class="ax" x="${X(m)}" y="${H - 10}" text-anchor="middle">${m}</text>`;
+    const step = cur.k === "peso" ? 1 : 5;
+    for (let v = Math.ceil(ymin / step) * step; v <= ymax; v += step) s += `<line class="grid" x1="${L}" y1="${Y(v)}" x2="${W - R}" y2="${Y(v)}"/><text class="ax" x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`;
+    for (const p of [3, 15, 50, 85, 97]) { const pts = tb.map((l, m) => `${X(m).toFixed(1)},${Y(fromZ(Z[p], l)).toFixed(1)}`).join(" "); s += `<polyline class="p${p === 50 ? " p50" : ""}" points="${pts}"/><text class="lab" x="${W - R + 2}" y="${Y(fromZ(Z[p], tb[24])) + 4}" text-anchor="start">P${p}</text>`; }
+    s += `<circle class="dot" cx="${X(meses)}" cy="${Y(cur.x)}" r="7"/><text class="dotl" x="${X(meses) + (meses > 20 ? -12 : 12)}" y="${Y(cur.x) - 10}" text-anchor="${meses > 20 ? "end" : "start"}">P${Math.min(99, Math.max(1, cur.p))}</text>`;
+    s += `<text class="ax" x="${W - R}" y="${H - 10}" text-anchor="end">meses</text>`;
+    $("chart").innerHTML = s;
+    saveState("percentiles", { sexo, nac, fm, sg, peso: val("peso") || undefined, talla: val("talla") || undefined, pc: val("pc") || undefined, ultimo: `${names[res[0].k][0]} en el percentil ${res[0].p}` });
+  };
+  const sv = loadState<any>("percentiles", null).value;
+  if (sv && sv.nac) { const r = form.querySelector<HTMLInputElement>(`input[name=sexo][value=${sv.sexo}]`); if (r) r.checked = true; for (const k of ["nac", "fm", "sg", "peso", "talla", "pc"]) if (sv[k]) ($(k) as HTMLInputElement).value = String(sv[k]); }
+  form.addEventListener("input", paint); form.addEventListener("change", paint); paint();
+</script>
+<script type="application/json" id="oms" is:inline set:html={JSON.stringify(oms)} />

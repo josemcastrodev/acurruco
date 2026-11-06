@@ -1,0 +1,85 @@
+---
+import ToolPage from "../../components/ToolPage.astro";
+import { byHref } from "../../data/herramientas";
+import sillas from "../../data/catalog/sillas-de-coche.json";
+import oms from "../../data/oms.json";
+const t = byHref("/herramientas/que-silla-de-coche/");
+/* Tres sillas del catálogo por tramo (marcas con tests de ADAC/OCU, en stock, de barata a cara). */
+const marcas = /maxi-cosi|bébé confort|bebe confort|cybex|joie|britax|römer|romer|chicco|jané|jane|be cool|kinderkraft|nuna|besafe|recaro|babyauto|foppapedretti|concord|axkid|silver cross|graco|inglesina|peg perego|lionelo|hauck/i;
+const tramo = (tag: string, lo: number, hi: number) => { const l = (sillas as any[]).filter((p) => p.stock && p.tags.includes(tag) && marcas.test(p.brand) && p.price >= lo && p.price <= hi && !/base|funda|accesorio|adaptador/i.test(p.name)).sort((a, b) => a.price - b.price); return l.length >= 3 ? [l[0], l[Math.floor(l.length / 2)], l[l.length - 1]] : l; };
+const picks = {
+  porta: tramo("Portabebés (40–87 cm)", 90, 400).concat(tramo("Evolutiva desde nacimiento (40–105/150 cm)", 150, 300)).slice(0, 3),
+  silla: tramo("De 61 a 105 cm (9 meses a 4 años)", 150, 600).concat(tramo("Evolutiva desde nacimiento (40–105/150 cm)", 200, 500)).slice(0, 3),
+  elev: tramo("De 76/100 a 150 cm (3 a 12 años)", 60, 400),
+};
+const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+const enc = (s: string) => encodeURIComponent(s);
+---
+<ToolPage tool={t}>
+  <script type="application/json" id="oms" is:inline set:html={JSON.stringify({ talla: oms.talla })} />
+  <form class="panel panel--ink cs" id="cs">
+    <div class="cs__in">
+      <label class="f" for="alt">Altura (cm) <input class="field nums" type="number" id="alt" name="alt" min="35" max="160" step="1" value="68" inputmode="numeric" /></label>
+      <label class="f" for="peso">Peso (kg) <input class="field nums" type="number" id="peso" name="peso" min="1" max="50" step="0.1" value="7.5" inputmode="decimal" /></label>
+      <label class="f" for="edad">Edad (meses) <input class="field nums" type="number" id="edad" name="edad" min="0" max="144" step="1" value="6" inputmode="numeric" /></label>
+      <div class="f"><span>Sexo (para estimar el crecimiento)</span><div class="seg" role="group"><label><input type="radio" name="sexo" value="m" checked /><span>Niño</span></label><label><input type="radio" name="sexo" value="f" /><span>Niña</span></label></div></div>
+    </div>
+    <div class="cs__sum">
+      <div class="big"><strong id="c-tramo"></strong><span id="c-tramo-l"></span></div>
+      <div class="facts nums">
+        <div><strong id="c-sent"></strong><span>sentido de la marcha</span></div>
+        <div><strong id="c-queda"></strong><span id="c-queda-l">le queda en este tramo</span></div>
+        <div><strong id="c-next"></strong><span>la siguiente silla</span></div>
+      </div>
+    </div>
+    <p class="muted small" id="c-txt"></p>
+    <p class="muted small">Tramos de la norma R129 (i-Size) por altura, con el tope de peso habitual de cada tipo. El cambio se estima con las curvas de talla de la OMS; manda siempre la ficha de la silla y que la cabeza no sobresalga del respaldo.</p>
+  </form>
+  <section class="panel" aria-labelledby="pk-t">
+    <h2 id="pk-t">Sillas que valen para este tramo</h2>
+    <p class="note" id="pk-note"></p>
+    {(["porta", "silla", "elev"] as const).map((k) => (
+      <ol class="picks" role="list" data-tramo={k} hidden>{picks[k].map((p: any) => <li><a class="pick" href={`/p/${p.id}/`}><img src={p.img} alt="" width="64" height="64" loading="lazy" /><span><strong>{p.name.length > 56 ? p.name.slice(0, 54) + "…" : p.name}</strong><em class="nums">{eur(p.price)} en Carrefour</em></span></a></li>)}</ol>
+    ))}
+    <p class="note"><a class="link-plain" href="/comparativas/sillas-de-coche-i-size/">La comparativa con los tests de ADAC</a> · <a class="link-plain" id="pk-cat" href="/catalogo/sillas-de-coche/">Todas las sillas de este tramo en el catálogo</a></p>
+  </section>
+</ToolPage>
+<style is:global>
+  .cs__in { display: grid; grid-template-columns: repeat(3, minmax(6rem, 9rem)) auto; gap: 1rem 1.5rem; align-items: end; }
+  .cs .f, .cs .f > span:first-child { color: var(--field-ink); } .cs .field { color: var(--ink); min-height: 2.8rem; }
+  .cs .seg { background: rgba(255,255,255,0.08); } .cs .seg input:checked + span { background: var(--accent); color: var(--accent-ink); }
+  .cs__sum { display: grid; grid-template-columns: minmax(14rem, 1fr) 2fr; gap: 1rem; }
+  .picks[hidden] { display: none; }
+  @media (max-width: 760px) { .cs__in { grid-template-columns: 1fr 1fr; } .cs__sum { grid-template-columns: 1fr; } }
+</style>
+<script define:vars={{ cats: { porta: `/catalogo/sillas-de-coche/?tipo=${enc("Portabebés (40–87 cm)")}|${enc("Evolutiva desde nacimiento (40–105/150 cm)")}`, silla: `/catalogo/sillas-de-coche/?tipo=${enc("De 61 a 105 cm (9 meses a 4 años)")}|${enc("Evolutiva desde nacimiento (40–105/150 cm)")}`, elev: `/catalogo/sillas-de-coche/?tipo=${enc("De 76/100 a 150 cm (3 a 12 años)")}` } }}>
+  const oms = JSON.parse(document.getElementById("oms").textContent);
+  const form = document.getElementById("cs"), $ = (id) => document.getElementById(id);
+  const val = (id) => Number($(id).value.replace(",", ".")) || 0;
+  const lms = (sexo, m) => { const tb = oms.talla[sexo]; const i = Math.min(tb.length - 2, Math.max(0, Math.floor(m))); const f = Math.min(1, Math.max(0, m - i)); return [0, 1, 2].map((k) => tb[i][k] + (tb[i + 1][k] - tb[i][k]) * f); };
+  const z = (x, [L, M, S]) => (Math.pow(x / M, L) - 1) / (L * S), fromZ = (zz, [L, M, S]) => M * Math.pow(1 + L * S * zz, 1 / L);
+  const paint = () => {
+    const alt = val("alt"), kg = val("peso"), edad = val("edad"), sexo = form.querySelector("input[name=sexo]:checked").value;
+    let k, nombre, l, sent, txt, next;
+    if (alt < 40) { k = "porta"; nombre = "Portabebés 40–87 cm"; l = "desde que mida 40 cm"; sent = "De espaldas"; txt = "Por debajo de 40 cm (prematuros muy pequeños) hay que consultar al hospital: algunos portabebés tienen inserto para 40 cm o menos."; next = "Silla 61–105 cm"; }
+    else if (alt <= 87 && kg <= 13 && edad < 18) { k = "porta"; nombre = "Portabebés 40–87 cm"; l = "grupo 0+ en la norma antigua"; sent = "De espaldas"; next = "Silla 61–105 cm, de espaldas"; txt = alt >= 61 ? "Ya podría usar una silla de 61 a 105 cm, pero no hace falta cambiar mientras la cabeza no asome por encima del respaldo del portabebés y no pase de 13 kg. Cambiar antes de tiempo protege menos." : "Es el tramo del portabebés: ligero, se ancla en una base Isofix o con el cinturón y se lleva en el carrito. Hasta 87 cm o 13 kg, lo que llegue antes."; }
+    else if (alt <= 105 && (kg <= 18 || alt <= 100)) { k = "silla"; nombre = "Silla 61–105 cm"; l = "de espaldas, grupo 1 en la norma antigua"; sent = edad < 15 ? "De espaldas, obligatorio" : "De espaldas, recomendado"; next = "Elevador con respaldo 100–150 cm"; txt = edad < 15 ? "Hasta los 15 meses es obligatorio ir a contramarcha. Las sillas de 61 a 105 cm van de espaldas todo el tramo; las giratorias ayudan a sentarlo sin dar la vuelta a la silla." : "La DGT, la AEP y ADAC recomiendan seguir a contramarcha hasta los 4 años o hasta los 105 cm. En un choque frontal, de espaldas el cuello no tira de la cabeza."; }
+    else if (alt <= 150 && edad < 144) { k = "elev"; nombre = "Elevador con respaldo 100–150 cm"; l = "grupo 2/3 en la norma antigua"; sent = "De frente, con el cinturón del coche"; next = "Cinturón del coche sin silla, a partir de 135 cm o 12 años"; txt = "A partir de 100 cm y 15 kg va de frente, sujeto con el cinturón del coche guiado por el elevador. Con respaldo, no cojín solo: protege la cabeza en un choque lateral. Obligatorio hasta los 135 cm; recomendado hasta los 150."; }
+    else { k = "elev"; nombre = "Ya no necesita silla"; l = "a partir de 135 cm la ley permite ir con cinturón"; sent = "Cinturón del coche"; next = "—"; txt = "Por encima de 135 cm (150 recomendado) puede ir con el cinturón del coche, siempre detrás hasta los 12 años. Comprueba que la banda cruza el hombro y no el cuello."; }
+    $("c-tramo").textContent = nombre; $("c-tramo-l").textContent = l; $("c-sent").textContent = sent; $("c-next").textContent = next; $("c-txt").textContent = txt;
+    // cuánto le queda: con la curva de talla de la OMS, desde su percentil de hoy, hasta el tope del tramo (solo hasta 24 meses)
+    const tope = k === "porta" ? 87 : k === "silla" ? 105 : 150;
+    let queda = "";
+    if (edad <= 24 && alt >= 40 && alt < tope) {
+      const zz = Math.max(-3, Math.min(3, z(alt, lms(sexo, edad))));
+      let m = edad; while (m < 24 && fromZ(zz, lms(sexo, m)) < tope) m += 0.5;
+      queda = m >= 24 ? "más de " + (24 - edad) + " meses" : `unos ${Math.round(m - edad)} meses`;
+      $("c-queda-l").textContent = `le queda en este tramo (hacia los ${m >= 24 ? "2 años" : Math.round(m) + " meses"})`;
+    } else { queda = alt >= tope ? "0" : "—"; $("c-queda-l").textContent = "le queda en este tramo"; }
+    $("c-queda").textContent = queda;
+    document.querySelectorAll("[data-tramo]").forEach((ol) => (ol.hidden = ol.dataset.tramo !== k));
+    $("pk-cat").href = cats[k];
+    $("pk-note").textContent = k === "porta" ? "Portabebés y sillas evolutivas desde nacimiento con tests independientes, del catálogo, de barata a cara. Comprueba la compatibilidad con tu base Isofix o tu carrito." : k === "silla" ? "Sillas de 61 a 105 cm que van de espaldas todo el tramo, y evolutivas que lo cubren. Mira si tu coche tiene Isofix y pata de apoyo." : "Elevadores con respaldo, de 100 a 150 cm. Los de Isofix se quedan fijos cuando el niño no va.";
+  };
+  form.addEventListener("input", paint); form.addEventListener("change", paint); paint();
+</script>

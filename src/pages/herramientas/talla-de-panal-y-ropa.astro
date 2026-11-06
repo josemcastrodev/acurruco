@@ -1,0 +1,84 @@
+---
+import ToolPage from "../../components/ToolPage.astro";
+import { byHref } from "../../data/herramientas";
+import oms from "../../data/oms.json";
+const t = byHref("/herramientas/talla-de-panal-y-ropa/");
+/* Rangos de peso (kg) de cada talla, según los envases de cada marca en noviembre de 2026. */
+const marcas = [
+  { name: "Dodot Sensitive", href: "/catalogo/panales/?marca=Dodot", tallas: [[0, 0, 3], [1, 2, 5], [2, 4, 8], [3, 6, 10], [4, 9, 14], [5, 11, 16], [6, 13, 18], [7, 15, 30]] },
+  { name: "Carrefour Baby", href: "/catalogo/panales/?marca=Carrefour+Baby", tallas: [[1, 2, 5], [2, 3, 6], [3, 4, 9], [4, 7, 18], [5, 11, 25], [6, 16, 30]] },
+  { name: "Huggies", href: "/catalogo/panales/?marca=Huggies", tallas: [[1, 2, 5], [2, 3, 6], [3, 6, 10], [4, 8, 16], [5, 11, 25], [6, 15, 30]] },
+  { name: "Deliplus (Mercadona)", href: "/comparativas/panales/", tallas: [[1, 2, 5], [2, 3, 6], [3, 4, 10], [4, 9, 15], [5, 13, 18], [6, 17, 30]] },
+];
+/* Tallas de ropa por altura (cm): etiqueta española y equivalencia en meses. */
+const ropa = [[50, "0–1 mes"], [56, "1 mes"], [62, "3 meses"], [68, "6 meses"], [74, "9 meses"], [80, "12 meses"], [86, "18 meses"], [92, "24 meses"], [98, "3 años"]];
+---
+<ToolPage tool={t}>
+  <script type="application/json" id="oms" is:inline set:html={JSON.stringify({ peso: oms.peso, talla: oms.talla })} />
+  <form class="panel panel--ink tl" id="tl">
+    <div class="tl__in">
+      <label class="f" for="peso">Peso (kg) <input class="field nums" type="number" id="peso" name="peso" min="1" max="30" step="0.1" value="5.5" inputmode="decimal" /></label>
+      <label class="f" for="alt">Altura (cm) <input class="field nums" type="number" id="alt" name="alt" min="35" max="110" step="1" value="59" inputmode="numeric" /></label>
+      <label class="f" for="edad">Edad (meses) <input class="field nums" type="number" id="edad" name="edad" min="0" max="36" step="1" value="2" inputmode="numeric" /></label>
+      <div class="f"><span>Sexo (para estimar cuándo cambia)</span><div class="seg" role="group"><label><input type="radio" name="sexo" value="m" checked /><span>Niño</span></label><label><input type="radio" name="sexo" value="f" /><span>Niña</span></label></div></div>
+    </div>
+    <div class="tl__sum">
+      <div class="big"><strong id="t-panal"></strong><span id="t-panal-l">de pañal en Dodot</span></div>
+      <div class="big big--2"><strong id="t-ropa"></strong><span id="t-ropa-l"></span></div>
+    </div>
+    <ol class="brands" role="list" id="brands">{marcas.map((m) => <li><a class="brands__n" href={m.href}>{m.name}</a><strong class="nums" data-brand={m.name}></strong><span class="small muted nums" data-range></span></li>)}</ol>
+    <p class="muted small" id="t-txt"></p>
+    <p class="muted small">Rangos de kilos de los envases de cada marca (noviembre de 2026). Las tallas se solapan a propósito: en la zona de solape manda el ajuste. La estimación de cuándo cambia sigue la curva de peso de la OMS desde el percentil de hoy.</p>
+  </form>
+  <section class="panel" aria-labelledby="rt-t">
+    <h2 id="rt-t">Tallas de ropa, de un vistazo</h2>
+    <ol class="sizes nums" role="list" id="sizes">{ropa.map(([cm, m]) => <li data-cm={cm}><strong>{cm}</strong><span>{m}</span></li>)}</ol>
+    <p class="note">La etiqueta en meses es orientativa; el número en centímetros es la altura del bebé para la que está cortada. Las marcas francesas y alemanas tallan grande; para regalar, a partir de la 68.</p>
+  </section>
+</ToolPage>
+<style is:global>
+  .tl__in { display: grid; grid-template-columns: repeat(3, minmax(6rem, 9rem)) auto; gap: 1rem 1.5rem; align-items: end; }
+  .tl .f, .tl .f > span:first-child { color: var(--field-ink); } .tl .field { color: var(--ink); min-height: 2.8rem; }
+  .tl .seg { background: rgba(255,255,255,0.08); } .tl .seg input:checked + span { background: var(--accent); color: var(--accent-ink); }
+  .tl__sum { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .big--2 { background: rgba(255,255,255,0.1); color: var(--field-ink); }
+  .brands { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 8px; }
+  .brands li { display: grid; gap: 0.15rem; padding: 0.8rem 1rem; border-radius: 10px; background: rgba(255,255,255,0.08); }
+  .brands__n { font-size: var(--step-small); font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 0.18em; }
+  .brands strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.4rem; line-height: 1; }
+  .brands .muted { color: var(--field-muted); }
+  .sizes { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
+  .sizes li { display: grid; gap: 0.1rem; padding: 0.6rem 0.3rem; border-radius: 8px; background: var(--bg); text-align: center; font-size: 0.78rem; color: var(--muted); }
+  .sizes li strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.2rem; color: var(--ink); }
+  .sizes li.is-on { background: var(--accent); color: var(--accent-ink); } .sizes li.is-on strong { color: var(--accent-ink); }
+  @media (max-width: 760px) { .tl__in { grid-template-columns: 1fr 1fr; } .tl__sum { grid-template-columns: 1fr; } .sizes { grid-template-columns: repeat(5, 1fr); } }
+</style>
+<script define:vars={{ marcas, ropa }}>
+  const oms = JSON.parse(document.getElementById("oms").textContent);
+  const form = document.getElementById("tl"), $ = (id) => document.getElementById(id);
+  const val = (id) => Number($(id).value.replace(",", ".")) || 0;
+  const lms = (ind, sexo, m) => { const tb = oms[ind][sexo]; const i = Math.min(tb.length - 2, Math.max(0, Math.floor(m))); const f = Math.min(1, Math.max(0, m - i)); return [0, 1, 2].map((k) => tb[i][k] + (tb[i + 1][k] - tb[i][k]) * f); };
+  const z = (x, [L, M, S]) => (Math.pow(x / M, L) - 1) / (L * S), fromZ = (zz, [L, M, S]) => M * Math.pow(1 + L * S * zz, 1 / L);
+  // talla en una marca: la menor cuyo rango contiene el peso, salvo que esté en el último kilo del rango (entonces la siguiente)
+  const tallaDe = (m, kg) => { const ok = m.tallas.filter(([, lo, hi]) => kg >= lo && kg <= hi); if (!ok.length) return kg < m.tallas[0][1] ? m.tallas[0] : m.tallas[m.tallas.length - 1]; if (ok.length > 1 && kg >= ok[0][2] - 0.5) return ok[1]; return ok[0]; };
+  const cuando = (ind, sexo, edad, x, tope) => { if (edad > 24 || x >= tope) return null; const zz = Math.max(-3, Math.min(3, z(x, lms(ind, sexo, edad)))); let m = edad; while (m < 24 && fromZ(zz, lms(ind, sexo, m)) < tope) m += 0.25; return m >= 24 ? null : m; };
+  const paint = () => {
+    const kg = val("peso"), alt = val("alt"), edad = val("edad"), sexo = form.querySelector("input[name=sexo]:checked").value;
+    const porMarca = marcas.map((m) => ({ m, t: tallaDe(m, kg) }));
+    const comun = porMarca[0].t[0]; // la referencia es Dodot; cada marca, abajo
+    $("t-panal").textContent = `Talla ${comun}`;
+    porMarca.forEach(({ m, t }) => { form.querySelector(`[data-brand="${m.name}"]`).textContent = `T${t[0]}`; form.querySelector(`[data-brand="${m.name}"]`).nextElementSibling.textContent = `${t[1]}–${t[2]} kg`; });
+    // cuándo pasa a la siguiente en la marca de referencia (Dodot)
+    const d = porMarca[0].t, next = marcas[0].tallas.find((x) => x[0] === d[0] + 1);
+    const mNext = next ? cuando("peso", sexo, edad, kg, next[1] + 0.5) : null;
+    $("t-panal-l").textContent = next ? (mNext ? `de pañal en Dodot · la siguiente (T${next[0]}) hacia los ${Math.round(mNext)} meses` : `de pañal en Dodot · la siguiente es la T${next[0]}`) : "de pañal en Dodot: la mayor";
+    // ropa por altura
+    let r = ropa.find(([cm]) => alt <= cm) || ropa[ropa.length - 1];
+    $("t-ropa").textContent = `Talla ${r[0]}`;
+    const rn = ropa[ropa.indexOf(r) + 1]; const mR = rn ? cuando("talla", sexo, edad, alt, r[0] + 0.5) : null;
+    $("t-ropa-l").textContent = `de ropa (etiqueta ${r[1]})${mR ? ` · la ${rn[0]} hacia los ${Math.round(mR)} meses` : ""}`;
+    [...$("sizes").children].forEach((li) => li.classList.toggle("is-on", Number(li.dataset.cm) === r[0]));
+    $("t-txt").textContent = kg < 2.5 ? "Por debajo de 2,5 kg hay tallas de prematuro (T0 o P) en Dodot y en farmacia." : `Con ${String(kg).replace(".", ",")} kg, Dodot lo pone en la talla ${comun}; mira cada marca arriba, porque los rangos cambian. Si deja marcas en los muslos o se escapa por arriba, sube una talla aunque el envase diga que aún cabe.`;
+  };
+  form.addEventListener("input", paint); form.addEventListener("change", paint); paint();
+</script>

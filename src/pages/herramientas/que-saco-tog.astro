@@ -1,0 +1,62 @@
+---
+import ToolPage from "../../components/ToolPage.astro";
+import { byHref } from "../../data/herramientas";
+const t = byHref("/herramientas/que-saco-tog/");
+const all = import.meta.glob("../../data/catalog/*.json", { eager: true });
+const byId = new Map<string, any>(); for (const k in all) if (!k.endsWith("index.json")) for (const p of (all[k] as any).default) byId.set(p.id, p);
+const picks = ["42271547420", "46006733444", "46006733445", "40761780496"].map((id) => byId.get(id)).filter((p) => p && p.stock);
+const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+/* Guía por temperatura: TOG del saco y capas debajo (basada en las tablas de los fabricantes y de las guías de sueño seguro). */
+const guia = [
+  { hasta: 15, tog: "3,5", capas: "Body de manga larga, pijama de manga larga y calcetines", nota: "Por debajo de 16 °C la habitación está demasiado fría: mejor calentar un poco que abrigar de más." },
+  { hasta: 17, tog: "2,5", capas: "Body de manga larga, pijama de manga larga y calcetines", nota: "Fresco. Sube la calefacción si puedes a 18–20 °C." },
+  { hasta: 19, tog: "2,5", capas: "Body de manga larga y pijama de manga larga", nota: "La temperatura ideal, con saco de invierno." },
+  { hasta: 21, tog: "2,5 o 1", capas: "Con 2,5: body de manga corta y pijama fino. Con 1: body de manga larga y pijama", nota: "La temperatura ideal. Cualquiera de las dos combinaciones vale; mira la nuca." },
+  { hasta: 23, tog: "1", capas: "Pijama de manga larga, o body de manga larga", nota: "Templado. Un saco de entretiempo y una capa." },
+  { hasta: 24, tog: "1 o 0,5", capas: "Body de manga corta", nota: "Cálido. Con 0,5 TOG puede llevar pijama fino; con 1, solo body." },
+  { hasta: 26, tog: "0,5", capas: "Body de manga corta o solo pañal", nota: "Calor. Ventila antes de acostarlo; un ventilador que no apunte a la cuna ayuda." },
+  { hasta: 99, tog: "sin saco", capas: "Solo pañal, o body de manga corta sin saco", nota: "Más de 26 °C: nada de saco. Baja la temperatura de la habitación si puedes." },
+];
+---
+<ToolPage tool={t}>
+  <form class="panel panel--ink tog" id="tog">
+    <label class="f f--range" for="temp">Temperatura de la habitación <output class="f__val" id="temp-out" for="temp">21 °C</output><input type="range" id="temp" name="temp" min="14" max="30" step="1" value="21" /></label>
+    <div class="tog__sum">
+      <div class="big"><strong id="g-tog"></strong><span>TOG del saco</span></div>
+      <div class="tog__capas"><span class="small muted">Debajo del saco</span><strong id="g-capas"></strong><span class="small muted" id="g-nota"></span></div>
+    </div>
+    <ol class="scale nums" role="list" aria-hidden="true" id="scale">
+      {[["3,5", "<16"], ["2,5", "16–20"], ["1", "20–23"], ["0,5", "23–26"], ["—", ">26"]].map(([tog, r]) => <li><strong>{tog}</strong><span>{r} °C</span></li>)}
+    </ol>
+    <p class="muted small">Comprueba tocando la nuca o el pecho: sudado, sobra una capa; fresco, falta una. Manos y pies fríos son normales. Nunca gorro ni mantas sueltas para dormir en casa.</p>
+  </form>
+  {picks.length > 0 && (
+    <section class="panel" aria-labelledby="pk-t">
+      <h2 id="pk-t">Sacos del catálogo</h2>
+      <ol class="picks" role="list">{picks.map((p) => <li><a class="pick" href={`/p/${p.id}/`}><img src={p.img} alt="" width="64" height="64" loading="lazy" /><span><strong>{p.name.length > 56 ? p.name.slice(0, 54) + "…" : p.name}</strong><em class="nums">{eur(p.price)} en Carrefour</em></span></a></li>)}</ol>
+      <p class="note">Mira el TOG en la ficha: si no lo indica, los de muselina son de 0,5, los de algodón de 1 y los acolchados de 2,5. <a class="link-plain" href="/catalogo/ropa-de-cuna/">Todos los sacos y la ropa de cuna</a>.</p>
+    </section>
+  )}
+</ToolPage>
+<style is:global>
+  .tog .f { color: var(--field-ink); font-size: var(--step-body); } .tog .f__val { color: var(--accent); } .tog input[type=range] { accent-color: var(--accent); }
+  .tog__sum { display: grid; grid-template-columns: minmax(10rem, 14rem) 1fr; gap: 1rem; }
+  .tog__capas { display: grid; gap: 0.3rem; padding: 1.1rem 1.3rem; background: rgba(255,255,255,0.08); border-radius: 12px; align-content: start; }
+  .tog__capas strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.3rem; line-height: 1.25; font-weight: 600; }
+  .scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+  .scale li { display: grid; gap: 0.1rem; padding: 0.6rem; border-radius: 8px; background: rgba(255,255,255,0.08); text-align: center; font-size: var(--step-small); color: var(--field-muted); }
+  .scale li strong { color: var(--field-ink); font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.2rem; }
+  .scale li.is-on { background: var(--accent); color: var(--accent-ink); } .scale li.is-on strong { color: var(--accent-ink); }
+  @media (max-width: 640px) { .tog__sum { grid-template-columns: 1fr; } .scale li { padding: 0.4rem 0.2rem; font-size: 0.75rem; } }
+</style>
+<script define:vars={{ guia }}>
+  const $ = (id) => document.getElementById(id), temp = $("temp");
+  const paint = () => {
+    const c = Number(temp.value); $("temp-out").textContent = `${c} °C`;
+    const g = guia.find((x) => c <= x.hasta);
+    $("g-tog").textContent = g.tog === "sin saco" ? "Sin saco" : g.tog; $("g-capas").textContent = g.capas; $("g-nota").textContent = g.nota;
+    const idx = c < 16 ? 0 : c <= 20 ? 1 : c <= 23 ? 2 : c <= 26 ? 3 : 4;
+    [...$("scale").children].forEach((li, i) => li.classList.toggle("is-on", i === idx));
+  };
+  temp.addEventListener("input", paint); paint();
+</script>

@@ -1,96 +1,200 @@
 ---
-import Base from "../../layouts/Base.astro";
-import Header from "../../components/Header.astro";
-import Footer from "../../components/Footer.astro";
+import ToolPage from "../../components/ToolPage.astro";
+import { byHref } from "../../data/herramientas";
+const t = byHref("/herramientas/presupuesto-primer-ano/");
 
-/* Partidas del primer año con tres niveles de gasto. Cifras orientativas tomadas de nuestro catálogo y de las comparativas (Carrefour y Amazon, noviembre de 2026). */
+/* Partidas del primer año con tres niveles de gasto (cifras orientativas del catálogo y las comparativas, noviembre de 2026)
+   y cómo se reparte cada una en el tiempo: índice 0 = antes de nacer, 1..12 = mes de vida. */
+const antes = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const mes = (m: number) => antes.map((_, i) => (i === m ? 1 : 0));
+const mensual = (desde = 1, hasta = 12) => antes.map((_, i) => (i >= desde && i <= hasta ? 1 / (hasta - desde + 1) : 0));
+const porEdad = [0, 0.11, 0.11, 0.1, 0.09, 0.09, 0.08, 0.08, 0.08, 0.07, 0.07, 0.06, 0.06]; // pañales: más al principio
 const partidas = [
-  { id: "coche", name: "Silla de coche", hint: "Portabebés 40–87 cm; la base Isofix va aparte", ahorro: 130, medio: 260, premium: 570, once: true, cat: "/catalogo/sillas-de-coche/" },
-  { id: "carrito", name: "Carrito", hint: "Dos o tres piezas con capazo", ahorro: 260, medio: 500, premium: 1300, once: true, cat: "/catalogo/carritos/" },
-  { id: "cuna", name: "Cuna de colecho o minicuna", hint: "Con colchón", ahorro: 95, medio: 240, premium: 460, once: true, cat: "/catalogo/cunas/" },
-  { id: "cuna2", name: "Cuna grande (a partir de 6 meses)", hint: "60×120 cm con colchón", ahorro: 150, medio: 300, premium: 600, once: true, cat: "/catalogo/cunas/" },
-  { id: "panales", name: "Pañales", hint: "Unos 2.500 al año", ahorro: 450, medio: 700, premium: 1000, once: false, cat: "/comparativas/panales/" },
-  { id: "toallitas", name: "Toallitas y cremas", hint: "", ahorro: 120, medio: 200, premium: 320, once: false, cat: "/comparativas/cremas-de-panal/" },
-  { id: "leche", name: "Leche de fórmula", hint: "Pon 0 si lactancia materna exclusiva", ahorro: 0, medio: 700, premium: 1100, once: false, cat: "/catalogo/alimentacion-infantil/" },
-  { id: "alimentacion", name: "Alimentación complementaria (6–12 m)", hint: "Cereales, potitos, bolsitas", ahorro: 150, medio: 300, premium: 500, once: false, cat: "/catalogo/alimentacion-infantil/" },
-  { id: "biberones", name: "Biberones, esterilizador y trona", hint: "", ahorro: 120, medio: 260, premium: 520, once: true, cat: "/catalogo/biberones-y-menaje/" },
-  { id: "ropa", name: "Ropa (tallas 0 a 12 meses)", hint: "Bodies, pijamas, calcetines, abrigo", ahorro: 200, medio: 450, premium: 900, once: false, cat: "/lista-de-nacimiento/" },
-  { id: "bano", name: "Bañera, cambiador y cuidado", hint: "", ahorro: 60, medio: 150, premium: 350, once: true, cat: "/catalogo/baneras-y-cambiadores/" },
-  { id: "porteo", name: "Portabebés", hint: "", ahorro: 40, medio: 100, premium: 200, once: true, cat: "/catalogo/portabebes/" },
-  { id: "casa", name: "Hamaca, parque y seguridad en casa", hint: "", ahorro: 80, medio: 220, premium: 500, once: true, cat: "/catalogo/hamacas-y-parques/" },
-  { id: "vigila", name: "Vigilabebés", hint: "Pon 0 si no lo necesitas", ahorro: 0, medio: 90, premium: 200, once: true, cat: "/catalogo/vigilabebes/" },
-  { id: "juguetes", name: "Juguetes y libros", hint: "Lo que no regalan", ahorro: 50, medio: 150, premium: 400, once: false, cat: "/regalos/" },
+  { id: "coche", name: "Silla de coche", hint: "Portabebés 40–87 cm; la base Isofix va aparte", ahorro: 130, medio: 260, premium: 570, spread: antes, cat: "/comparativas/sillas-de-coche-i-size/", segundo: true },
+  { id: "carrito", name: "Carrito", hint: "Dos o tres piezas con capazo", ahorro: 260, medio: 500, premium: 1300, spread: antes, cat: "/guias/elegir-carrito/", segundo: true },
+  { id: "cuna", name: "Cuna de colecho o minicuna", hint: "Con colchón", ahorro: 95, medio: 240, premium: 460, spread: antes, cat: "/comparativas/cunas-de-colecho/", segundo: true },
+  { id: "cuna2", name: "Cuna grande (a partir de 6 meses)", hint: "60×120 cm con colchón", ahorro: 150, medio: 300, premium: 600, spread: mes(6), cat: "/catalogo/cunas/", segundo: true },
+  { id: "panales", name: "Pañales", hint: "Unos 2.500 al año", ahorro: 450, medio: 700, premium: 1000, spread: porEdad, cat: "/herramientas/calculadora-de-panales/" },
+  { id: "toallitas", name: "Toallitas y cremas", hint: "", ahorro: 120, medio: 200, premium: 320, spread: mensual(), cat: "/comparativas/cremas-de-panal/" },
+  { id: "leche", name: "Leche de fórmula", hint: "Según la lactancia que elijas arriba", ahorro: 550, medio: 700, premium: 1100, spread: mensual(), cat: "/catalogo/alimentacion-infantil/", lact: true },
+  { id: "alimentacion", name: "Alimentación complementaria (6–12 m)", hint: "Cereales, potitos, bolsitas", ahorro: 150, medio: 300, premium: 500, spread: mensual(6, 12), cat: "/catalogo/alimentacion-infantil/" },
+  { id: "biberones", name: "Biberones y esterilizador", hint: "", ahorro: 50, medio: 120, premium: 260, spread: antes, cat: "/catalogo/biberones-y-menaje/" },
+  { id: "trona", name: "Trona", hint: "A partir de los 6 meses", ahorro: 60, medio: 140, premium: 260, spread: mes(6), cat: "/catalogo/tronas/", segundo: true },
+  { id: "ropa", name: "Ropa (tallas 50 a 80)", hint: "Bodies, pijamas, calcetines, abrigo", ahorro: 200, medio: 450, premium: 900, spread: [0.4, 0, 0, 0.2, 0, 0, 0.2, 0, 0, 0.2, 0, 0, 0], cat: "/lista-de-nacimiento/" },
+  { id: "bano", name: "Bañera, cambiador y cuidado", hint: "", ahorro: 60, medio: 150, premium: 350, spread: antes, cat: "/catalogo/baneras-y-cambiadores/", segundo: true },
+  { id: "porteo", name: "Portabebés", hint: "", ahorro: 40, medio: 100, premium: 200, spread: antes, cat: "/catalogo/portabebes/", segundo: true },
+  { id: "casa", name: "Hamaca, parque y seguridad en casa", hint: "", ahorro: 80, medio: 220, premium: 500, spread: [0, 0.4, 0, 0, 0, 0, 0.3, 0, 0.3, 0, 0, 0, 0], cat: "/catalogo/hamacas-y-parques/", segundo: true },
+  { id: "vigila", name: "Vigilabebés", hint: "Pon 0 si no lo necesitas", ahorro: 0, medio: 90, premium: 200, spread: mes(4), cat: "/catalogo/vigilabebes/", segundo: true },
+  { id: "juguetes", name: "Juguetes y libros", hint: "Lo que no regalan", ahorro: 50, medio: 150, premium: 400, spread: [0, 0, 0, 0.25, 0, 0, 0.25, 0, 0, 0.25, 0, 0, 0.25], cat: "/regalos/" },
+  { id: "guarderia", name: "Guardería", hint: "Según el mes en que empiece, arriba", ahorro: 0, medio: 0, premium: 0, spread: mensual(), cat: "", guard: true },
 ];
 const sum = (k: "ahorro" | "medio" | "premium") => partidas.reduce((n, p) => n + p[k], 0);
 const eur = (n: number) => n.toLocaleString("es-ES", { maximumFractionDigits: 0 }) + " €";
+const meses = ["Antes de nacer", "Mes 1", "Mes 2", "Mes 3", "Mes 4", "Mes 5", "Mes 6", "Mes 7", "Mes 8", "Mes 9", "Mes 10", "Mes 11", "Mes 12"];
 ---
-<Base title="Cuánto cuesta un bebé el primer año: calculadora por partidas · Acurruco" description={`Entre ${eur(sum("ahorro"))} y ${eur(sum("premium"))} el primer año según cómo compres. Ajusta cada partida a tu caso y mira el total.`} canonical="https://acurruco.com/herramientas/presupuesto-primer-ano/">
-  <Header />
-  <main class="wrap bud">
-    <header class="bud__head">
-      <nav class="crumbs small" aria-label="Estás en"><a href="/">Inicio</a> › <a href="/herramientas/">Herramientas</a> › <span>Presupuesto</span></nav>
-      <h1 class="head">Cuánto cuesta un bebé el primer año</h1>
-      <p class="lead">Entre {eur(sum("ahorro"))} comprando con cabeza y {eur(sum("premium"))} si vas a lo mejor de cada cosa, sin contar guardería ni lo que te regalen. Elige un punto de partida y ajusta cada partida a tu caso.</p>
-    </header>
-    <form class="bud__form" id="bud">
-      <fieldset class="bud__levels">
-        <legend class="sr-only">Nivel de gasto</legend>
-        <label class="lvl"><input type="radio" name="nivel" value="ahorro" /> <span><strong>Ahorro</strong><small>{eur(sum("ahorro"))}</small></span></label>
-        <label class="lvl"><input type="radio" name="nivel" value="medio" checked /> <span><strong>Medio</strong><small>{eur(sum("medio"))}</small></span></label>
-        <label class="lvl"><input type="radio" name="nivel" value="premium" /> <span><strong>Premium</strong><small>{eur(sum("premium"))}</small></span></label>
-      </fieldset>
-      <div class="bud__total" aria-live="polite">
-        <span>Tu primer año</span>
-        <strong class="nums" id="total">{eur(sum("medio"))}</strong>
-        <span class="small muted nums" id="mes">unos {eur(Math.round(sum("medio") / 12))} al mes</span>
+<ToolPage tool={{ ...t, lead: `Entre ${eur(sum("ahorro"))} comprando con cabeza y ${eur(sum("premium"))} si vas a lo mejor de cada cosa, sin contar guardería ni lo que te regalen. Elige un punto de partida y ajústalo a tu caso; se comparte con un enlace.` }}>
+  <form class="bud" id="bud">
+    <div class="panel panel--ink bud__top">
+      <div class="bud__opts">
+        <div class="f"><span>Nivel de gasto</span>
+          <div class="seg" role="group"><label><input type="radio" name="nivel" value="ahorro" /><span>Ahorro</span></label><label><input type="radio" name="nivel" value="medio" checked /><span>Medio</span></label><label><input type="radio" name="nivel" value="premium" /><span>Premium</span></label></div>
+        </div>
+        <div class="f"><span>Lactancia</span>
+          <div class="seg" role="group"><label><input type="radio" name="lact" value="materna" /><span>Materna</span></label><label><input type="radio" name="lact" value="mixta" /><span>Mixta</span></label><label><input type="radio" name="lact" value="formula" checked /><span>Fórmula</span></label></div>
+        </div>
+        <div class="f"><span>Guardería</span>
+          <div class="seg" role="group"><label><input type="radio" name="guard" value="0" checked /><span>No</span></label><label><input type="radio" name="guard" value="5" /><span>Desde los 4 meses</span></label><label><input type="radio" name="guard" value="9" /><span>Desde los 8 meses</span></label></div>
+        </div>
+        <div class="f"><span>¿Segundo hijo?</span>
+          <div class="seg" role="group"><label><input type="radio" name="segundo" value="0" checked /><span>Es el primero</span></label><label><input type="radio" name="segundo" value="1" /><span>Ya tengo lo grande</span></label></div>
+        </div>
+        <label class="f f--num" for="regalos">Lo que te regalan, aproximado <input class="field nums" type="number" id="regalos" name="regalos" min="0" step="50" value="0" /></label>
       </div>
+      <div class="bud__sum">
+        <div class="big"><strong class="nums" id="total">{eur(sum("medio"))}</strong><span id="mes">unos {eur(Math.round(sum("medio") / 12))} al mes</span></div>
+        <div class="facts nums">
+          <div><strong id="t-antes">0 €</strong><span>antes de nacer</span></div>
+          <div><strong id="t-max">0 €</strong><span id="t-max-l">el mes más caro</span></div>
+          <div><strong id="t-fijo">0 €</strong><span>de compras grandes</span></div>
+          <div><strong id="t-var">0 €</strong><span>de gasto que se repite</span></div>
+        </div>
+      </div>
+      <div class="actions"><button class="button button--sm" type="button" id="share">Compartir el presupuesto</button><button class="button button--sm button--ghost" type="button" id="print">Imprimir</button><button class="link-plain small" type="button" id="reset">Volver al nivel elegido</button></div>
+    </div>
+
+    <section class="panel" aria-labelledby="tl-t">
+      <h2 id="tl-t">Cuándo se gasta</h2>
+      <p class="note">Mes a mes, con las compras grandes antes de nacer y a los seis meses, y lo que se repite cada mes. Pasa el ratón o toca una barra para ver el detalle.</p>
+      <ol class="tl nums" role="list" id="tl">{meses.map((m, i) => <li class="tl__m"><span class="tl__bar"><span class="tl__fill"></span></span><strong class="tl__v"></strong><span class="tl__l"><span class="tl__long">{m}</span><span class="tl__short">{i === 0 ? "A" : i}</span></span></li>)}</ol>
+      <p class="small muted" id="tl-detail" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="rows-t">
+      <h2 id="rows-t">Partida por partida</h2>
+      <p class="note">Cambia cualquier cifra a tu caso. En gris, lo que el nivel que has elegido pone de referencia.</p>
       <ol class="rows" role="list">
         {partidas.map((p) => (
-          <li class="row">
+          <li class="row" data-id={p.id} data-guard={p.guard ? "1" : undefined} data-lact={p.lact ? "1" : undefined} data-segundo={p.segundo ? "1" : undefined}>
             <div class="row__name"><strong>{p.name}</strong>{p.hint && <span class="small muted">{p.hint}</span>}</div>
-            <div class="row__in">
-              <input class="field nums" type="number" min="0" step="10" name={p.id} data-ahorro={p.ahorro} data-medio={p.medio} data-premium={p.premium} value={p.medio} aria-label={`${p.name}, euros`} />
-              <span class="row__eur">€</span>
-            </div>
-            <a class="row__go link-plain small" href={p.cat}>Ver opciones</a>
+            <div class="row__in"><input class="field nums" type="number" min="0" step="10" name={p.id} data-ahorro={p.ahorro} data-medio={p.medio} data-premium={p.premium} value={p.medio} aria-label={`${p.name}, euros`} /><span class="row__eur">€</span></div>
+            <span class="row__ref small muted nums" data-ref></span>
+            {p.cat ? <a class="row__go link-plain small" href={p.cat}>Ver opciones</a> : <span></span>}
           </li>
         ))}
       </ol>
-      <p class="small muted">Cifras orientativas tomadas de nuestro catálogo y comparativas en noviembre de 2026; cada familia gasta distinto. Lo que te regalen en la lista de nacimiento resta de aquí.</p>
-    </form>
-  </main>
-  <Footer />
-</Base>
-<style>
-  .bud { padding-block: 1.5rem 0; display: grid; gap: 2rem; }
-  .crumbs a { text-decoration: none; }
-  .bud__head { display: grid; gap: 1rem; max-width: 66ch; }
-  .bud__form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem; align-items: start; }
-  .bud__levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; border: 0; padding: 0; margin: 0; }
-  .lvl { display: block; cursor: pointer; }
-  .lvl input { position: absolute; opacity: 0; }
-  .lvl span { display: grid; gap: 0.15rem; padding: 0.9rem 1rem; background: #fff; border-radius: 12px; border: 2px solid transparent; }
-  .lvl small { color: var(--muted); font-size: var(--step-small); }
-  .lvl input:checked + span { border-color: var(--ink); }
-  .lvl input:focus-visible + span { outline: 3px solid var(--accent); }
-  .bud__total { display: grid; gap: 0.2rem; padding: 1rem 1.25rem; background: var(--accent); border-radius: 12px; justify-items: start; }
-  .bud__total strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 72; font-size: 2.6rem; line-height: 1; font-weight: 600; }
-  .rows { grid-column: 1 / -1; display: grid; gap: 6px; }
-  .row { display: grid; grid-template-columns: 1fr 10rem auto; gap: 1rem; align-items: center; background: #fff; border-radius: 12px; padding: 0.6rem 0.9rem 0.6rem 1.1rem; }
-  .row__name { display: grid; gap: 0.1rem; }
+      <p class="small muted">Cifras orientativas tomadas del catálogo y de las comparativas en noviembre de 2026; cada familia gasta distinto. La guardería va a 350 € al mes en pública o concertada (nivel ahorro y medio) y 500 € en privada (premium), sin comedor.</p>
+    </section>
+
+    <section class="panel bud__cmp" aria-labelledby="cmp-t">
+      <h2 id="cmp-t">Los tres niveles, con todo lo demás igual</h2>
+      <ol class="lv" role="list" id="lv">
+        {(["ahorro", "medio", "premium"] as const).map((k) => <li class="lv__row" data-k={k}><span class="lv__n">{k === "ahorro" ? "Ahorro" : k === "medio" ? "Medio" : "Premium"}</span><span class="lv__bar"><span class="lv__fill"></span></span><strong class="lv__v nums"></strong></li>)}
+      </ol>
+      <p class="note">Lo que separa el nivel ahorro del premium son, sobre todo, el carrito, la silla y la cuna. En pañales y leche, la marca blanca y la fórmula de supermercado ya están en el nivel ahorro.</p>
+    </section>
+  </form>
+</ToolPage>
+<style is:global>
+  .bud { display: grid; gap: 1rem; }
+  .bud__top { gap: 1.25rem; }
+  .bud__opts { display: flex; flex-wrap: wrap; gap: 0.9rem 1.5rem; align-items: end; }
+  .bud__opts .f > span:first-child { color: var(--field-muted); }
+  .bud__opts .seg { background: rgba(255,255,255,0.08); }
+  .bud__opts .seg input:checked + span { background: var(--accent); color: var(--accent-ink); }
+  .f--num .field { max-width: 9rem; min-height: 2.6rem; padding-block: 0.3rem; }
+  .bud__sum { display: grid; grid-template-columns: minmax(14rem, 1fr) 2fr; gap: 1rem; }
+  .bud__top .button--ghost { background: rgba(255,255,255,0.12); color: var(--field-ink); }
+  .bud__top .link-plain { color: var(--field-muted); }
+  .tl { display: grid; grid-template-columns: repeat(13, 1fr); gap: 6px; align-items: end; height: 220px; }
+  .tl__m { display: grid; grid-template-rows: 1fr auto auto; height: 100%; gap: 0.25rem; min-width: 0; cursor: default; }
+  .tl__bar { display: flex; align-items: flex-end; height: 100%; }
+  .tl__fill { display: block; width: 100%; background: var(--surface-2); border-radius: 6px 6px 3px 3px; transition: height 400ms var(--ease-out); min-height: 2px; }
+  .tl__m--big .tl__fill { background: var(--accent); }
+  .tl__m:hover .tl__fill, .tl__m:focus-within .tl__fill { background: var(--ink); }
+  .tl__v { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 0.95rem; text-align: center; white-space: nowrap; }
+  .tl__l { font-size: 0.72rem; color: var(--muted); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tl__short { display: none; }
+  .rows { display: grid; gap: 6px; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) 9rem 6rem auto; gap: 1rem; align-items: center; background: var(--bg); border-radius: 12px; padding: 0.6rem 0.9rem 0.6rem 1.1rem; }
+  .row[hidden] { display: none; }
+  .row__name { display: grid; gap: 0.1rem; min-width: 0; }
   .row__in { display: flex; align-items: center; gap: 0.4rem; }
   .row__in .field { min-height: 2.5rem; padding-block: 0.3rem; text-align: right; }
   .row__go { white-space: nowrap; }
-  .bud__form > .small { grid-column: 1 / -1; }
-  @media (max-width: 760px) { .bud__form { grid-template-columns: 1fr; } .row { grid-template-columns: 1fr auto; } .row__go { grid-column: 1 / -1; } }
+  .lv { display: grid; gap: 8px; }
+  .lv__row { display: grid; grid-template-columns: 6rem 1fr auto; gap: 1rem; align-items: center; }
+  .lv__row.is-on .lv__n { font-weight: 700; }
+  .lv__bar { height: 1.1rem; background: var(--bg); border-radius: 6px; overflow: hidden; }
+  .lv__fill { display: block; height: 100%; background: var(--surface-2); border-radius: 6px; transition: width 400ms var(--ease-out); }
+  .lv__row.is-on .lv__fill { background: var(--accent); }
+  .lv__v { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.2rem; }
+  @media (max-width: 760px) {
+    .bud__sum { grid-template-columns: 1fr; }
+    .row { grid-template-columns: minmax(0, 1fr) 7.5rem; } .row__ref { grid-column: 1; } .row__go { grid-column: 2; justify-self: end; }
+    .tl { height: 170px; gap: 3px; } .tl__v { display: none; } .tl__long { display: none; } .tl__short { display: inline; }
+    .tl__m--big .tl__v { display: block; font-size: 0.7rem; }
+  }
+  @media print { .bud__top .actions, .row__go { display: none !important; } }
 </style>
 <script>
+  import { loadState, saveState, wireShare, eur } from "../../scripts/state";
   const form = document.getElementById("bud") as HTMLFormElement;
-  const total = document.getElementById("total")!, mes = document.getElementById("mes")!;
-  const inputs = [...form.querySelectorAll<HTMLInputElement>("input[type=number]")];
-  const eur = (n: number) => Math.round(n).toLocaleString("es-ES") + " €";
-  const paint = () => { const t = inputs.reduce((n, i) => n + (Number(i.value) || 0), 0); total.textContent = eur(t); mes.textContent = `unos ${eur(t / 12)} al mes`; };
-  form.querySelectorAll<HTMLInputElement>("input[name=nivel]").forEach((r) => r.addEventListener("change", () => { inputs.forEach((i) => { i.value = i.dataset[r.value] || "0"; }); paint(); }));
-  inputs.forEach((i) => i.addEventListener("input", paint));
+  const rows = [...form.querySelectorAll<HTMLElement>(".row")];
+  const inputs = rows.map((r) => r.querySelector<HTMLInputElement>("input[type=number]")!);
+  const $ = (id: string) => document.getElementById(id)!;
+  const spreads: Record<string, number[]> = JSON.parse(document.getElementById("spreads")!.textContent!);
+  const radio = (n: string) => form.querySelector<HTMLInputElement>(`input[name=${n}]:checked`)?.value || "";
+  const guardMes = { ahorro: 350, medio: 350, premium: 500 };
+  const lactFactor = { materna: 0, mixta: 0.5, formula: 1 };
+  type S = { n: string; l: string; g: string; s: string; r: number; v: Record<string, number> };
+  const ref = (inp: HTMLInputElement) => {
+    const n = radio("nivel") as "ahorro" | "medio" | "premium", row = inp.closest<HTMLElement>(".row")!;
+    let v = Number(inp.dataset[n] || 0);
+    if (row.dataset.lact) v = Math.round(v * lactFactor[radio("lact") as keyof typeof lactFactor]);
+    if (row.dataset.guard) { const g = Number(radio("guard")); v = g ? guardMes[n] * (13 - g) : 0; }
+    if (row.dataset.segundo && radio("segundo") === "1") v = 0;
+    return v;
+  };
+  const fill = (force: boolean) => { inputs.forEach((i) => { const r = ref(i); i.closest(".row")!.querySelector("[data-ref]")!.textContent = `ref. ${eur(r)}`; if (force || i.dataset.touched !== "1") i.value = String(r); }); };
+  const paint = () => {
+    const vals = inputs.map((i) => Number(i.value) || 0);
+    const regalos = Number((form.elements.namedItem("regalos") as HTMLInputElement).value) || 0;
+    const g = Number(radio("guard"));
+    const porMes = new Array(13).fill(0); let fijo = 0, variable = 0;
+    rows.forEach((r, k) => {
+      let sp = spreads[r.dataset.id!]; const v = vals[k];
+      if (r.dataset.guard) sp = sp.map((_, i) => (g && i >= g ? 1 / (13 - g) : 0));
+      sp.forEach((w, i) => (porMes[i] += v * w));
+      if (sp.filter((w) => w > 0).length <= 2) fijo += v; else variable += v;
+      r.hidden = !!r.dataset.guard && !g;
+    });
+    const total = Math.max(0, vals.reduce((a, b) => a + b, 0) - regalos);
+    $("total").textContent = eur(total); $("mes").textContent = `unos ${eur(total / 12)} al mes${regalos ? `, restados ${eur(regalos)} de regalos` : ""}`;
+    $("t-antes").textContent = eur(porMes[0]); $("t-fijo").textContent = eur(fijo); $("t-var").textContent = eur(variable);
+    const max = Math.max(...porMes); const im = porMes.indexOf(max);
+    $("t-max").textContent = eur(max); $("t-max-l").textContent = im === 0 ? "el tramo más caro: antes de nacer" : `el mes más caro: el ${im}`;
+    [...$("tl").children].forEach((li, i) => { const el = li as HTMLElement; (el.querySelector(".tl__fill") as HTMLElement).style.height = Math.max(1, Math.round((porMes[i] / max) * 100)) + "%"; el.querySelector(".tl__v")!.textContent = eur(porMes[i]); el.classList.toggle("tl__m--big", porMes[i] > total / 13 * 1.5); el.tabIndex = 0; el.onmouseenter = el.onfocus = () => { const parts = rows.map((r, k) => ({ n: r.querySelector("strong")!.textContent, v: vals[k] * (r.dataset.guard ? (g && i >= g ? 1 / (13 - g) : 0) : spreads[r.dataset.id!][i]) })).filter((x) => x.v > 0.5).sort((a, b) => b.v - a.v); $("tl-detail").textContent = `${i === 0 ? "Antes de nacer" : "Mes " + i}: ${parts.map((x) => `${x.n} ${eur(x.v)}`).join(" · ")}`; }; });
+    // los tres niveles con las mismas opciones
+    const lv = (["ahorro", "medio", "premium"] as const).map((n) => { const cur = radio("nivel"); form.querySelector<HTMLInputElement>(`input[name=nivel][value=${n}]`)!.checked = true; const s = inputs.reduce((a, i) => a + ref(i), 0); form.querySelector<HTMLInputElement>(`input[name=nivel][value=${cur}]`)!.checked = true; return s; });
+    const lmax = Math.max(...lv);
+    [...$("lv").children].forEach((li, i) => { const el = li as HTMLElement; (el.querySelector(".lv__fill") as HTMLElement).style.width = Math.round((lv[i] / lmax) * 100) + "%"; el.querySelector(".lv__v")!.textContent = eur(lv[i]); el.classList.toggle("is-on", el.dataset.k === radio("nivel")); });
+    const v: Record<string, number> = {}; inputs.forEach((i, k) => { if (i.dataset.touched === "1") v[i.name] = vals[k]; });
+    saveState("presupuesto", { n: radio("nivel"), l: radio("lact"), g: radio("guard"), s: radio("segundo"), r: regalos, v: { ...Object.fromEntries(inputs.map((i, k) => [i.name, vals[k]])) }, t: v } satisfies S & { t: Record<string, number> });
+  };
+  // restaurar
+  const saved = loadState<any>("presupuesto", null).value;
+  if (saved && saved.n) {
+    for (const [n, k] of [["nivel", "n"], ["lact", "l"], ["guard", "g"], ["segundo", "s"]] as const) { const r = form.querySelector<HTMLInputElement>(`input[name=${n}][value="${saved[k]}"]`); if (r) r.checked = true; }
+    (form.elements.namedItem("regalos") as HTMLInputElement).value = String(saved.r || 0);
+    fill(true);
+    if (saved.t) inputs.forEach((i) => { if (i.name in saved.t) { i.value = String(saved.t[i.name]); i.dataset.touched = "1"; } });
+  } else fill(true);
+  form.querySelectorAll<HTMLInputElement>("input[type=radio]").forEach((r) => r.addEventListener("change", () => { fill(false); paint(); }));
+  inputs.forEach((i) => i.addEventListener("input", () => { i.dataset.touched = "1"; paint(); }));
+  (form.elements.namedItem("regalos") as HTMLInputElement).addEventListener("input", paint);
+  $("reset").addEventListener("click", () => { inputs.forEach((i) => (i.dataset.touched = "0")); fill(true); paint(); });
+  $("print").addEventListener("click", () => window.print());
+  wireShare($("share"), "Presupuesto del primer año · Acurruco");
   paint();
 </script>
+<script type="application/json" id="spreads" is:inline set:html={JSON.stringify(Object.fromEntries(partidas.map((p) => [p.id, p.spread])))} />

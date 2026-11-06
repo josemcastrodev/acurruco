@@ -1,114 +1,166 @@
 ---
-import Base from "../layouts/Base.astro";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
+import ToolPage from "../components/ToolPage.astro";
+import { byHref } from "../data/herramientas";
+import { lista, type Item } from "../data/lista";
+const t = byHref("/lista-de-nacimiento/");
 
-/* La lista: lo que hace falta de verdad para un recién nacido, por bloques, con lo que puede esperar. */
-const bloques = [
-  { name: "Para dormir", items: [
-    ["Cuna de colecho o minicuna", "Con colchón firme y sábanas ajustables. Nada de almohadas ni protectores.", "/comparativas/cunas-de-colecho/", true],
-    ["2 sacos de dormir de recién nacido", "TOG 1 para casa a 20–22 °C. Sustituyen a mantas y edredones.", "/catalogo/ropa-de-cuna/", true],
-    ["3 sábanas bajeras de cuna", "Una puesta, una en la lavadora, una de reserva.", "/catalogo/ropa-de-cuna/", true],
-    ["Vigilabebés", "Solo si la cuna va a estar en otra habitación. Los primeros meses, no hace falta.", "/catalogo/vigilabebes/", false],
-  ]},
-  { name: "Para el coche y la calle", items: [
-    ["Silla de coche i-Size 40–87 cm", "Obligatoria para salir del hospital en coche. Pruébala en tu coche antes de comprar.", "/comparativas/sillas-de-coche-i-size/", true],
-    ["Carrito con capazo", "Los primeros 6 meses el bebé va tumbado: el capazo no es opcional.", "/catalogo/carritos/", true],
-    ["Portabebés o fular", "Para casa y recados cortos; manos libres y bebé tranquilo.", "/catalogo/portabebes/", true],
-    ["Bolso cambiador", "Vale cualquier mochila con un cambiador plegable dentro.", "/catalogo/accesorios-paseo/", false],
-  ]},
-  { name: "Para comer", items: [
-    ["2 biberones de 150 ml y tetina de flujo lento", "Aunque des el pecho: para la leche extraída o por si acaso.", "/catalogo/biberones-y-menaje/", true],
-    ["Sacaleches", "Si vas a dar el pecho y volver al trabajo. Espera a ver cómo va la lactancia.", "/catalogo/lactancia/", false],
-    ["Esterilizador", "El microondas con una bolsa de esterilizar hace lo mismo; el eléctrico es comodidad.", "/catalogo/esterilizadores/", false],
-    ["Cojín de lactancia", "Ayuda las primeras semanas; después sirve para que el bebé se siente.", "/catalogo/lactancia/", false],
-    ["Trona", "No hasta los 6 meses. No la compres ahora.", "/catalogo/tronas/", false],
-  ]},
-  { name: "Para cambiar y bañar", items: [
-    ["Pañales talla 1 (un paquete grande) y talla 2", "Unos 8 al día las primeras semanas. La talla 1 dura dos o tres semanas.", "/comparativas/panales/", true],
-    ["Toallitas sin perfume o de agua", "Para el primer mes, las de 99 % agua. Después, cualquiera sin perfume.", "/catalogo/toallitas/", true],
-    ["Crema de pañal", "Una de barrera (óxido de zinc) y listo. Capa fina en cada cambio.", "/comparativas/cremas-de-panal/", true],
-    ["Cambiador", "El colchón cambiador sobre la cómoda funciona igual que el mueble.", "/catalogo/baneras-y-cambiadores/", true],
-    ["Bañera", "Una sencilla con soporte o una plegable; el fregadero también sirve las primeras semanas.", "/catalogo/baneras-y-cambiadores/", true],
-    ["Gel y champú de bebé", "Uno solo, sin perfume. Con agua tibia basta la mayoría de los días.", "/catalogo/cuidado/", true],
-    ["Termómetro digital", "Axilar o rectal; el de oído no es fiable en recién nacidos.", "/catalogo/cuidado/", true],
-    ["Tijeras de uñas de bebé o lima", "Las uñas crecen rápido y se arañan la cara.", "/catalogo/cuidado/", true],
-    ["Aspirador nasal", "Para los primeros resfriados, con suero fisiológico.", "/catalogo/cuidado/", false],
-  ]},
-  { name: "Ropa (talla 0–1 y 1–3 meses)", items: [
-    ["6–8 bodies de manga larga", "Con cierre en el hombro, para no pasarlos por la cabeza.", "/catalogo/ropa-de-cuna/", true],
-    ["6 pijamas enteros", "Con cremallera mejor que con automáticos, para los cambios de noche.", "/catalogo/ropa-de-cuna/", true],
-    ["3 pares de calcetines y un gorro", "Sin lazos. El gorro, solo para la calle.", "/catalogo/ropa-de-cuna/", true],
-    ["4 muselinas grandes", "Sirven de arrullo, toalla, sombra en el carrito y paño para las regurgitaciones.", "/catalogo/ropa-de-cuna/", true],
-    ["Un mono de invierno o saco de carrito", "Según la estación en que nazca.", "/catalogo/accesorios-paseo/", false],
-  ]},
-  { name: "Para casa", items: [
-    ["Hamaca", "Para tenerlo cerca mientras cocinas o te duchas. A partir de las 2–3 semanas.", "/catalogo/hamacas-y-parques/", false],
-    ["Manta o alfombra de juego", "Para el suelo desde el primer mes: boca abajo unos minutos cada día.", "/catalogo/juguetes/", false],
-    ["Luz nocturna regulable", "Para las tomas de noche sin encender la habitación.", "/catalogo/muebles/", false],
-    ["Humidificador", "Solo si la casa es muy seca; con calefacción de radiadores suele serlo.", "/catalogo/cuidado/", false],
-  ]},
-];
-const total = bloques.reduce((n, b) => n + b.items.length, 0);
-const must = bloques.reduce((n, b) => n + b.items.filter((i) => i[3]).length, 0);
+/* Precio orientativo de cada cosa (nivel medio) y productos concretos del catálogo para "ver opciones". */
+const all = import.meta.glob("../data/catalog/*.json", { eager: true });
+const byId = new Map<string, any>();
+for (const k in all) if (!k.endsWith("index.json")) for (const p of (all[k] as any).default) byId.set(p.id, p);
+const items = lista.flatMap((b, bi) => b.items.map((it, ii) => ({ ...it, id: `${bi}-${ii}`, bloque: b.name, picks: (it.ids || []).map((id) => byId.get(id)).filter((p) => p && p.stock).slice(0, 2) })));
+const total = items.length, must = items.filter((i) => i.must).length;
+const eur = (n: number) => n.toLocaleString("es-ES", { maximumFractionDigits: 0 }) + " €";
+const sumMust = items.filter((i) => i.must).reduce((n, i) => n + i.price, 0), sumAll = items.reduce((n, i) => n + i.price, 0);
 ---
-<Base title="Lista de nacimiento: qué necesita un recién nacido de verdad · Acurruco" description={`${total} cosas, ${must} imprescindibles y el resto puede esperar. Marca lo que ya tienes, comparte el resto y entra en la comparativa de cada cosa antes de comprar.`} canonical="https://acurruco.com/lista-de-nacimiento/">
-  <Header />
-  <main class="wrap list">
-    <header class="list__head">
-      <h1 class="head">La lista de nacimiento</h1>
-      <p class="lead">{total} cosas en total: {must} son imprescindibles antes de nacer y el resto pueden esperar a ver cómo es vuestro bebé. Marca lo que ya tienes; se guarda en tu navegador.</p>
-      <p class="list__progress nums"><span id="done">0</span> de {total} marcadas · <button class="link-plain" type="button" id="clear">empezar de cero</button></p>
-    </header>
-    {bloques.map((b, bi) => (
-      <section class="block" aria-labelledby={`b-${bi}`}>
-        <h2 id={`b-${bi}`} class="block__name">{b.name}</h2>
-        <ul class="block__items" role="list">
-          {b.items.map(([name, why, href, must], ii) => (
-            <li class:list={["item", { "item--opt": !must }]}>
-              <label class="item__chk"><input type="checkbox" data-id={`${bi}-${ii}`} /><span class="item__name">{name}</span></label>
-              <p class="item__why">{why} {!must && <em>Puede esperar.</em>}</p>
-              <a class="item__go link-plain" href={href}>Ver opciones</a>
-            </li>
-          ))}
-        </ul>
+<ToolPage tool={{ ...t, lead: `${total} cosas: ${must} imprescindibles antes de nacer y el resto pueden esperar. Marca lo que ya tienes y lo que te regalan, mira cuánto falta y compártela con un enlace.` }}>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", name: "Lista de nacimiento", numberOfItems: total, itemListElement: items.map((i, n) => ({ "@type": "ListItem", position: n + 1, name: i.name })) })} />
+  </Fragment>
+  <div class="lst" id="lista" data-total={total}>
+    <div class="lst__top panel panel--ink">
+      <div class="lst__sum">
+        <div class="big"><strong class="nums" id="l-falta">{eur(sumMust)}</strong><span id="l-falta-t">por comprar de lo imprescindible</span></div>
+        <div class="facts nums">
+          <div><strong id="l-tengo">0</strong><span>ya lo tengo</span></div>
+          <div><strong id="l-regalo">0</strong><span>me lo regalan</span></div>
+          <div><strong id="l-pend">{must}</strong><span>faltan de los {must} imprescindibles</span></div>
+          <div><strong id="l-pend-all">{total}</strong><span>faltan de las {total} cosas</span></div>
+        </div>
+      </div>
+      <div class="lst__ctrl">
+        <div class="seg" role="group" aria-label="Qué ver">
+          <label><input type="radio" name="ver" value="todo" checked /><span>Todo</span></label>
+          <label><input type="radio" name="ver" value="must" /><span>Solo imprescindibles</span></label>
+          <label><input type="radio" name="ver" value="falta" /><span>Solo lo que falta</span></label>
+        </div>
+        <div class="seg" role="group" aria-label="Estación en que nace">
+          <label><input type="radio" name="est" value="invierno" checked /><span>Nace en invierno</span></label>
+          <label><input type="radio" name="est" value="verano" /><span>En verano</span></label>
+        </div>
+        <div class="actions">
+          <button class="button button--sm" type="button" id="share">Compartir la lista</button>
+          <button class="button button--sm button--ghost" type="button" id="print">Imprimir</button>
+          <button class="link-plain small" type="button" id="clear">Empezar de cero</button>
+        </div>
+      </div>
+      <p class="muted small lst__hint">Toca cada cosa para pasarla de <em>falta</em> a <em>lo tengo</em> o <em>me lo regalan</em>. El enlace de arriba se actualiza solo: mándaselo a quien quiera regalar y verá lo que queda, con los productos.</p>
+    </div>
+
+    {lista.map((b, bi) => (
+      <section class="blk" aria-labelledby={`b-${bi}`} data-bloque>
+        <h2 id={`b-${bi}`} class="blk__name">{b.name} <span class="muted nums small" data-count></span></h2>
+        <ol class="blk__items" role="list">
+          {b.items.map((it: Item, ii) => {
+            const item = items.find((x) => x.id === `${bi}-${ii}`)!;
+            return (
+              <li class:list={["it", { "it--opt": !it.must }]} data-id={item.id} data-must={it.must ? "1" : "0"} data-price={it.price} data-season={it.season || ""}>
+                <div class="it__row">
+                  <div class="it__state" role="group" aria-label={`Estado de ${it.name}`}>
+                    <button type="button" class="st" data-st="1" aria-pressed="false" title="Ya lo tengo">Lo tengo</button>
+                    <button type="button" class="st" data-st="2" aria-pressed="false" title="Me lo regalan">Me lo regalan</button>
+                  </div>
+                  <div class="it__body">
+                    <strong class="it__name">{it.name}</strong>
+                    <span class="it__price nums muted small">{it.price ? `unos ${eur(it.price)}` : ""}{!it.must && <em> · puede esperar</em>}</span>
+                    <p class="it__why small muted">{it.why}</p>
+                  </div>
+                  <a class="it__go link-plain small" href={it.href}>Ver opciones</a>
+                </div>
+                {item.picks.length > 0 && (
+                  <ol class="it__picks picks" role="list">
+                    {item.picks.map((p: any) => (
+                      <li><a class="pick" href={`/p/${p.id}/`}><img src={p.img} alt="" width="64" height="64" loading="lazy" /><span><strong>{p.name.length > 48 ? p.name.slice(0, 46) + "…" : p.name}</strong><em class="nums">{p.price.toLocaleString("es-ES", { minimumFractionDigits: 2 })} € en Carrefour</em></span></a></li>
+                    ))}
+                  </ol>
+                )}
+              </li>
+            );
+          })}
+        </ol>
       </section>
     ))}
-    <section class="list__foot">
-      <h2 class="lead">Lo que no está en la lista, a propósito</h2>
-      <p>Calientabiberones, esterilizador UV, cuna de viaje, trona, andador, zapatos, juguetes con pilas, peluches grandes y más de diez conjuntos de ropa de talla 0. Todo eso o no hace falta nunca o no hace falta todavía.</p>
+
+    <section class="panel lst__foot">
+      <h2>Lo que no está en la lista, a propósito</h2>
+      <p>Calientabiberones, esterilizador UV, cuna de viaje, trona, andador, zapatos, juguetes con pilas, peluches grandes y más de diez conjuntos de ropa de talla 0. Todo eso o no hace falta nunca o no hace falta todavía. Lo que sí se agradece y nadie pone en la lista: comida hecha para los padres las primeras semanas.</p>
+      <p class="small muted">Precios orientativos del catálogo en noviembre de 2026, nivel medio. En total, lo imprescindible ronda {eur(sumMust)} y la lista completa {eur(sumAll)}; lo que te regalen, resta.</p>
     </section>
-  </main>
-  <Footer />
-</Base>
-<style>
-  .list { padding-block: 2rem 0; display: grid; gap: 2.5rem; }
-  .list__head { display: grid; gap: 1rem; max-width: 64ch; }
-  .list__progress { font-weight: 600; }
-  .list__progress button { font: inherit; color: var(--muted); }
-  .block { display: grid; gap: 1rem; }
-  .block__name { font-size: var(--step-lead); }
-  .block__items { display: grid; gap: 8px; }
-  .item { display: grid; grid-template-columns: 1fr auto; gap: 0.25rem 1.5rem; align-items: center; background: #fff; border-radius: 12px; padding: 1rem 1.25rem; }
-  .item--opt { background: color-mix(in oklab, #fff 60%, var(--bg)); }
-  .item__chk { display: flex; gap: 0.75rem; align-items: center; cursor: pointer; font-weight: 600; }
-  .item__chk input { width: 1.25rem; height: 1.25rem; accent-color: var(--ink); }
-  .item:has(input:checked) .item__name { text-decoration: line-through; color: var(--muted); }
-  .item__why { grid-column: 1; font-size: var(--step-small); color: var(--muted); padding-left: 2rem; max-width: 70ch; }
-  .item__why em { font-style: normal; font-weight: 600; color: var(--ink); }
-  .item__go { grid-column: 2; grid-row: 1 / 3; font-size: var(--step-small); font-weight: 600; white-space: nowrap; }
-  .list__foot { background: #fff; border-radius: 14px; padding: 1.5rem 1.75rem; display: grid; gap: 0.5rem; max-width: 72ch; }
-  @media (max-width: 600px) { .item { grid-template-columns: 1fr; } .item__go { grid-column: 1; grid-row: auto; padding-left: 2rem; } }
+  </div>
+</ToolPage>
+<style is:global>
+  .lst { display: grid; gap: 2rem; }
+  .lst__top { gap: 1.25rem; }
+  .lst__sum { display: grid; grid-template-columns: minmax(14rem, 1fr) 2fr; gap: 1rem; align-items: stretch; }
+  .lst__ctrl { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; }
+  .panel--ink .seg { background: rgba(255,255,255,0.08); }
+  .panel--ink .seg input:checked + span { background: var(--accent); color: var(--accent-ink); }
+  .panel--ink .button--ghost { background: rgba(255,255,255,0.12); color: var(--field-ink); }
+  .panel--ink .link-plain { color: var(--field-muted); }
+  .lst__hint { max-width: 70ch; } .lst__hint em { font-style: normal; color: var(--field-ink); font-weight: 600; }
+  .blk { display: grid; gap: 0.9rem; }
+  .blk__name { font-size: var(--step-lead); }
+  .blk__items { display: grid; gap: 8px; }
+  .it { background: #fff; border-radius: 12px; padding: 0.9rem 1.1rem; display: grid; gap: 0.75rem; }
+  .it--opt { background: color-mix(in oklab, #fff 60%, var(--bg)); }
+  .it__row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1rem; align-items: start; }
+  .it__state { display: grid; gap: 4px; }
+  .st { padding: 0.35rem 0.7rem; border-radius: 8px; background: var(--bg); font-size: 0.8rem; font-weight: 600; white-space: nowrap; border: 1.5px solid transparent; }
+  .st[aria-pressed=true] { background: var(--ink); color: var(--field-ink); }
+  .it[data-state="2"] .st[data-st="2"] { background: var(--accent); color: var(--accent-ink); }
+  .it__body { display: grid; gap: 0.15rem; min-width: 0; }
+  .it__name { font-weight: 600; }
+  .it[data-state="1"] .it__name, .it[data-state="2"] .it__name { text-decoration: line-through; color: var(--muted); }
+  .it__price em { font-style: normal; }
+  .it__why { max-width: 70ch; }
+  .it__go { white-space: nowrap; font-weight: 600; }
+  .it__picks { padding-left: 0; }
+  .it[data-state="1"] .it__picks, .it[data-state="2"] .it__picks { display: none; }
+  .it[hidden] { display: none; }
+  .lst__foot { gap: 0.6rem; max-width: 80ch; }
+  .lst__foot h2 { font-size: var(--step-lead); }
+  @media (max-width: 700px) { .lst__sum { grid-template-columns: 1fr; } .it__row { grid-template-columns: 1fr; } .it__state { grid-template-columns: 1fr 1fr; order: 2; } .it__go { order: 3; } }
+  @media print { .lst__top, .it__picks, .st, .it__go { display: none !important; } .it { break-inside: avoid; padding: 0.3rem 0; border-bottom: 1px solid #ddd; border-radius: 0; } .it[data-state="1"], .it[data-state="2"] { display: none; } }
 </style>
 <script>
-  const KEY = "acurruco-lista";
-  const boxes = [...document.querySelectorAll<HTMLInputElement>("input[data-id]")];
-  const done = document.getElementById("done")!;
-  let saved: string[] = [];
-  try { saved = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch {}
-  boxes.forEach((b) => { b.checked = saved.includes(b.dataset.id!); });
-  const paint = () => { done.textContent = String(boxes.filter((b) => b.checked).length); };
-  boxes.forEach((b) => b.addEventListener("change", () => { try { localStorage.setItem(KEY, JSON.stringify(boxes.filter((x) => x.checked).map((x) => x.dataset.id))); } catch {} paint(); }));
-  document.getElementById("clear")!.addEventListener("click", () => { boxes.forEach((b) => (b.checked = false)); try { localStorage.removeItem(KEY); } catch {} paint(); });
+  import { loadState, saveState, clearState, wireShare, eur } from "../scripts/state";
+  const root = document.getElementById("lista")!;
+  const items = [...root.querySelectorAll<HTMLElement>(".it")];
+  type S = Record<string, number>; // id → 0 falta, 1 lo tengo, 2 me lo regalan
+  let state = loadState<S & { _est?: string }>("lista", {}).value || {};
+  if (Array.isArray(state)) { const s: S = {}; (state as string[]).forEach((id) => (s[id] = 1)); state = s; } // formato antiguo
+  const $ = (id: string) => document.getElementById(id)!;
+  const ver = () => (root.querySelector<HTMLInputElement>("input[name=ver]:checked")?.value || "todo");
+  const est = () => (root.querySelector<HTMLInputElement>("input[name=est]:checked")?.value || "invierno");
+  const paint = () => {
+    let tengo = 0, regalo = 0, pendM = 0, pendA = 0, falta = 0, faltaAll = 0;
+    const v = ver(), e = est();
+    for (const el of items) {
+      const id = el.dataset.id!, st = state[id] || 0, must = el.dataset.must === "1", price = Number(el.dataset.price) || 0, season = el.dataset.season;
+      el.dataset.state = String(st);
+      el.querySelectorAll<HTMLButtonElement>(".st").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.st) === st)));
+      const offSeason = season && season !== e;
+      const hide = offSeason || (v === "must" && !must) || (v === "falta" && st > 0);
+      el.hidden = !!hide;
+      if (offSeason) continue;
+      if (st === 1) tengo++; else if (st === 2) regalo++; else { pendA++; faltaAll += price; if (must) { pendM++; falta += price; } }
+    }
+    $("l-tengo").textContent = String(tengo); $("l-regalo").textContent = String(regalo); $("l-pend").textContent = String(pendM); $("l-pend-all").textContent = String(pendA);
+    $("l-falta").textContent = eur(falta); $("l-falta-t").textContent = pendM ? `por comprar de lo imprescindible · ${eur(faltaAll)} con todo` : `lo imprescindible está cubierto · ${eur(faltaAll)} con todo`;
+    root.querySelectorAll<HTMLElement>("[data-bloque]").forEach((b) => { const vis = [...b.querySelectorAll<HTMLElement>(".it")].filter((x) => !x.hidden); const done = vis.filter((x) => Number(x.dataset.state) > 0).length; b.querySelector("[data-count]")!.textContent = vis.length ? `${done} de ${vis.length}` : ""; b.hidden = vis.length === 0; });
+  };
+  const save = () => { const { _est, ...rest } = state as any; saveState("lista", { ...rest, _est: est() === "verano" ? "v" : undefined }); };
+  root.addEventListener("click", (ev) => {
+    const b = (ev.target as HTMLElement).closest<HTMLButtonElement>(".st"); if (!b) return;
+    const el = b.closest<HTMLElement>(".it")!, id = el.dataset.id!, st = Number(b.dataset.st);
+    state[id] = state[id] === st ? 0 : st; if (!state[id]) delete state[id];
+    save(); paint();
+  });
+  root.querySelectorAll<HTMLInputElement>("input[name=ver], input[name=est]").forEach((r) => r.addEventListener("change", () => { save(); paint(); }));
+  if ((state as any)._est === "v") { const r = root.querySelector<HTMLInputElement>("input[name=est][value=verano]"); if (r) r.checked = true; }
+  delete (state as any)._est;
+  $("clear").addEventListener("click", () => { state = {}; clearState("lista"); paint(); });
+  $("print").addEventListener("click", () => window.print());
+  wireShare($("share"), "Mi lista de nacimiento · Acurruco");
   paint();
 </script>

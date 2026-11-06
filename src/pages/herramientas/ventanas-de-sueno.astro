@@ -1,0 +1,72 @@
+---
+import ToolPage from "../../components/ToolPage.astro";
+import { byHref } from "../../data/herramientas";
+const t = byHref("/herramientas/ventanas-de-sueno/");
+/* Ventanas de vigilia (minutos, de la primera a la última del día) y duración orientativa de cada siesta, por edad en meses. */
+const tabla = [
+  { hasta: 1, ww: [45, 60, 60, 60, 60, 60, 75], naps: [60, 60, 60, 60, 45, 30], total: "14 a 17 h", txt: "Las primeras semanas no hay horario: duerme cuando lo pide, cada 45 o 60 minutos despierto. Esto es solo un ejemplo de día." },
+  { hasta: 2, ww: [60, 75, 75, 75, 90, 90], naps: [60, 60, 60, 45, 30], total: "14 a 17 h", txt: "Aguanta despierto una hora u hora y cuarto. Las siestas aún son cortas e irregulares." },
+  { hasta: 3, ww: [75, 90, 90, 90, 105], naps: [60, 75, 60, 45], total: "14 a 17 h", txt: "Cuatro siestas y una hora y media de ventana. Empieza a distinguir el día de la noche." },
+  { hasta: 4, ww: [90, 105, 105, 120, 120], naps: [60, 75, 60, 30], total: "12 a 16 h", txt: "Hacia los 4 meses cambia la estructura del sueño y muchos bebés se despiertan más por la noche. Es una fase." },
+  { hasta: 5, ww: [105, 120, 135, 150], naps: [75, 75, 45], total: "12 a 16 h", txt: "Tres siestas; la última, corta, para llegar a la noche." },
+  { hasta: 6, ww: [120, 135, 150, 165], naps: [90, 90, 30], total: "12 a 16 h", txt: "Dos siestas largas y una tercera de puente. Si se salta la tercera, acuéstalo antes." },
+  { hasta: 8, ww: [165, 180, 210], naps: [75, 90], total: "12 a 16 h", txt: "Dos siestas: media mañana y después de comer. La hora de acostar se estabiliza." },
+  { hasta: 11, ww: [180, 195, 225], naps: [75, 90], total: "12 a 16 h", txt: "Dos siestas. Si se resiste a la de la mañana, acórtala, pero no la quites todavía." },
+  { hasta: 14, ww: [180, 210, 225], naps: [60, 90], total: "11 a 14 h", txt: "Dos siestas que se van desequilibrando: la de la mañana se acorta. Hacia los 15 meses pasará a una." },
+  { hasta: 17, ww: [300, 300], naps: [120], total: "11 a 14 h", txt: "Una sola siesta después de comer, de hora y media a dos horas. La transición dura unas semanas." },
+  { hasta: 24, ww: [330, 330], naps: [120], total: "11 a 14 h", txt: "Una siesta al mediodía y de cinco a seis horas despierto por la tarde. A la cama entre las 19:30 y las 20:30." },
+];
+---
+<ToolPage tool={t}>
+  <form class="panel panel--ink sl" id="sl">
+    <div class="sl__in">
+      <label class="f f--range" for="edad">Edad <output class="f__val" id="edad-out" for="edad">6 meses</output><input type="range" id="edad" name="edad" min="0" max="24" value="6" /></label>
+      <label class="f" for="desp">Se ha despertado a las <input class="field nums" type="time" id="desp" name="desp" value="07:00" /></label>
+    </div>
+    <div class="sl__sum">
+      <div class="big"><strong id="s-cama"></strong><span>a la cama</span></div>
+      <div class="facts nums">
+        <div><strong id="s-naps"></strong><span>siestas hoy</span></div>
+        <div><strong id="s-ww"></strong><span>aguanta despierto</span></div>
+        <div><strong id="s-total"></strong><span>de sueño al día, en total</span></div>
+      </div>
+    </div>
+    <ol class="plan" role="list" id="plan"></ol>
+    <p class="muted small" id="s-txt"></p>
+    <p class="muted small">Rangos de la Academia Americana de Medicina del Sueño y de la AEP. Si una siesta dura más o menos de lo previsto, mueve la siguiente: la ventana cuenta desde que se despierta, no desde la hora del plan.</p>
+  </form>
+</ToolPage>
+<style is:global>
+  .sl__in { display: grid; grid-template-columns: minmax(0, 1fr) minmax(10rem, 12rem); gap: 1rem 2rem; align-items: end; }
+  .sl .f { color: var(--field-ink); font-size: var(--step-body); } .sl .f__val { color: var(--accent); } .sl input[type=range] { accent-color: var(--accent); }
+  .sl .field { color: var(--ink); min-height: 2.8rem; }
+  .sl__sum { display: grid; grid-template-columns: minmax(12rem, 1fr) 2fr; gap: 1rem; }
+  .plan { display: grid; gap: 6px; }
+  .plan li { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1rem; align-items: center; padding: 0.6rem 0.9rem; border-radius: 10px; background: rgba(255,255,255,0.08); }
+  .plan li strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.15rem; white-space: nowrap; }
+  .plan li.is-nap { background: rgba(255,255,255,0.14); }
+  .plan li.is-bed { background: var(--accent); color: var(--accent-ink); }
+  .plan li span { font-size: var(--step-small); }
+  @media (max-width: 640px) { .sl__in, .sl__sum { grid-template-columns: 1fr; } .plan li { grid-template-columns: 5.5rem 1fr; } }
+</style>
+<script define:vars={{ tabla }}>
+  const $ = (id) => document.getElementById(id);
+  const edad = $("edad"), desp = $("desp");
+  const hm = (min) => { min = ((min % 1440) + 1440) % 1440; return `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`; };
+  const dur = (m) => (m >= 60 ? `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ""}` : `${m} min`);
+  const paint = () => {
+    const m = Number(edad.value); $("edad-out").textContent = m === 0 ? "recién nacido" : m === 1 ? "1 mes" : `${m} meses`;
+    const row = tabla.find((r) => m <= r.hasta) || tabla[tabla.length - 1];
+    const [h, mi] = desp.value.split(":").map(Number); let t = (h || 7) * 60 + (mi || 0);
+    const items = [{ t, txt: "Se despierta", cls: "" }];
+    row.naps.forEach((n, i) => { t += row.ww[i]; items.push({ t, txt: `Siesta ${i + 1}, unos ${dur(n)} (hasta las ${hm(t + n)})`, cls: "is-nap" }); t += n; });
+    t += row.ww[row.naps.length];
+    // la hora de acostar no pasa de las 20:30 ni baja de las 18:30
+    const cama = Math.min(20 * 60 + 30, Math.max(18 * 60 + 30, t));
+    items.push({ t: cama, txt: cama !== t ? `A dormir (ajustado; por ventanas saldrían las ${hm(t)})` : "A dormir", cls: "is-bed" });
+    $("plan").replaceChildren(...items.map((it) => { const li = document.createElement("li"); li.className = it.cls; li.innerHTML = `<strong class="nums">${hm(it.t)}</strong><span>${it.txt}</span>`; return li; }));
+    $("s-cama").textContent = hm(cama); $("s-naps").textContent = String(row.naps.length);
+    $("s-ww").textContent = `${dur(row.ww[0])} – ${dur(row.ww[row.ww.length - 1])}`; $("s-total").textContent = row.total; $("s-txt").textContent = row.txt;
+  };
+  edad.addEventListener("input", paint); desp.addEventListener("input", paint); desp.addEventListener("change", paint); paint();
+</script>
