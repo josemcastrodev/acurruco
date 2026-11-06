@@ -1,0 +1,36 @@
+# Acurruco
+
+> Guías, comparativas y catálogo para el primer año del bebé, en español (España). Escrito por padres, con datos de tests independientes (ADAC, OCU) y precios reales de Carrefour; enlaces de afiliado a Carrefour (Awin) y Amazon.
+
+Acurruco explica qué necesita un bebé de 0 a 24 meses en cada etapa (embarazo, recién nacido, 3–6 meses, 6–12 meses, 1–2 años) y qué comprar: sillas de coche i-Size, carritos, cunas de colecho, pañales, cremas, juguetes sensoriales y Montessori, regalos por edad. Cada producto tiene su ficha con precio del día en Carrefour.
+
+## Guías
+- [Qué necesita un recién nacido](https://acurruco.com/guias/que-necesita-un-recien-nacido/): lo mínimo de cada cosa y qué no comprar aún.
+- [La bolsa del hospital](https://acurruco.com/guias/bolsa-del-hospital/): qué llevar para el parto y los primeros días.
+- [Cómo elegir el carrito](https://acurruco.com/guias/elegir-carrito/): dúo, trío o silla ligera.
+- [Juguetes sensoriales](https://acurruco.com/guias/juguetes-sensoriales/): cuáles sirven y a qué edad.
+- [Juguetes Montessori](https://acurruco.com/guias/juguetes-montessori/): los que tienen sentido de 0 a 2 años.
+- [Lista de nacimiento](https://acurruco.com/lista-de-nacimiento/): 31 cosas, 19 imprescindibles.
+- [Cuánto cuesta un bebé el primer año](https://acurruco.com/herramientas/presupuesto-primer-ano/): presupuesto por partidas.
+
+## Comparativas
+- [Sillas de coche i-Size para recién nacido](https://acurruco.com/comparativas/sillas-de-coche-i-size/): con las notas de ADAC.
+- [Cunas de colecho](https://acurruco.com/comparativas/cunas-de-colecho/): norma UNE-EN 1130 y precios.
+- [Pañales](https://acurruco.com/comparativas/panales/): precio por pañal talla a talla y test de la OCU.
+- [Cremas para el culito](https://acurruco.com/comparativas/cremas-de-panal/): barrera o prevención.
+
+## Regalos por edad
+- [Recién nacido](https://acurruco.com/regalos/recien-nacido/)
+- [3 a 6 meses](https://acurruco.com/regalos/3-6-meses/)
+- [6 a 12 meses](https://acurruco.com/regalos/6-12-meses/)
+- [1 a 2 años](https://acurruco.com/regalos/1-ano/)
+- [Navidad](https://acurruco.com/regalos/navidad/)
+
+## Catálogo
+- [Catálogo por necesidad](https://acurruco.com/catalogo/): 26 categorías con filtros por marca, tipo, precio y stock.
+- [Sillas de coche](https://acurruco.com/catalogo/sillas-de-coche/), [Carritos](https://acurruco.com/catalogo/carritos/), [Cunas](https://acurruco.com/catalogo/cunas/), [Pañales](https://acurruco.com/catalogo/panales/), [Juguetes para bebés](https://acurruco.com/catalogo/juguetes/).
+
+## Sobre el sitio
+- [Cómo elegimos](https://acurruco.com/como-elegimos/)
+- [Quiénes somos](https://acurruco.com/quienes-somos/)
+- [Contacto](https://acurruco.com/contacto/)
