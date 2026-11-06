@@ -1,0 +1,114 @@
+---
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+/* La lista: lo que hace falta de verdad para un recién nacido, por bloques, con lo que puede esperar. */
+const bloques = [
+  { name: "Para dormir", items: [
+    ["Cuna de colecho o minicuna", "Con colchón firme y sábanas ajustables. Nada de almohadas ni protectores.", "/comparativas/cunas-de-colecho/", true],
+    ["2 sacos de dormir de recién nacido", "TOG 1 para casa a 20–22 °C. Sustituyen a mantas y edredones.", "/catalogo/ropa-de-cuna/", true],
+    ["3 sábanas bajeras de cuna", "Una puesta, una en la lavadora, una de reserva.", "/catalogo/ropa-de-cuna/", true],
+    ["Vigilabebés", "Solo si la cuna va a estar en otra habitación. Los primeros meses, no hace falta.", "/catalogo/vigilabebes/", false],
+  ]},
+  { name: "Para el coche y la calle", items: [
+    ["Silla de coche i-Size 40–87 cm", "Obligatoria para salir del hospital en coche. Pruébala en tu coche antes de comprar.", "/comparativas/sillas-de-coche-i-size/", true],
+    ["Carrito con capazo", "Los primeros 6 meses el bebé va tumbado: el capazo no es opcional.", "/catalogo/carritos/", true],
+    ["Portabebés o fular", "Para casa y recados cortos; manos libres y bebé tranquilo.", "/catalogo/portabebes/", true],
+    ["Bolso cambiador", "Vale cualquier mochila con un cambiador plegable dentro.", "/catalogo/accesorios-paseo/", false],
+  ]},
+  { name: "Para comer", items: [
+    ["2 biberones de 150 ml y tetina de flujo lento", "Aunque des el pecho: para la leche extraída o por si acaso.", "/catalogo/biberones-y-menaje/", true],
+    ["Sacaleches", "Si vas a dar el pecho y volver al trabajo. Espera a ver cómo va la lactancia.", "/catalogo/lactancia/", false],
+    ["Esterilizador", "El microondas con una bolsa de esterilizar hace lo mismo; el eléctrico es comodidad.", "/catalogo/esterilizadores/", false],
+    ["Cojín de lactancia", "Ayuda las primeras semanas; después sirve para que el bebé se siente.", "/catalogo/lactancia/", false],
+    ["Trona", "No hasta los 6 meses. No la compres ahora.", "/catalogo/tronas/", false],
+  ]},
+  { name: "Para cambiar y bañar", items: [
+    ["Pañales talla 1 (un paquete grande) y talla 2", "Unos 8 al día las primeras semanas. La talla 1 dura dos o tres semanas.", "/comparativas/panales/", true],
+    ["Toallitas sin perfume o de agua", "Para el primer mes, las de 99 % agua. Después, cualquiera sin perfume.", "/catalogo/toallitas/", true],
+    ["Crema de pañal", "Una de barrera (óxido de zinc) y listo. Capa fina en cada cambio.", "/comparativas/cremas-de-panal/", true],
+    ["Cambiador", "El colchón cambiador sobre la cómoda funciona igual que el mueble.", "/catalogo/baneras-y-cambiadores/", true],
+    ["Bañera", "Una sencilla con soporte o una plegable; el fregadero también sirve las primeras semanas.", "/catalogo/baneras-y-cambiadores/", true],
+    ["Gel y champú de bebé", "Uno solo, sin perfume. Con agua tibia basta la mayoría de los días.", "/catalogo/cuidado/", true],
+    ["Termómetro digital", "Axilar o rectal; el de oído no es fiable en recién nacidos.", "/catalogo/cuidado/", true],
+    ["Tijeras de uñas de bebé o lima", "Las uñas crecen rápido y se arañan la cara.", "/catalogo/cuidado/", true],
+    ["Aspirador nasal", "Para los primeros resfriados, con suero fisiológico.", "/catalogo/cuidado/", false],
+  ]},
+  { name: "Ropa (talla 0–1 y 1–3 meses)", items: [
+    ["6–8 bodies de manga larga", "Con cierre en el hombro, para no pasarlos por la cabeza.", "/catalogo/ropa-de-cuna/", true],
+    ["6 pijamas enteros", "Con cremallera mejor que con automáticos, para los cambios de noche.", "/catalogo/ropa-de-cuna/", true],
+    ["3 pares de calcetines y un gorro", "Sin lazos. El gorro, solo para la calle.", "/catalogo/ropa-de-cuna/", true],
+    ["4 muselinas grandes", "Sirven de arrullo, toalla, sombra en el carrito y paño para las regurgitaciones.", "/catalogo/ropa-de-cuna/", true],
+    ["Un mono de invierno o saco de carrito", "Según la estación en que nazca.", "/catalogo/accesorios-paseo/", false],
+  ]},
+  { name: "Para casa", items: [
+    ["Hamaca", "Para tenerlo cerca mientras cocinas o te duchas. A partir de las 2–3 semanas.", "/catalogo/hamacas-y-parques/", false],
+    ["Manta o alfombra de juego", "Para el suelo desde el primer mes: boca abajo unos minutos cada día.", "/catalogo/juguetes/", false],
+    ["Luz nocturna regulable", "Para las tomas de noche sin encender la habitación.", "/catalogo/muebles/", false],
+    ["Humidificador", "Solo si la casa es muy seca; con calefacción de radiadores suele serlo.", "/catalogo/cuidado/", false],
+  ]},
+];
+const total = bloques.reduce((n, b) => n + b.items.length, 0);
+const must = bloques.reduce((n, b) => n + b.items.filter((i) => i[3]).length, 0);
+---
+<Base title="Lista de nacimiento: qué necesita un recién nacido de verdad · Acurruco" description={`${total} cosas, ${must} imprescindibles y el resto puede esperar. Marca lo que ya tienes, comparte el resto y entra en la comparativa de cada cosa antes de comprar.`} canonical="https://acurruco.com/lista-de-nacimiento/">
+  <Header />
+  <main class="wrap list">
+    <header class="list__head">
+      <h1 class="head">La lista de nacimiento</h1>
+      <p class="lead">{total} cosas en total: {must} son imprescindibles antes de nacer y el resto pueden esperar a ver cómo es vuestro bebé. Marca lo que ya tienes; se guarda en tu navegador.</p>
+      <p class="list__progress nums"><span id="done">0</span> de {total} marcadas · <button class="link-plain" type="button" id="clear">empezar de cero</button></p>
+    </header>
+    {bloques.map((b, bi) => (
+      <section class="block" aria-labelledby={`b-${bi}`}>
+        <h2 id={`b-${bi}`} class="block__name">{b.name}</h2>
+        <ul class="block__items" role="list">
+          {b.items.map(([name, why, href, must], ii) => (
+            <li class:list={["item", { "item--opt": !must }]}>
+              <label class="item__chk"><input type="checkbox" data-id={`${bi}-${ii}`} /><span class="item__name">{name}</span></label>
+              <p class="item__why">{why} {!must && <em>Puede esperar.</em>}</p>
+              <a class="item__go link-plain" href={href}>Ver opciones</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+    <section class="list__foot">
+      <h2 class="lead">Lo que no está en la lista, a propósito</h2>
+      <p>Calientabiberones, esterilizador UV, cuna de viaje, trona, andador, zapatos, juguetes con pilas, peluches grandes y más de diez conjuntos de ropa de talla 0. Todo eso o no hace falta nunca o no hace falta todavía.</p>
+    </section>
+  </main>
+  <Footer />
+</Base>
+<style>
+  .list { padding-block: 2rem 0; display: grid; gap: 2.5rem; }
+  .list__head { display: grid; gap: 1rem; max-width: 64ch; }
+  .list__progress { font-weight: 600; }
+  .list__progress button { font: inherit; color: var(--muted); }
+  .block { display: grid; gap: 1rem; }
+  .block__name { font-size: var(--step-lead); }
+  .block__items { display: grid; gap: 8px; }
+  .item { display: grid; grid-template-columns: 1fr auto; gap: 0.25rem 1.5rem; align-items: center; background: #fff; border-radius: 12px; padding: 1rem 1.25rem; }
+  .item--opt { background: color-mix(in oklab, #fff 60%, var(--bg)); }
+  .item__chk { display: flex; gap: 0.75rem; align-items: center; cursor: pointer; font-weight: 600; }
+  .item__chk input { width: 1.25rem; height: 1.25rem; accent-color: var(--ink); }
+  .item:has(input:checked) .item__name { text-decoration: line-through; color: var(--muted); }
+  .item__why { grid-column: 1; font-size: var(--step-small); color: var(--muted); padding-left: 2rem; max-width: 70ch; }
+  .item__why em { font-style: normal; font-weight: 600; color: var(--ink); }
+  .item__go { grid-column: 2; grid-row: 1 / 3; font-size: var(--step-small); font-weight: 600; white-space: nowrap; }
+  .list__foot { background: #fff; border-radius: 14px; padding: 1.5rem 1.75rem; display: grid; gap: 0.5rem; max-width: 72ch; }
+  @media (max-width: 600px) { .item { grid-template-columns: 1fr; } .item__go { grid-column: 1; grid-row: auto; padding-left: 2rem; } }
+</style>
+<script>
+  const KEY = "acurruco-lista";
+  const boxes = [...document.querySelectorAll<HTMLInputElement>("input[data-id]")];
+  const done = document.getElementById("done")!;
+  let saved: string[] = [];
+  try { saved = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch {}
+  boxes.forEach((b) => { b.checked = saved.includes(b.dataset.id!); });
+  const paint = () => { done.textContent = String(boxes.filter((b) => b.checked).length); };
+  boxes.forEach((b) => b.addEventListener("change", () => { try { localStorage.setItem(KEY, JSON.stringify(boxes.filter((x) => x.checked).map((x) => x.dataset.id))); } catch {} paint(); }));
+  document.getElementById("clear")!.addEventListener("click", () => { boxes.forEach((b) => (b.checked = false)); try { localStorage.removeItem(KEY); } catch {} paint(); });
+  paint();
+</script>

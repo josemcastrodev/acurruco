@@ -1,0 +1,146 @@
+---
+import Base from "../../layouts/Base.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import ProductCard from "../../components/ProductCard.astro";
+import { comparativas, asinImg } from "../../data/comparativas";
+import amazon from "../../data/amazon.json";
+const A = amazon as Record<string, { price: number | null }>;
+const eurN = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+import index from "../../data/catalog/index.json";
+
+export async function getStaticPaths() {
+  const all = import.meta.glob("../../data/catalog/*.json", { eager: true });
+  const byId = new Map<string, any>();
+  for (const k in all) if (!k.endsWith("index.json")) for (const p of (all[k] as any).default) byId.set(p.id, p);
+  return comparativas.map((c) => ({ params: { slug: c.slug }, props: { c, products: Object.fromEntries(c.rows.filter((r) => r.carrefour).map((r) => [r.carrefour, byId.get(r.carrefour!)])) } }));
+}
+const { c, products } = Astro.props;
+const cat = index.find((x) => x.slug === c.catalog);
+const amz = (q: string) => `https://www.amazon.es/s?k=${encodeURIComponent(q)}&tag=acurruco-21`;
+const others = comparativas.filter((x) => x.slug !== c.slug);
+const picks = c.rows.filter((r) => r.carrefour && products[r.carrefour]).map((r) => products[r.carrefour!]);
+const description = c.tldr[0] + " " + c.intro.slice(0, 120) + "…";
+---
+<Base title={`${c.title} · Acurruco`} description={description} canonical={`https://acurruco.com/comparativas/${c.slug}/`} ogImage={`https://acurruco.com${c.photo}`}>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      "@context": "https://schema.org", "@graph": [
+        { "@type": "Article", headline: c.title, description, datePublished: "2026-11-06", image: `https://acurruco.com${c.photo}`, inLanguage: "es-ES", dateModified: "2026-11-06", author: { "@type": "Organization", name: "Acurruco" }, publisher: { "@type": "Organization", name: "Acurruco", logo: { "@type": "ImageObject", url: "https://acurruco.com/img/logo.png" } }, mainEntityOfPage: `https://acurruco.com/comparativas/${c.slug}/` },
+        { "@type": "FAQPage", mainEntity: c.faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
+        { "@type": "ItemList", name: c.h, itemListElement: c.rows.map((r, i) => ({ "@type": "ListItem", position: i + 1, name: r.name, ...(r.carrefour ? { url: `https://acurruco.com/p/${r.carrefour}/` } : {}) })) },
+      ],
+    })} />
+  </Fragment>
+  <Header />
+  <main class="wrap cmpp">
+    <nav class="crumbs small" aria-label="Estás en"><a href="/">Inicio</a> › <a href="/comparativas/">Comparativas</a> › <span>{c.short}</span></nav>
+    <header class="cmpp__head">
+      <div class="cmpp__text">
+        <h1 class="head">{c.h}</h1>
+        <p class="lead">{c.intro}</p>
+        <p class="small muted">Actualizado el {c.updated}. Precios de hoy en Carrefour; el de Amazon lo ves al abrir cada enlace mientras conectamos su catálogo.</p>
+      </div>
+      <figure class="cmpp__photo"><img src={c.photo} alt="" width="1800" height="1200" fetchpriority="high" /></figure>
+    </header>
+
+    <section class="tldr" aria-labelledby="tldr-title">
+      <h2 id="tldr-title">En resumen</h2>
+      <ul role="list">{c.tldr.map((t) => <li>{t}</li>)}</ul>
+    </section>
+
+    <section aria-labelledby="table-title">
+      <h2 id="table-title" class="head cmpp__h2">La tabla</h2>
+      <div class="table-wrap">
+        <table class="cmp">
+          <thead><tr><th><span class="sr-only">Foto</span></th>{c.columns.map((col) => <th>{col}</th>)}<th>Dónde</th></tr></thead>
+          <tbody>
+            {c.rows.map((r) => (
+              <tr>
+                <td class="cmp__img">{(r.carrefour && products[r.carrefour]) ? <img src={products[r.carrefour].img} alt="" width="72" height="72" loading="lazy" /> : r.asin ? <img src={asinImg(r.asin)} alt="" width="72" height="72" loading="lazy" /> : <span class="cmp__noimg" aria-hidden="true"></span>}</td>
+                <td><strong>{r.name}</strong>{r.pick && <span class="pick">{r.pick}</span>}{r.sub && <span class="cmp__sub">{r.sub}</span>}</td>
+                {r.cells.map((cell, i) => <td class="nums">{c.columns[i + 1] === "Nota ADAC" ? <span class:list={["grade", { "grade--good": r.grade && Number(r.grade.replace(",", ".")) <= 2.5, "grade--none": /sin test/i.test(cell) }]}>{cell}</span> : cell}</td>)}
+                <td class="cmp__where">
+                  {r.carrefour && products[r.carrefour] && <a class="offer offer--cf" href={`/p/${r.carrefour}/`}><span>Carrefour</span><strong class="nums">{eurN(products[r.carrefour].price)}</strong></a>}
+                  {r.asin && A[r.asin]?.price && <a class="offer" href={`https://www.amazon.es/dp/${r.asin}?tag=acurruco-21`} rel="sponsored nofollow noopener" target="_blank"><span>Amazon</span><strong class="nums">{eurN(A[r.asin].price!)}</strong></a>}
+                  {r.asin && !A[r.asin]?.price && <a class="offer" href={`https://www.amazon.es/dp/${r.asin}?tag=acurruco-21`} rel="sponsored nofollow noopener" target="_blank"><span>Amazon</span><strong>ver precio</strong></a>}
+                  {!r.asin && r.amazon && <a class="offer" href={amz(r.amazon)} rel="sponsored nofollow noopener" target="_blank"><span>Amazon</span><strong>buscar</strong></a>}
+                  {!r.carrefour && !r.asin && !r.amazon && <span class="cmp__nostore">Sólo en tiendas físicas</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    {picks.length > 0 && (
+      <section aria-labelledby="picks-title">
+        <h2 id="picks-title" class="head cmpp__h2">Las que puedes comprar hoy en Carrefour</h2>
+        <div class="grid">{picks.map((p) => <ProductCard p={p} />)}</div>
+      </section>
+    )}
+
+    <section class="how" aria-labelledby="how-title">
+      <h2 id="how-title" class="head cmpp__h2">Cómo elegir</h2>
+      <ol class="how__list">{c.how.map((h) => <li>{h}</li>)}</ol>
+    </section>
+
+    <section class="faqs" aria-labelledby="faq-title">
+      <h2 id="faq-title" class="head cmpp__h2">Preguntas frecuentes</h2>
+      {c.faq.map(([q, a]) => <details class="qa"><summary class="qa__q">{q}</summary><p class="qa__a">{a}</p></details>)}
+    </section>
+
+    <section class="more">
+      {cat && <p><a class="button button--ink" href={`/catalogo/${cat.slug}/`}>Ver los {cat.count} {cat.title.toLowerCase()} del catálogo</a></p>}
+      <h2 class="lead">Otras comparativas</h2>
+      <ul role="list">{others.map((o) => <li><a class="link-plain" href={`/comparativas/${o.slug}/`}>{o.h}</a></li>)}</ul>
+    </section>
+  </main>
+  <Footer />
+</Base>
+<style>
+  .cmpp { padding-block: 1.5rem 0; display: grid; gap: 3rem; }
+  .crumbs a { text-decoration: none; }
+  .cmpp__head { display: grid; grid-template-columns: 3fr 2fr; gap: var(--gutter); align-items: center; }
+  .cmpp__text { display: grid; gap: 1rem; }
+  .cmpp__photo { margin: 0; border-radius: 14px; overflow: hidden; aspect-ratio: 4 / 3; }
+  .cmpp__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .tldr { background: #fff; border-radius: 14px; padding: 1.5rem 1.75rem; display: grid; gap: 0.75rem; max-width: 80ch; }
+  .tldr h2 { font-size: var(--step-lead); }
+  .tldr ul { display: grid; gap: 0.6rem; }
+  .tldr li { padding-left: 1rem; border-left: 3px solid var(--accent); }
+  .cmpp__h2 { margin-bottom: 1.25rem; }
+  .table-wrap { overflow-x: auto; background: #fff; border-radius: 14px; }
+  .cmp { width: 100%; border-collapse: collapse; min-width: 820px; }
+  .cmp__img { width: 88px; }
+  .cmp__img img { width: 72px; height: 72px; object-fit: contain; background: #fff; border-radius: 8px; }
+  .cmp__noimg { display: none; }
+  .cmp th { text-align: left; font-size: var(--step-small); color: var(--muted); font-weight: 600; padding: 1rem 1.25rem; background: var(--surface); }
+  .cmp td { padding: 1rem 1.25rem; vertical-align: top; border-top: 1px solid var(--surface); }
+  .cmp__sub { display: block; font-size: var(--step-small); color: var(--muted); max-width: 30ch; margin-top: 0.2rem; }
+  .pick { display: inline-block; margin-left: 0.5rem; font-size: 0.8rem; font-weight: 700; background: var(--accent); color: var(--accent-ink); padding: 0.1rem 0.5rem; border-radius: 6px; vertical-align: middle; }
+  .grade { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 700; white-space: nowrap; }
+  .grade::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--surface-2); flex: none; }
+  .grade--good::before { background: var(--accent); }
+  .grade--none { font-weight: 400; color: var(--muted); }
+  .grade--none::before { display: none; }
+  .offer { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; min-width: 10.5rem; padding: 0.45rem 0.8rem; border-radius: 9px; background: var(--bg); text-decoration: none; font-size: var(--step-small); }
+  .offer strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.1rem; font-weight: 600; }
+  .offer--cf { background: var(--accent); color: var(--accent-ink); }
+  .cmp__nostore { font-size: var(--step-small); color: var(--muted); }
+  .cmp__where { display: grid; gap: 6px; }
+  .cmp__where .button { min-height: 2.25rem; padding-inline: 0.9rem; font-size: var(--step-small); white-space: nowrap; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+  .how__list { display: grid; gap: 0.9rem; padding-left: 1.25rem; max-width: 72ch; }
+  .faqs { display: grid; gap: 8px; max-width: 72ch; }
+  .qa { background: #fff; border-radius: 12px; padding: 0 1.5rem; }
+  .qa__q { cursor: pointer; list-style: none; padding: 1rem 0; font-weight: 600; display: flex; justify-content: space-between; gap: 1rem; }
+  .qa__q::-webkit-details-marker { display: none; }
+  .qa__q::after { content: "+"; color: var(--muted); font-size: 1.4rem; line-height: 1; }
+  .qa[open] .qa__q::after { content: "–"; }
+  .qa__a { padding-bottom: 1.1rem; color: var(--muted); }
+  .more { display: grid; gap: 1rem; }
+  .more ul { display: grid; gap: 0.4rem; }
+  @media (max-width: 820px) { .cmpp__head { grid-template-columns: 1fr; } .cmpp__photo { aspect-ratio: 3 / 2; } .grid { grid-template-columns: 1fr 1fr; gap: 8px; } }
+</style>

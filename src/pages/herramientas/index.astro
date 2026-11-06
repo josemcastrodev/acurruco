@@ -1,0 +1,79 @@
+---
+import Base from "../../layouts/Base.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+---
+<Base title="Herramientas para padres: calculadora de pañales, lista de nacimiento y presupuesto · Acurruco" description="Calcula cuántos pañales gasta tu bebé y cuánto cuesta cada marca, marca tu lista de nacimiento y estima el presupuesto del primer año." canonical="https://acurruco.com/herramientas/">
+  <Header />
+  <main class="wrap tools">
+    <header class="tools__head">
+      <h1 class="head">Herramientas</h1>
+      <p class="lead">Cosas que se calculan mal a ojo. Todas gratis, sin registro y con los precios de hoy.</p>
+    </header>
+    <div class="tools__grid">
+      <form class="tool tool--calc" id="calc" aria-labelledby="calc-title">
+        <h2 id="calc-title">Calculadora de pañales</h2>
+        <p>Un recién nacido moja unos ocho al día; con un año, cuatro o cinco. Mueve la edad y mira qué supone al mes en las dos marcas que más se compran en España.</p>
+        <label class="calc__label" for="edad">Edad: <output id="edad-out" for="edad">1 mes</output></label>
+        <input class="calc__range" type="range" id="edad" name="edad" min="0" max="24" step="1" value="1" />
+        <ul class="calc__out nums" role="list">
+          <li><strong id="c-dia">8</strong> pañales al día, talla <strong id="c-talla">1</strong></li>
+          <li><strong id="c-mes">240</strong> pañales al mes</li>
+          <li><strong id="c-dodot">96 €</strong> al mes con Dodot Sensitive</li>
+          <li><strong id="c-crf">55 €</strong> al mes con Carrefour Baby</li>
+          <li class="calc__save"><strong id="c-ahorro">492 €</strong> de diferencia al año</li>
+        </ul>
+        <p class="small">Precios por pañal en carrefour.es el 6 de noviembre de 2026: Dodot Sensitive 0,40 € (T1), 0,35 € (T2), 0,41 € (T3); Carrefour Baby 0,23 € (T1), 0,17 € (T2), 0,15 € (T3), 0,17 € (T4). Es una estimación: cada bebé es un mundo.</p>
+        <a class="link-plain" href="/comparativas/panales/">Ver la comparativa de pañales</a>
+      </form>
+      <a class="tool" href="/lista-de-nacimiento/">
+        <h2>Lista de nacimiento</h2>
+        <p>Treinta cosas, de las que la mitad pueden esperar. Marca lo que ya tienes; se guarda en tu navegador.</p>
+        <span class="tool__go">Abrir la lista</span>
+      </a>
+      <a class="tool" href="/herramientas/presupuesto-primer-ano/">
+        <h2>Presupuesto del primer año</h2>
+        <p>Cuánto cuesta un bebé el primer año según cómo compres: ahorro, medio o premium, partida por partida y ajustable a tu caso.</p>
+        <span class="tool__go">Calcular</span>
+      </a>
+    </div>
+  </main>
+  <Footer />
+</Base>
+<style>
+  .tools { padding-block: 2rem 0; display: grid; gap: 2.5rem; }
+  .tools__head { display: grid; gap: 1rem; max-width: 64ch; }
+  .tools__grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 16px; align-items: start; }
+  .tool { display: grid; gap: 0.75rem; align-content: start; padding: 1.75rem; background: #fff; border-radius: 14px; text-decoration: none; color: inherit; }
+  .tool h2 { font-size: var(--step-lead); }
+  .tool p { font-size: var(--step-small); color: var(--muted); max-width: 44ch; }
+  .tool__go { font-weight: 700; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+  .tool--calc { background: var(--accent); color: var(--accent-ink); }
+  .tool--calc p { color: var(--accent-ink); }
+  .calc__label { font-weight: 600; }
+  .calc__range { width: 100%; accent-color: var(--ink); }
+  .calc__out { display: grid; gap: 0.35rem; }
+  .calc__out strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 72; font-size: 1.6rem; font-weight: 600; margin-right: 0.1em; }
+  .calc__save strong { background: var(--ink); color: var(--field-ink); padding: 0.05em 0.35em 0.1em; border-radius: 6px; }
+  @media (max-width: 900px) { .tools__grid { grid-template-columns: 1fr; } }
+</style>
+<script>
+  (() => {
+    const range = document.getElementById("edad") as HTMLInputElement | null;
+    if (!range) return;
+    const out = document.getElementById("edad-out")!;
+    const $ = (id: string) => document.getElementById(id)!;
+    const tramos = [{ hasta: 1, dia: 8, talla: 1 }, { hasta: 3, dia: 7, talla: 2 }, { hasta: 6, dia: 6, talla: 3 }, { hasta: 12, dia: 5, talla: 4 }, { hasta: 24, dia: 4, talla: 5 }];
+    const precio: Record<number, [number, number]> = { 1: [0.40, 0.23], 2: [0.35, 0.17], 3: [0.41, 0.15], 4: [0.38, 0.17], 5: [0.42, 0.19] };
+    const eur = (n: number) => Math.round(n).toLocaleString("es-ES") + " €";
+    const paint = () => {
+      const m = Number(range.value);
+      const t = tramos.find((x) => m <= x.hasta) ?? tramos[tramos.length - 1];
+      const mes = t.dia * 30; const [dodot, crf] = precio[t.talla];
+      out.textContent = m === 0 ? "recién nacido" : m === 1 ? "1 mes" : `${m} meses`;
+      $("c-dia").textContent = String(t.dia); $("c-mes").textContent = String(mes); $("c-talla").textContent = String(t.talla);
+      $("c-dodot").textContent = eur(mes * dodot); $("c-crf").textContent = eur(mes * crf); $("c-ahorro").textContent = eur(mes * (dodot - crf) * 12);
+    };
+    range.addEventListener("input", paint); paint();
+  })();
+</script>

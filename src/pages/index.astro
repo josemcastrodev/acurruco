@@ -1,0 +1,502 @@
+---
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import index from "../data/catalog/index.json";
+import carrefour from "../data/carrefour.json";
+import amazon from "../data/amazon.json";
+
+const P = Object.fromEntries(carrefour.map((p) => [p.slug, p]));
+const total = index.reduce((n, c) => n + c.count, 0);
+const count = (slug: string) => index.find((c) => c.slug === slug)?.count ?? 0;
+const eur = (n: number | string) => Number(n).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+const amzImg = (asin: string) => `https://images-na.ssl-images-amazon.com/images/P/${asin}.01._SCLZZZZZZZ_.jpg`;
+const amzUrl = (asin: string) => `https://www.amazon.es/dp/${asin}?tag=acurruco-21`;
+const A = amazon as Record<string, { price: number | null; carrefour?: string }>;
+
+/* Las carpetas del hero: cinco entradas, cada una con atajos. "Empieza aquí" abre por defecto. */
+const carpetas = [
+  { tab: "Cuidado", x: "70%", text: "Pañales, cremas, baño y cambiador.", links: [["Pañales", "Cuál y cuántos, por precio real", "/comparativas/panales/"], ["Cremas", "Barrera o prevención", "/comparativas/cremas-de-panal/"], ["Bañeras y cambiadores", `${count("baneras-y-cambiadores")} productos`, "/catalogo/baneras-y-cambiadores/"], ["Calculadora", "Cuántos pañales al mes", "#calc"]] },
+  { tab: "Comer", x: "52%", text: "Lactancia, biberones, tronas y alimentación.", links: [["Lactancia", `${count("lactancia")} productos`, "/catalogo/lactancia/"], ["Biberones y chupetes", `${count("biberones-y-menaje")} productos`, "/catalogo/biberones-y-menaje/"], ["Tronas", `${count("tronas")} productos`, "/catalogo/tronas/"], ["Alimentación infantil", `${count("alimentacion-infantil")} productos`, "/catalogo/alimentacion-infantil/"]] },
+  { tab: "Dormir", x: "35%", text: "Cunas de colecho, minicunas, colchones y sueño seguro.", links: [["Cunas de colecho", "La comparativa", "/comparativas/cunas-de-colecho/"], ["Cunas y minicunas", `${count("cunas")} productos`, "/catalogo/cunas/"], ["Colchones", `${count("colchones")} productos`, "/catalogo/colchones/"], ["Ropa de cuna", `${count("ropa-de-cuna")} productos`, "/catalogo/ropa-de-cuna/"]] },
+  { tab: "Pasear y coche", x: "19%", text: "Sillas de coche i-Size, carritos, sillas ligeras y portabebés.", links: [["Sillas de coche", "Las mejores según ADAC", "/comparativas/sillas-de-coche-i-size/"], ["Carritos", `${count("carritos")} productos`, "/catalogo/carritos/"], ["Sillas de paseo", `${count("sillas-de-paseo")} productos`, "/catalogo/sillas-de-paseo/"], ["Portabebés", `${count("portabebes")} productos`, "/catalogo/portabebes/"]] },
+  { tab: "Empieza aquí", x: "3%", text: "¿En qué momento estás?", links: [["Embarazo", "Antes de que nazca", "#embarazo"], ["0 a 3 meses", "Recién nacido", "#recien-nacido"], ["3 a 6 meses", "Empieza a mirar el mundo", "#3-6"], ["6 a 12 meses", "Se sienta y come", "#6-12"], ["1 a 2 años", "Anda, habla, trepa", "#1-2"]] },
+];
+
+/* Las etapas: qué importa en cada momento y adónde ir. */
+const etapas = [
+  { id: "embarazo", when: "Embarazo", title: "Antes de que nazca", text: "Lo que conviene tener en casa el día que volváis del hospital, y lo que puede esperar.", links: [["La lista de nacimiento", "/lista-de-nacimiento/"], ["La bolsa del hospital", "/guias/bolsa-del-hospital/"], ["Elegir la silla de coche", "/comparativas/sillas-de-coche-i-size/"], ["Cuna o colecho", "/comparativas/cunas-de-colecho/"]] },
+  { id: "recien-nacido", when: "0 a 3 meses", title: "Recién nacido", text: "Dormir, comer y cambiar pañales: casi todo gira en torno a tres cosas.", links: [["Qué necesita un recién nacido", "/guias/que-necesita-un-recien-nacido/"], ["Pañales: cuál y cuántos", "/comparativas/panales/"], ["Cremas para el culito", "/comparativas/cremas-de-panal/"], ["Qué regalar a un recién nacido", "/regalos/recien-nacido/"]] },
+  { id: "3-6", when: "3 a 6 meses", title: "Empieza a mirar el mundo", text: "Primeros juguetes, la hamaca para la cocina y el carrito que se usa de verdad.", links: [["Juguetes sensoriales", "/guias/juguetes-sensoriales/"], ["Hamacas y parques", "/catalogo/hamacas-y-parques/"], ["Elegir el carrito", "/guias/elegir-carrito/"], ["Regalos de 3 a 6 meses", "/regalos/3-6-meses/"]] },
+  { id: "6-12", when: "6 a 12 meses", title: "Se sienta y come", text: "La trona, la alimentación complementaria y la casa a prueba de bebé.", links: [["Tronas", "/catalogo/tronas/"], ["Juguetes Montessori", "/guias/juguetes-montessori/"], ["Seguridad en casa", "/catalogo/seguridad/"], ["Regalos de 6 a 12 meses", "/regalos/6-12-meses/"]] },
+  { id: "1-2", when: "1 a 2 años", title: "Anda, habla, trepa", text: "Silla de coche del siguiente tramo, silla de paseo ligera y juguetes que aguanten.", links: [["Sillas de coche 76–150 cm", "/catalogo/sillas-de-coche/?tipo=De%2076%2F100%20a%20150%20cm%20(3%20a%2012%20a%C3%B1os)"], ["Sillas de paseo ligeras", "/catalogo/sillas-de-paseo/"], ["Regalos para 1 año", "/regalos/1-ano/"], ["Presupuesto del primer año", "/herramientas/presupuesto-primer-ano/"]] },
+];
+
+/* El índice de necesidades: seis entradas grandes y una sola foto que cambia con la elegida. */
+const necesidades = [
+  { id: "coche", name: "Para el coche", photo: "/img/photos/coche-43.jpg", text: "La silla i-Size es la compra más importante del primer año. Qué tramo, qué base y qué dicen los tests de choque.", guia: "/comparativas/sillas-de-coche-i-size/", cat: "sillas-de-coche", cats: ["sillas-de-coche", "accesorios-coche"] },
+  { id: "paseo", name: "Para pasear", photo: "/img/photos/paseo-43.jpg", text: "Carritos de dos y tres piezas para empezar, sillas ligeras para cuando ya se sienta y portabebés para las manos libres.", guia: "/guias/elegir-carrito/", cat: "carritos", cats: ["carritos", "sillas-de-paseo", "portabebes", "accesorios-paseo"] },
+  { id: "dormir", name: "Para dormir", photo: "/img/photos/colecho-43.jpg", text: "Cunas de colecho que cumplen la norma, minicunas, colchones firmes y lo que dice la AEP sobre sueño seguro.", guia: "/comparativas/cunas-de-colecho/", cat: "cunas", cats: ["cunas", "colchones", "ropa-de-cuna", "muebles"] },
+  { id: "cuidado", name: "Para el cuidado", photo: "/img/photos/cambiador-43.jpg", text: "Pañales por precio real, cremas con nota de la OCU, bañeras y cambiadores que se limpian en diez segundos.", guia: "/comparativas/panales/", cat: "panales", cats: ["panales", "toallitas", "cuidado", "baneras-y-cambiadores", "bano"] },
+  { id: "comer", name: "Para comer", photo: "/img/photos/comer-43.jpg", text: "Lactancia, biberones y esterilizadores los primeros meses; trona y alimentación complementaria a partir de los seis.", guia: "/catalogo/tronas/", cat: "biberones-y-menaje", cats: ["lactancia", "biberones-y-menaje", "esterilizadores", "tronas", "alimentacion-infantil", "embarazo"] },
+  { id: "casa", name: "Para la casa y jugar", photo: "/img/photos/casa-43.jpg", text: "Hamacas y parques para tenerlo cerca, vigilabebés, seguridad y los juguetes que se usan de verdad en cada edad.", guia: "/guias/juguetes-sensoriales/", cat: "hamacas-y-parques", cats: ["hamacas-y-parques", "vigilabebes", "seguridad", "andadores", "juguetes"] },
+];
+
+/* Sillas de coche para recién nacido: sólo las que puedes comprar hoy, con los dos precios cuando existen. Carrefour primero. */
+const sillas = [
+  { name: "Chicco Kory Essential i-Size", cm: "40–80 cm", adac: null, why: "La más vendida en Carrefour: portabebés ligero (3,5 kg) que va con cinturón o con base Isofix aparte.", pick: "La más vendida", img: "/img/products/chicco-kory-essential.jpg", carrefour: P["chicco-kory-essential"], asin: "B0C6KXB9LL" },
+  { name: "Maxi-Cosi CabrioFix i-Size", cm: "40–75 cm", adac: "buena", why: "Compatible con casi todos los carritos; con la base FamilyFix 360 gira hacia la puerta.", pick: "Compatible con todo", img: "/img/products/maxicosi-cabriofix.jpg", carrefour: P["maxicosi-cabriofix"], asin: "B09LVKQMBQ" },
+  { name: "Cybex Cloud G3 Plus", cm: "40–87 cm", adac: "2,2", why: "Nota 'buena' en el test de otoño de 2026 y la única que se tumba del todo fuera del coche.", pick: "Para viajes largos", img: amzImg("B0GLQBTWC2"), asin: "B0GLQBTWC2" },
+  { name: "Maxi-Cosi Pebble 360 Pro²", cm: "40–87 cm", adac: "buena", why: "Giratoria con su base: el bebé entra de cara a la puerta. Segunda generación, sin el problema de contaminantes de la primera.", pick: "Giratoria", img: amzImg("B000MOZ39C"), asin: "B000MOZ39C" },
+  { name: "Kinderkraft i-Lite con base", cm: "40–87 cm", adac: "2,7", why: "La barata con nota 'buena' en ADAC (otoño 2025). Pesa 3,3 kg.", pick: "Nota buena, precio bajo", img: amzImg("B0F143C7BR"), asin: "B0F143C7BR" },
+];
+
+const faqs = [
+  { q: "¿Qué es i-Size y por qué importa?", a: "i-Size es el nombre de la normativa europea R129. Desde septiembre de 2024 ya no se venden sillas de la norma antigua (R44). Las i-Size se eligen por la altura del bebé, no por el peso, obligan a ir a contramarcha hasta los 15 meses como mínimo y pasan un ensayo de impacto lateral. Si ves una silla 'grupo 0+' de segunda mano, mira la etiqueta naranja: si pone ECE R44, es la norma vieja." },
+  { q: "¿Amazon o Carrefour?", a: "Depende del producto. En sillas, carritos y cunas, Carrefour suele tener el mismo precio que la web del fabricante y lo trae a tu súper; Amazon gana en variedad y en devoluciones. En pañales y cremas, la marca blanca de Carrefour y Mercadona cuesta la mitad que Dodot con una nota parecida. Cuando un producto está en las dos tiendas, te enseñamos los dos precios al lado." },
+  { q: "¿Cómo gana dinero Acurruco?", a: "Con enlaces de afiliado. Si compras algo desde un enlace de esta web, Amazon o Carrefour nos pagan una comisión pequeña y a ti te cuesta exactamente lo mismo. No cobramos por aparecer, no aceptamos productos regalados a cambio de reseñas y recomendamos la marca blanca cuando es la mejor compra, aunque deje menos comisión." },
+  { q: "¿Quién escribe esto?", a: "Padres de niños pequeños, en Madrid, que han pasado por todo esto hace poco. Leemos los tests originales, probamos lo que podemos en casa y actualizamos cada comparativa cuando cambian los precios o sale un test nuevo. La fecha de la última revisión está en cada página." },
+  { q: "¿Cada cuánto se actualizan los precios?", a: "Los del catálogo, cada día, a partir de los datos que nos envían las tiendas. Los de las comparativas se revisan a mano cuando actualizamos el artículo; por eso en cada tabla ves la fecha." },
+];
+
+const title = "Acurruco · Guías y comparativas para el primer año de tu bebé";
+const description = "Qué necesita tu bebé en cada etapa y cuál comprar: sillas de coche, carritos, cunas, pañales y más, comparados con los tests de ADAC y OCU y con precios reales de Carrefour y enlaces a Amazon y Carrefour.";
+---
+<Base title={title} description={description}>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        { "@type": "Organization", "@id": "https://acurruco.com/#org", name: "Acurruco", url: "https://acurruco.com/", logo: "https://acurruco.com/img/logo.png" },
+        { "@type": "WebSite", "@id": "https://acurruco.com/#site", url: "https://acurruco.com/", name: "Acurruco", inLanguage: "es-ES", publisher: { "@id": "https://acurruco.com/#org" } },
+        { "@type": "FAQPage", mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+      ],
+    })} />
+  </Fragment>
+
+  <div class="hero">
+    <Header dark />
+    <div class="hero__copy wrap">
+      <h1 class="hero__title lines"><span class="line"><span data-line style="--i:0">Lo que necesita tu bebé</span></span></h1>
+      <p class="hero__lead" data-rise style="--i:1">Explicado por etapas y comparado con los tests de ADAC y OCU: {total.toLocaleString("es-ES")} productos con el precio de hoy en Carrefour y enlace a Amazon, para no perderte.</p>
+    </div>
+    <div class="folders" id="folders" aria-label="Por dónde empezar">
+      {carpetas.map((f, i) => (
+        <section class={`folder folder--${i + 1}${i === 4 ? " is-open" : ""}`} data-k={i} style={`--x: ${f.x}`} aria-labelledby={`ftab-${i}`}>
+          <h2 class="folder__tabwrap"><button class="folder__tab" type="button" id={`ftab-${i}`} aria-expanded={i === 4 ? "true" : "false"} aria-controls={`fpanel-${i}`}>{f.tab}</button></h2>
+          <div class="folder__panel" id={`fpanel-${i}`}>
+            <div class="folder__inside">
+              <p class="folder__text">{f.text}</p>
+              <ul class="stages" role="list">
+                {f.links.map(([a, b, h]) => <li><a href={h}><strong>{a}</strong><span>{b}</span></a></li>)}
+              </ul>
+            </div>
+          </div>
+        </section>
+      ))}
+    </div>
+  </div>
+
+  <main>
+    <!-- Por etapas -->
+    <section class="stages-s wrap" id="etapas" aria-labelledby="etapas-title">
+      <div class="sec__head">
+        <h2 id="etapas-title" class="head">Por etapas</h2>
+        <p class="lead">Cada mes cambia lo que importa. Esto es lo que mirar en cada momento, en orden.</p>
+      </div>
+      <ol class="timeline" role="list">
+        {etapas.map((e) => (
+          <li class="stage" id={e.id}>
+            <span class="stage__when">{e.when}</span>
+            <h3 class="stage__title">{e.title}</h3>
+            <p class="stage__text">{e.text}</p>
+            <ul class="stage__links" role="list">{e.links.map(([l, h]) => <li><a href={h}>{l}</a></li>)}</ul>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <!-- Por necesidad: el índice -->
+    <section class="needs" id="necesidades" aria-labelledby="needs-title">
+      <div class="needs__in wrap">
+        <div class="needs__list">
+          <div class="sec__head">
+            <h2 id="needs-title" class="head">Por necesidad</h2>
+            <p class="lead">Seis bloques. Pasa por encima o toca uno: la guía que explica qué mirar y el catálogo completo para elegir.</p>
+          </div>
+          <ol class="needidx" role="list">
+            {necesidades.map((n, i) => {
+              const c = n.cats.reduce((s, slug) => s + count(slug), 0);
+              return (
+                <li class:list={["needidx__item", { "is-on": i === 0 }]} data-photo={n.photo} data-k={i}>
+                  <h3 class="needidx__name"><a href={n.guia}>{n.name}</a></h3>
+                  <p class="needidx__text">{n.text}</p>
+                  <p class="needidx__links"><a class="button" href={n.guia}>Leer la guía</a><a class="needidx__cat" href={`/catalogo/${n.cat}/`}>{c.toLocaleString("es-ES")} productos en el catálogo</a></p>
+                  <img class="needidx__inline" src={n.photo} alt="" width="960" height="720" loading="lazy" />
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+        <figure class="needs__frame" aria-hidden="true">
+          {necesidades.map((n, i) => <img src={n.photo} alt="" width="960" height="720" class:list={[{ "is-on": i === 0 }]} loading={i === 0 ? "eager" : "lazy"} data-k={i} />)}
+        </figure>
+      </div>
+    </section>
+
+    <!-- Sillas de coche para recién nacido -->
+    <section class="compare wrap" id="comparativa" aria-labelledby="compare-title">
+      <div class="sec__head">
+        <h2 id="compare-title" class="head">Sillas de coche para recién nacido</h2>
+        <p class="lead">Cinco portabebés i-Size que puedes comprar hoy, con el precio en cada tienda. La nota ADAC va de 1 (mejor) a 5; hasta 2,5 cuenta como buena.</p>
+      </div>
+      <ol class="prow" role="list">
+        {sillas.map((s) => {
+          const cf = s.carrefour, am = A[s.asin];
+          return (
+            <li class="prow__item">
+              <a class="prow__img" href={cf ? `/p/${cf.id}/` : amzUrl(s.asin)} rel={cf ? undefined : "sponsored nofollow noopener"} target={cf ? undefined : "_blank"} tabindex="-1" aria-hidden="true"><img src={s.img} alt="" width="160" height="160" loading="lazy" /></a>
+              <div class="prow__body">
+                <p class="prow__pick">{s.pick}</p>
+                <h3 class="prow__name">{cf ? <a href={`/p/${cf.id}/`}>{s.name}</a> : <a href={amzUrl(s.asin)} rel="sponsored nofollow noopener" target="_blank">{s.name}</a>}</h3>
+                <p class="prow__why">{s.why}</p>
+                <p class="prow__meta nums">{s.cm}{s.adac && <span> · ADAC <strong>{s.adac}</strong></span>}</p>
+              </div>
+              <div class="prow__offers">
+                {cf && <a class="offer offer--cf" href={`/p/${cf.id}/`}><span>Carrefour</span><strong class="nums">{eur(cf.price)}</strong></a>}
+                {am && am.price && <a class="offer" href={amzUrl(s.asin)} rel="sponsored nofollow noopener" target="_blank"><span>Amazon</span><strong class="nums">{eur(am.price)}</strong></a>}
+                {am && !am.price && <a class="offer" href={amzUrl(s.asin)} rel="sponsored nofollow noopener" target="_blank"><span>Amazon</span><strong>ver precio</strong></a>}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+      <p class="compare__foot"><a class="link-plain" href="/comparativas/sillas-de-coche-i-size/">La comparativa completa, con las ganadoras de ADAC que no se venden online</a> · <span class="muted">Precios del 6 de noviembre de 2026; los de Carrefour se actualizan a diario.</span></p>
+    </section>
+
+    <!-- Calculadora de pañales -->
+    <section class="calc-s wrap" id="calc" aria-labelledby="calc-title">
+      <div class="calc">
+        <div class="calc__head">
+          <h2 id="calc-title" class="head">Cuántos pañales va a gastar</h2>
+          <p class="lead">Un recién nacido moja unos ocho al día; con un año, cuatro o cinco. Mueve la edad y compara lo que cuesta cada marca al mes con los precios de hoy.</p>
+        </div>
+        <form class="calc__form" id="calc-form">
+          <label class="calc__label" for="edad">Edad del bebé <output id="edad-out" for="edad">1 mes</output></label>
+          <input class="calc__range" type="range" id="edad" name="edad" min="0" max="24" step="1" value="1" />
+          <div class="calc__facts nums">
+            <div><strong id="c-dia">8</strong><span>al día</span></div>
+            <div><strong id="c-mes">240</strong><span>al mes</span></div>
+            <div><strong id="c-talla">1</strong><span>talla</span></div>
+            <div><strong id="c-ano">2.500</strong><span>el primer año</span></div>
+          </div>
+          <ol class="bars" role="list" id="bars"></ol>
+          <p class="small">Precio por pañal el 6 de noviembre de 2026: Carrefour Baby (carrefour.es), Deliplus (Mercadona, dic. 2025), Dodot Sensitive en Carrefour (pack de 90). Es una estimación: cada bebé es un mundo.</p>
+          <p><a class="link-plain" href="/comparativas/panales/">La comparativa de pañales, talla a talla</a></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- Cómo elegimos -->
+    <section class="how wrap" id="como" aria-labelledby="how-title">
+      <div class="how__grid">
+        <div class="sec__head">
+          <h2 id="how-title" class="head">Cómo elegimos</h2>
+          <p class="lead">Reunimos los tests independientes, los leemos en su idioma original y los cruzamos con lo que se vende en España y con su precio. Nos quedamos con lo que importa en un bebé de meses.</p>
+          <a class="link-plain" href="/como-elegimos/">El método completo</a>
+        </div>
+        <dl class="how__steps">
+          <div><dt>Reunimos</dt><dd>Los tests de ADAC, OCU, RACE, DGT, Stiftung Warentest y AEP, las fichas de los fabricantes y cientos de opiniones de padres.</dd></div>
+          <div><dt>Cribamos</dt><dd>Fuera lo que no cumple la norma, lo que no se vende en España y lo que nadie necesita.</dd></div>
+          <div><dt>Elegimos</dt><dd>Una recomendación clara por presupuesto, con el porqué y la fecha de la última revisión en cada página.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- Preguntas -->
+    <section class="faq wrap" id="preguntas" aria-labelledby="faq-title">
+      <div class="sec__head"><h2 id="faq-title" class="head">Preguntas que nos hacen</h2></div>
+      <div class="faq__list">
+        {faqs.map((f) => (
+          <details class="qa">
+            <summary class="qa__q">{f.q}</summary>
+            <p class="qa__a">{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+
+    <!-- Cierre -->
+    <section class="close wrap" id="lista" aria-labelledby="close-title">
+      <div class="close__in">
+        <div class="close__text">
+          <h2 id="close-title" class="head">Empieza por la lista</h2>
+          <p class="lead">Lo que hace falta de verdad para un recién nacido, con precio al lado y sin relleno. Gratis y sin registrarte.</p>
+          <a class="button" href="/lista-de-nacimiento/">Ver la lista de nacimiento</a>
+        </div>
+        <figure class="close__photo"><img src="/img/photos/lista-43.jpg" alt="Lo imprescindible de un recién nacido ordenado sobre una sábana de lino" width="960" height="720" loading="lazy" /></figure>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .sec__head { display: grid; gap: 0.6rem; max-width: 62ch; margin-bottom: 1.75rem; }
+  main > section[class] { padding-block: clamp(2.5rem, 5vw, 4.5rem); }
+  main > section:first-child { padding-top: clamp(3rem, 6vw, 5rem); }
+
+  /* ---------- hero ---------- */
+  .hero { background: var(--field); color: var(--field-ink); display: grid; grid-template-rows: auto auto auto; overflow: clip; }
+  .hero__copy { text-align: center; padding-block: clamp(1.25rem, 4vh, 3rem) clamp(0.5rem, 2vh, 1.25rem); display: grid; justify-items: center; gap: 1rem; }
+  .hero__title { font-size: clamp(2.4rem, 1.2rem + 4.2vw, 4.75rem); line-height: 1; letter-spacing: -0.025em; font-weight: 500; }
+  .hero__lead { font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem); max-width: 58ch; color: var(--field-ink); text-wrap: pretty; }
+  .folders { width: min(90vw, 1440px); margin-inline: auto; padding-top: 56px; display: grid; }
+  .folder { position: relative; border-radius: 18px 18px 0 0; color: var(--ink); margin-top: -18px; z-index: var(--z, 1); }
+  .folder:first-child { margin-top: 0; }
+  .folder[data-k="0"] { --z: 1; } .folder[data-k="1"] { --z: 2; } .folder[data-k="2"] { --z: 3; } .folder[data-k="3"] { --z: 4; } .folder[data-k="4"] { --z: 5; }
+  .folder--1 { background: #5a4660; } .folder--2 { background: #7d6680; } .folder--3 { background: #c6b8c5; } .folder--4 { background: var(--surface); } .folder--5 { background: var(--bg); }
+  .folder--1, .folder--2 { color: var(--field-ink); }
+  .folder__tabwrap { font: inherit; margin: 0; height: 46px; background: inherit; border-radius: inherit; }
+  .folder__tab { position: absolute; left: var(--x); top: -40px; height: 41px; padding: 0 1.4rem; display: inline-flex; align-items: center; font: inherit; font-size: var(--step-body); font-weight: 600; background: inherit; color: inherit; border-radius: 12px 12px 0 0; white-space: nowrap; cursor: pointer; }
+  .folder__tab::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--accent); opacity: 0; transition: opacity var(--t-hover) ease; z-index: -1; }
+  .folder.is-open .folder__tab { cursor: default; }
+  .folder.is-open .folder__tab::before { content: ""; position: absolute; left: 1.4rem; right: 1.4rem; bottom: 6px; height: 3px; border-radius: 2px; background: var(--accent); }
+  .folder__panel { overflow: hidden; height: 0; transition: height 480ms var(--ease-in-out); }
+  .folder.is-open .folder__panel { height: auto; }
+  .folder__inside { padding: 0.25rem 2rem 1.75rem; display: grid; gap: 0.9rem; opacity: 0; transform: translateY(-6px); transition: opacity 260ms ease, transform 420ms var(--ease-out); }
+  .folder.is-open .folder__inside { opacity: 1; transform: none; }
+  .folder:not(:last-child) .folder__inside { padding-bottom: 4.5rem; }
+  .folder__text { font-size: var(--step-lead); font-weight: 600; }
+  .stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 10px; }
+  .stages a { display: grid; gap: 0.2rem; padding: 0.9rem 1.1rem; background: #fff; border-radius: 12px; text-decoration: none; color: var(--ink); min-height: 4.75rem; transition: background-color var(--t-hover) ease, transform var(--t-press) var(--ease-out); }
+  .folder--1 .stages a, .folder--2 .stages a { background: rgba(255,255,255,0.94); }
+  .stages strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.2rem; font-weight: 600; line-height: 1.1; }
+  .stages span { font-size: var(--step-small); color: var(--muted); }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .folder { animation: folder-up 700ms var(--ease-expo) both; animation-delay: calc(var(--z, 1) * 60ms); }
+  }
+  @keyframes folder-up { from { transform: translateY(28px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (hover: hover) and (pointer: fine) {
+    .folder:not(.is-open) .folder__tab:hover::after { opacity: 1; }
+    .folder:not(.is-open) .folder__tab:hover { color: var(--accent-ink); }
+    .stages a:hover { background: var(--accent); }
+    .stages a:hover span { color: var(--ink); }
+  }
+  @media (max-width: 820px) {
+    .folders { width: 100%; padding-top: 44px; }
+    .folder__tabwrap { height: 40px; }
+    .folder__tab { top: -32px; height: 33px; font-size: var(--step-small); padding: 0 0.9rem; }
+    .folder[data-k="0"] { --x: 62% !important; } .folder[data-k="1"] { --x: 44% !important; } .folder[data-k="2"] { --x: 24% !important; } .folder[data-k="3"] { --x: 46% !important; } .folder[data-k="4"] { --x: 4% !important; }
+    .folder__inside { padding-inline: 1.1rem; }
+    .stages { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ---------- etapas ---------- */
+  .timeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--gutter); }
+  .stage { display: grid; gap: 0.5rem; align-content: start; padding-top: 1rem; border-top: 3px solid var(--accent); }
+  .stage__when { font-size: var(--step-small); font-weight: 700; color: var(--muted); }
+  .stage__title { font-size: var(--step-lead); }
+  .stage__text { font-size: var(--step-small); color: var(--muted); }
+  .stage__links { display: grid; gap: 0.35rem; margin-top: 0.5rem; font-size: var(--step-small); font-weight: 600; }
+  .stage__links a { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+  @media (max-width: 1000px) { .timeline { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .timeline { grid-template-columns: 1fr; } }
+
+  /* ---------- necesidades: el índice ---------- */
+  .needs { background: #fff; }
+  .needs__in { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 3rem; align-items: start; }
+  .needidx { display: grid; }
+  .needidx__item { position: relative; padding: 1.1rem 0 1.1rem 1.25rem; border-top: 1px solid var(--surface); }
+  .needidx__item::before { content: ""; position: absolute; left: 0; top: 1.3rem; bottom: 1.3rem; width: 4px; border-radius: 2px; background: var(--accent); transform: scaleY(0); transform-origin: top; transition: transform 320ms var(--ease-out); }
+  .needidx__item.is-on::before { transform: scaleY(1); }
+  .needidx__name { font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.4rem); line-height: 1.05; }
+  .needidx__name a { text-decoration: none; color: var(--muted); transition: color var(--t-hover) ease; }
+  .needidx__item.is-on .needidx__name a { color: var(--ink); }
+  .needidx__name a::after { content: ""; position: absolute; inset: 0; }
+  .needidx__text, .needidx__links, .needidx__inline { display: none; }
+  .needidx__item.is-on .needidx__text { display: block; margin-top: 0.5rem; max-width: 46ch; color: var(--muted); animation: ad-rise 400ms var(--ease-out) both; }
+  .needidx__item.is-on .needidx__links { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-top: 0.9rem; position: relative; z-index: 1; animation: ad-rise 400ms var(--ease-out) 60ms both; }
+  .needidx__links .button { min-height: 2.6rem; padding-inline: 1rem; font-size: var(--step-small); }
+  .needidx__cat { font-size: var(--step-small); font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+  .needs__frame { position: sticky; top: 2rem; margin: 0; aspect-ratio: 4 / 3; border-radius: 16px; overflow: hidden; background: var(--surface); }
+  .needs__frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.04); transition: opacity 500ms ease, transform 1200ms var(--ease-soft); }
+  .needs__frame img.is-on { opacity: 1; transform: none; }
+  @media (hover: hover) and (pointer: fine) { .needidx__item:hover .needidx__name a { color: var(--ink); } }
+  @media (max-width: 820px) {
+    .needs__in { grid-template-columns: 1fr; gap: 1rem; }
+    .needs__frame { display: none; }
+    .needidx__item.is-on .needidx__inline { display: block; width: 100%; border-radius: 12px; margin-top: 0.9rem; aspect-ratio: 3 / 2; object-fit: cover; }
+  }
+
+  /* ---------- sillas: filas de producto ---------- */
+  .prow { display: grid; gap: 10px; }
+  .prow__item { display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 1.5rem; align-items: center; background: #fff; border-radius: 14px; padding: 1rem 1.25rem 1rem 1rem; }
+  .prow__img { display: block; width: 150px; height: 150px; background: #fff; border-radius: 10px; }
+  .prow__img img { width: 100%; height: 100%; object-fit: contain; }
+  .prow__body { display: grid; gap: 0.3rem; min-width: 0; }
+  .prow__pick { font-size: var(--step-small); font-weight: 700; color: var(--accent-strong); }
+  .prow__name { font-size: var(--step-lead); line-height: 1.15; }
+  .prow__name a { text-decoration: none; }
+  .prow__why { font-size: var(--step-small); color: var(--muted); max-width: 52ch; }
+  .prow__meta { font-size: var(--step-small); color: var(--muted); }
+  .prow__meta strong { color: var(--ink); }
+  .prow__offers { display: grid; gap: 6px; min-width: 11rem; }
+  .offer { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 0.6rem 0.9rem; border-radius: 10px; background: var(--bg); text-decoration: none; font-size: var(--step-small); transition: background-color var(--t-hover) ease; }
+  .offer strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.2rem; font-weight: 600; }
+  .offer--cf { background: var(--accent); color: var(--accent-ink); }
+  .offer:hover { background: var(--surface); }
+  .offer--cf:hover { background: var(--accent-strong); }
+  .compare__foot { margin-top: 1.25rem; font-size: var(--step-small); }
+  @media (max-width: 760px) {
+    .prow__item { grid-template-columns: 96px 1fr; }
+    .prow__img { width: 96px; height: 96px; }
+    .prow__offers { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ---------- calculadora ---------- */
+  .calc { background: var(--field); color: var(--field-ink); border-radius: 18px; padding: clamp(1.5rem, 4vw, 3rem); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 3rem; align-items: start; }
+  .calc__head { display: grid; gap: 0.75rem; }
+  .calc__head .lead { color: var(--field-muted); }
+  .calc__form { display: grid; gap: 1.1rem; }
+  .calc__label { font-weight: 600; display: flex; justify-content: space-between; }
+  .calc__label output { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.3rem; }
+  .calc__range { width: 100%; accent-color: var(--accent); }
+  .calc__facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .calc__facts div { display: grid; gap: 0.1rem; padding: 0.7rem 0.9rem; background: rgba(255,255,255,0.08); border-radius: 10px; }
+  .calc__facts strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 72; font-size: 1.6rem; line-height: 1; font-weight: 600; }
+  .calc__facts span { font-size: var(--step-small); color: var(--field-muted); }
+  .bars { display: grid; gap: 0.55rem; }
+  .bars :global(.bar) { display: grid; grid-template-columns: 11rem 1fr auto; gap: 0.75rem; align-items: center; font-size: var(--step-small); }
+  .bars :global(.bar__track) { height: 14px; border-radius: 7px; background: rgba(255,255,255,0.1); overflow: hidden; }
+  .bars :global(.bar__fill) { height: 100%; border-radius: 7px; background: var(--field-muted); transition: width 420ms var(--ease-out); }
+  .bars :global(.bar--best) :global(.bar__fill) { background: var(--accent); }
+  .bars :global(.bar) :global(strong) { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.2rem; font-weight: 600; min-width: 4.5rem; text-align: right; }
+  .bars :global(.bar) :global(a) { color: inherit; }
+  .calc .small { color: var(--field-muted); }
+  .calc .link-plain { color: var(--field-ink); text-decoration-color: var(--accent); }
+  @media (max-width: 900px) { .calc { grid-template-columns: 1fr; gap: 1.5rem; } .calc__facts { grid-template-columns: 1fr 1fr; } .bars :global(.bar) { grid-template-columns: 1fr auto; } .bars :global(.bar__track) { grid-column: 1 / -1; } }
+
+  /* ---------- cómo elegimos ---------- */
+  .how__grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gutter); align-items: start; }
+  .how__steps { display: grid; gap: 1.25rem; }
+  .how__steps div { padding-left: 1.25rem; border-left: 3px solid var(--accent); }
+  .how__steps dt { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: var(--step-lead); font-weight: 600; margin-bottom: 0.25rem; }
+  .how__steps dd { color: var(--muted); max-width: 44ch; }
+  @media (max-width: 820px) { .how__grid { grid-template-columns: 1fr; } }
+
+  /* ---------- preguntas ---------- */
+  .faq__list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
+  .qa { background: #fff; border-radius: 12px; padding: 0 1.5rem; }
+  .qa__q { cursor: pointer; list-style: none; padding: 0.9rem 0; font-weight: 600; font-size: var(--step-body); display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
+  .qa__q::-webkit-details-marker { display: none; }
+  .qa__q::after { content: "+"; font-size: 1.5rem; line-height: 1; color: var(--muted); transition: transform var(--t-ui) var(--ease-out); }
+  .qa[open] .qa__q::after { transform: rotate(45deg); }
+  .qa__a { padding: 0 0 1.25rem; color: var(--muted); max-width: 64ch; }
+  @media (max-width: 820px) { .faq__list { grid-template-columns: 1fr; } }
+
+  /* ---------- cierre ---------- */
+  .close__in { display: grid; grid-template-columns: 2fr 3fr; gap: var(--gutter); align-items: center; background: #fff; border-radius: 18px; overflow: hidden; }
+  .close__photo { margin: 0; aspect-ratio: 4 / 3; }
+  .close__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .close__text { display: grid; gap: 1rem; justify-items: start; padding: 2rem 1rem 2rem 2.5rem; }
+  @media (max-width: 820px) { .close__in { grid-template-columns: 1fr; } .close__text { padding: 1.5rem; } }
+</style>
+
+<script>
+  // Las carpetas: la pulsada se abre debajo de su pestaña y la que estaba abierta se cierra, con alturas medidas.
+  (() => {
+    const folders = [...document.querySelectorAll<HTMLElement>("#folders .folder")];
+    const panel = (f: HTMLElement) => f.querySelector<HTMLElement>(".folder__panel")!;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let busy = false, gen = 0;
+    const settle = (p: HTMLElement) => { p.style.height = "auto"; };
+    folders.forEach((f) => f.querySelector(".folder__tab")?.addEventListener("click", () => {
+      if (f.classList.contains("is-open") || busy) return;
+      const my = ++gen;
+      const was = folders.find((x) => x.classList.contains("is-open"));
+      const pOpen = panel(f), pClose = was ? panel(was) : null;
+      const hClose = pClose ? pClose.getBoundingClientRect().height : 0;
+      pOpen.style.height = "auto"; f.classList.add("is-open");
+      const hOpen = pOpen.scrollHeight;
+      pOpen.style.height = "0px"; f.classList.remove("is-open");
+      if (reduce) {
+        if (was && pClose) { was.classList.remove("is-open"); pClose.style.height = "0px"; }
+        f.classList.add("is-open"); pOpen.style.height = "auto";
+      } else {
+        busy = true;
+        if (pClose) pClose.style.height = hClose + "px";
+        pOpen.getBoundingClientRect();
+        requestAnimationFrame(() => {
+          if (was && pClose) { was.classList.remove("is-open"); pClose.style.height = "0px"; }
+          f.classList.add("is-open"); pOpen.style.height = hOpen + "px";
+          // Un solo cierre por apertura: si llega otro clic antes, los avisos de esta apertura ya no tocan nada.
+          const finish = () => {
+            pOpen.removeEventListener("transitionend", done); clearTimeout(tm);
+            if (my !== gen) return;
+            settle(pOpen); busy = false;
+          };
+          const done = (e: TransitionEvent) => { if (e.target !== pOpen || e.propertyName !== "height") return; finish(); };
+          pOpen.addEventListener("transitionend", done);
+          const tm = setTimeout(finish, 600);
+        });
+      }
+      folders.forEach((x) => x.querySelector(".folder__tab")?.setAttribute("aria-expanded", x === f ? "true" : "false"));
+    }));
+    folders.forEach((f) => { if (f.classList.contains("is-open")) panel(f).style.height = "auto"; });
+    addEventListener("resize", () => folders.forEach((f) => { if (f.classList.contains("is-open")) settle(panel(f)); }));
+  })();
+
+  // El índice de necesidades: la entrada señalada se abre y su foto aparece en el marco.
+  (() => {
+    const items = [...document.querySelectorAll<HTMLElement>(".needidx__item")];
+    const pics = [...document.querySelectorAll<HTMLImageElement>(".needs__frame img")];
+    const on = (k: number) => {
+      items.forEach((it) => it.classList.toggle("is-on", it.dataset.k === String(k)));
+      pics.forEach((p) => p.classList.toggle("is-on", p.dataset.k === String(k)));
+    };
+    const fine = matchMedia("(hover: hover) and (pointer: fine)");
+    items.forEach((it) => {
+      const k = Number(it.dataset.k);
+      it.addEventListener("pointerenter", () => { if (fine.matches) on(k); });
+      it.addEventListener("focusin", () => on(k));
+      it.addEventListener("click", (e) => { if (!it.classList.contains("is-on")) { e.preventDefault(); on(k); } });
+    });
+  })();
+
+  // La calculadora de pañales: tramos por edad y precio por pañal de cada marca.
+  (() => {
+    const range = document.getElementById("edad") as HTMLInputElement | null;
+    if (!range) return;
+    const out = document.getElementById("edad-out")!;
+    const bars = document.getElementById("bars")!;
+    const $ = (id: string) => document.getElementById(id)!;
+    const tramos = [{ hasta: 1, dia: 8, talla: 1 }, { hasta: 3, dia: 7, talla: 2 }, { hasta: 6, dia: 6, talla: 3 }, { hasta: 12, dia: 5, talla: 4 }, { hasta: 24, dia: 4, talla: 5 }];
+    const marcas: { name: string; href: string; precio: number[] }[] = [
+      { name: "Carrefour Baby", href: "/catalogo/panales/?marca=Carrefour+Baby", precio: [0.23, 0.17, 0.15, 0.17, 0.19] },
+      { name: "Deliplus (Mercadona)", href: "/comparativas/panales/", precio: [0.22, 0.16, 0.15, 0.15, 0.17] },
+      { name: "Dodot Sensitive en Carrefour", href: "/catalogo/panales/?marca=Dodot", precio: [0.40, 0.35, 0.41, 0.38, 0.42] },
+    ];
+    const eur = (n: number) => Math.round(n).toLocaleString("es-ES") + " €";
+    const paint = () => {
+      const m = Number(range.value);
+      const t = tramos.find((x) => m <= x.hasta) ?? tramos[tramos.length - 1];
+      const mes = t.dia * 30;
+      out.textContent = m === 0 ? "recién nacido" : m === 1 ? "1 mes" : `${m} meses`;
+      $("c-dia").textContent = String(t.dia); $("c-mes").textContent = String(mes); $("c-talla").textContent = String(t.talla);
+      const rows = marcas.map((b) => ({ ...b, coste: mes * b.precio[t.talla - 1] })).sort((a, b) => a.coste - b.coste);
+      const max = rows[rows.length - 1].coste;
+      bars.replaceChildren(...rows.map((r, i) => {
+        const li = document.createElement("li"); li.className = "bar" + (i === 0 ? " bar--best" : "");
+        const a = document.createElement("a"); a.href = r.href; a.textContent = r.name; if (r.href.startsWith("http")) { a.rel = "sponsored nofollow noopener"; a.target = "_blank"; }
+        const track = document.createElement("div"); track.className = "bar__track";
+        const fill = document.createElement("div"); fill.className = "bar__fill"; fill.style.width = Math.round((r.coste / max) * 100) + "%"; track.append(fill);
+        const st = document.createElement("strong"); st.className = "nums"; st.textContent = eur(r.coste) + "/mes";
+        li.append(a, track, st);
+        return li;
+      }));
+    };
+    range.addEventListener("input", paint);
+    paint();
+  })();
+</script>

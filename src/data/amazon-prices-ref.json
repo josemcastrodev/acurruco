@@ -1,0 +1,129 @@
+{
+ "_nota": "Precios y ASIN tomados a mano en amazon.es el 6 de noviembre de 2026 hasta que la Creators API esté aprobada. La clave carrefour enlaza con el id del catálogo cuando el mismo producto está en las dos tiendas.",
+ "B0GLQBTWC2": {
+  "name": "Cybex Cloud G3 Plus",
+  "price": 259.95,
+  "date": "2026-11-06"
+ },
+ "B0F143C7BR": {
+  "name": "Kinderkraft i-Lite + base Endura Safe FX",
+  "price": 183.52,
+  "date": "2026-11-06"
+ },
+ "B000MOZ39C": {
+  "name": "Maxi-Cosi Pebble 360 Pro²",
+  "price": 220.99,
+  "date": "2026-11-06"
+ },
+ "B09LVKQMBQ": {
+  "name": "Maxi-Cosi CabrioFix i-Size",
+  "price": 131.12,
+  "date": "2026-11-06",
+  "carrefour": "44678555940"
+ },
+ "B0C6KXB9LL": {
+  "name": "Chicco Kory Essential i-Size",
+  "price": null,
+  "date": "2026-11-06",
+  "carrefour": "39302160848"
+ },
+ "B0BR87PL25": {
+  "name": "Chicco Next2Me Magic Evo",
+  "price": 199.0,
+  "date": "2026-11-06",
+  "carrefour": "41813544486"
+ },
+ "B0FT354RXW": {
+  "name": "Chicco Next2Me Essential",
+  "price": 135.0,
+  "date": "2026-11-06",
+  "carrefour": "40931925729"
+ },
+ "B0BKJXJSKC": {
+  "name": "Chicco Next2Me Forever",
+  "price": 381.21,
+  "date": "2026-11-06"
+ },
+ "B0FD3SCK73": {
+  "name": "Kinderkraft Nestee Up 2",
+  "price": 94.95,
+  "date": "2026-11-06",
+  "carrefour": "39306826880"
+ },
+ "B0FBZ46V3V": {
+  "name": "Dodot Sensitive talla 1, 168 ud.",
+  "price": 43.98,
+  "date": "2026-11-06",
+  "perUnit": 0.26
+ },
+ "B07BN1YLZB": {
+  "name": "Sophie la Girafe, mordedor de caucho natural",
+  "price": 13.99,
+  "date": "2026-11-06"
+ },
+ "B008J1QP7Y": {
+  "name": "Oball Easy Grasp, sonajero",
+  "price": 6.99,
+  "date": "2026-11-06"
+ },
+ "B00ZRD99C0": {
+  "name": "Oball clásica, pelota de fácil agarre",
+  "price": 5.99,
+  "date": "2026-11-06"
+ },
+ "B0CTJGXHTQ": {
+  "name": "Oball set de regalo Grasp the Day",
+  "price": 12.99,
+  "date": "2026-11-06"
+ },
+ "B0D2NW96MR": {
+  "name": "Jané pack 6 muselinas de algodón y bambú",
+  "price": 14.95,
+  "date": "2026-11-06"
+ },
+ "B0CYP7CTB5": {
+  "name": "Libro de tela blando para bebé (hahaland)",
+  "price": 13.99,
+  "date": "2026-11-06"
+ },
+ "B000I2Q0F4": {
+  "name": "Lamaze Freddie la Luciérnaga",
+  "price": 24.97,
+  "date": "2026-11-06"
+ },
+ "B0CMFRVGW9": {
+  "name": "Fisher-Price pirámide de aros apilable",
+  "price": 22.5,
+  "date": "2026-11-06"
+ },
+ "B00MYL9JW8": {
+  "name": "Fisher-Price bloques apila y descubre",
+  "price": 13.5,
+  "date": "2026-11-06"
+ },
+ "B09D8BTCT5": {
+  "name": "reer MyHappyBath, libro de baño",
+  "price": 5.99,
+  "date": "2026-11-06"
+ },
+ "8448853288": {
+  "name": "La ovejita que vino a cenar, libro de cartón",
+  "price": 10.4,
+  "date": "2026-11-06"
+ },
+ "B0DG4Y5M3M": {
+  "name": "Puzzle de madera con mangos, 4 piezas",
+  "price": 15.99,
+  "date": "2026-11-06"
+ },
+ "B00712O2D6": {
+  "name": "Hape Picafuerte, xilófono de madera",
+  "price": 26.54,
+  "date": "2026-11-06"
+ },
+ "B093FBW2QM": {
+  "name": "Baby Einstein Hape, piano Magic Touch",
+  "price": 19.99,
+  "date": "2026-11-06"
+ }
+}

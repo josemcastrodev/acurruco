@@ -1,0 +1,53 @@
+---
+/* Cabecera: logo, cinco entradas y una acción. En móvil, un menú desplegable sin JavaScript. */
+interface Props { dark?: boolean }
+const { dark = false } = Astro.props;
+const links = [
+  { href: "/guias/", label: "Guías" },
+  { href: "/comparativas/", label: "Comparativas" },
+  { href: "/catalogo/", label: "Catálogo" },
+  { href: "/regalos/", label: "Regalos" },
+  { href: "/herramientas/", label: "Herramientas" },
+];
+const path = Astro.url.pathname;
+---
+<header class:list={["top", { "top--dark": dark }]}>
+  <div class="top__in wrap">
+    <a href="/" class="top__brand" aria-label="Acurruco, inicio">
+      <img src={dark ? "/img/logo-light.png" : "/img/logo.png"} alt="Acurruco" width="1387" height="273" />
+    </a>
+    <nav class="top__nav" aria-label="Principal">
+      {links.map((l) => <a href={l.href} aria-current={path.startsWith(l.href) ? "page" : undefined}>{l.label}</a>)}
+    </nav>
+    <a class="button top__cta" href="/lista-de-nacimiento/">Lista de nacimiento</a>
+    <details class="top__menu">
+      <summary aria-label="Menú"><span></span><span></span><span></span></summary>
+      <nav class="top__sheet" aria-label="Principal">
+        {links.map((l) => <a href={l.href}>{l.label}</a>)}
+        <a href="/lista-de-nacimiento/">Lista de nacimiento</a>
+      </nav>
+    </details>
+  </div>
+</header>
+<style>
+  .top { background: var(--bg); color: var(--ink); position: relative; z-index: 20; }
+  .top--dark { background: var(--field); color: var(--field-ink); }
+  .top__in { display: flex; align-items: center; justify-content: space-between; gap: 2rem; min-height: 4.25rem; padding-block: 0.75rem; }
+  .top__brand img { height: 30px; width: auto; }
+  .top__nav { display: flex; gap: 1.6rem; font-weight: 600; }
+  .top__nav a { text-decoration: none; padding-block: 0.3rem; border-bottom: 2px solid transparent; transition: border-color var(--t-hover) ease; }
+  .top__nav a[aria-current] { border-bottom-color: var(--accent); }
+  .top__cta { min-height: 2.6rem; padding-inline: 1.1rem; font-size: var(--step-small); }
+  .top__menu { display: none; }
+  @media (hover: hover) and (pointer: fine) { .top__nav a:hover { border-bottom-color: var(--accent); } }
+  @media (max-width: 880px) {
+    .top__nav, .top__cta { display: none; }
+    .top__menu { display: block; position: relative; }
+    .top__menu summary { list-style: none; cursor: pointer; width: 2.75rem; height: 2.75rem; display: grid; place-content: center; gap: 5px; border-radius: 10px; background: color-mix(in oklab, currentColor 10%, transparent); }
+    .top__menu summary::-webkit-details-marker { display: none; }
+    .top__menu summary span { display: block; width: 20px; height: 2px; background: currentColor; border-radius: 2px; }
+    .top__sheet { position: absolute; right: 0; top: calc(100% + 8px); min-width: 14rem; display: grid; background: #fff; color: var(--ink); border-radius: 12px; padding: 0.5rem; box-shadow: 0 18px 40px -20px rgba(59, 42, 60, 0.5); }
+    .top__sheet a { padding: 0.7rem 0.9rem; text-decoration: none; font-weight: 600; border-radius: 8px; }
+    .top__sheet a:last-child { background: var(--accent); margin-top: 0.25rem; }
+  }
+</style>

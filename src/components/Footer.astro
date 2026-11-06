@@ -1,0 +1,48 @@
+---
+import index from "../data/catalog/index.json";
+const groups = [
+  ["coche", "Para el coche"], ["paseo", "Para pasear"], ["dormir", "Para dormir"], ["comer", "Para comer"], ["casa", "Para la casa"], ["cuidado", "Para el cuidado"], ["jugar", "Para jugar"],
+];
+---
+<footer class="foot">
+  <div class="foot__in wrap">
+    <div class="foot__brand">
+      <img src="/img/logo-light.png" alt="Acurruco" width="1408" height="356" />
+      <p>Guías y comparativas para el primer año de tu bebé. Escritas por padres, con datos de tests independientes y precios reales de Amazon y Carrefour.</p>
+      <p class="small foot__legal">En calidad de Afiliado de Amazon, obtenemos ingresos por las compras adscritas que cumplen los requisitos aplicables. Los enlaces a Carrefour son de afiliado a través de Awin. Nunca te cuesta más.</p>
+    </div>
+    <div class="foot__cols">
+      {groups.map(([g, name]) => (
+        <nav class="foot__col" aria-label={name}>
+          <strong>{name}</strong>
+          {index.filter((c) => c.group === g).map((c) => <a href={`/catalogo/${c.slug}/`}>{c.title}</a>)}
+        </nav>
+      ))}
+      <nav class="foot__col" aria-label="Acurruco">
+        <strong>Acurruco</strong>
+        <a href="/como-elegimos/">Cómo elegimos</a>
+        <a href="/quienes-somos/">Quiénes somos</a>
+        <a href="/contacto/">Contacto</a>
+        <a href="/aviso-legal/">Aviso legal</a>
+        <a href="/privacidad/">Privacidad</a>
+        <a href="/cookies/">Cookies</a>
+      </nav>
+    </div>
+    <p class="small foot__copy">© 2026 Acurruco · Madrid · hola@acurruco.com</p>
+  </div>
+</footer>
+<style>
+  .foot { background: var(--field); color: var(--field-ink); margin-top: clamp(3rem, 6vw, 5rem); }
+  .foot__in { padding-block: 2.5rem 1.5rem; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 3fr); gap: 2.5rem 3rem; align-items: start; }
+  .foot__brand { display: grid; gap: 0.75rem; max-width: 40ch; }
+  .foot__brand img { height: 30px; width: auto; }
+  .foot__brand p { font-size: var(--step-small); }
+  .foot__legal { color: var(--field-muted); }
+  .foot__cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem 1.25rem; font-size: 0.875rem; }
+  .foot__col { display: grid; gap: 0.2rem; align-content: start; }
+  .foot__col strong { margin-bottom: 0.25rem; }
+  .foot__col a { text-decoration: none; color: var(--field-muted); }
+  .foot__col a:hover { color: var(--field-ink); text-decoration: underline; }
+  .foot__copy { color: var(--field-muted); grid-column: 1 / -1; }
+  @media (max-width: 900px) { .foot__in { grid-template-columns: 1fr; } .foot__cols { grid-template-columns: 1fr 1fr; } }
+</style>

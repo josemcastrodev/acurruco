@@ -1,0 +1,16 @@
+---
+/* El nido: un arco que sostiene una cabecita. Dibujado a mano a partir del logo. */
+interface Props { ink?: string; skin?: string; height?: number; wordmark?: boolean; class?: string }
+const { ink = "currentColor", skin = "var(--accent)", height = 40, wordmark = true, class: cls = "" } = Astro.props;
+const w = wordmark ? 300 : 84;
+---
+<svg class={cls} viewBox={`0 0 ${w} 84`} height={height} width={(w * height) / 84} role="img" aria-label="Acurruco" fill="none">
+  <path d="M8 36 C 14 70, 70 70, 76 36" stroke={ink} stroke-width="13" stroke-linecap="round" />
+  <circle cx="42" cy="34" r="19" fill={skin} />
+  <path d="M42 15 c 4 -5, 9 -4, 7 1" stroke={ink} stroke-width="3.2" stroke-linecap="round" />
+  <path d="M33 33 q 3 -3, 6 0 M45 33 q 3 -3, 6 0" stroke={ink} stroke-width="2.6" stroke-linecap="round" />
+  <path d="M37 40 q 5 5, 10 0" stroke={ink} stroke-width="2.6" stroke-linecap="round" />
+  {wordmark && (
+    <text x="94" y="58" fill={ink} font-family="Fraunces, Georgia, serif" font-size="52" font-weight="600" letter-spacing="-1" style="font-variation-settings:'SOFT' 100,'opsz' 72">acurruco</text>
+  )}
+</svg>

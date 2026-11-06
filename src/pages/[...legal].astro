@@ -1,0 +1,81 @@
+---
+import Base from "../layouts/Base.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+/* Páginas de texto: quiénes somos, cómo elegimos, contacto y legales. */
+export function getStaticPaths() {
+  const pages: Record<string, { title: string; description: string; h: string; body: string[] }> = {
+  "como-elegimos": {
+    title: "Cómo elegimos lo que recomendamos", description: "Nuestro método: tests independientes (ADAC, OCU, Stiftung Warentest), fichas de fabricante, precio real y uso en casa. Sin patrocinios.", h: "Cómo elegimos",
+    body: [
+      "Reunimos los tests independientes que existen para cada categoría: ADAC y Stiftung Warentest en Alemania, OCU en España, RACE para sillas de coche. Los leemos en su idioma original, no a través de notas de prensa.",
+      "Cruzamos esos resultados con lo que de verdad se vende en España y con su precio en Amazon y Carrefour el día que escribimos. Un producto fantástico que no se encuentra o cuesta el doble no sirve de recomendación.",
+      "Probamos en casa lo que podemos: somos padres de niños pequeños y las cunas, carritos, pañales y cremas que recomendamos los hemos usado o los usan familias cercanas.",
+      "Recomendamos por presupuesto: en cada comparativa hay una opción buena y barata, una equilibrada y una premium, con el porqué de cada una.",
+      "No aceptamos productos regalados a cambio de reseñas ni cobramos por aparecer. Ganamos una comisión si compras desde nuestros enlaces, y recomendamos la marca blanca cuando es la mejor compra aunque deje menos.",
+      "Cada página lleva la fecha de la última revisión. Cuando sale un test nuevo o cambia un precio de forma relevante, actualizamos.",
+    ],
+  },
+  "quienes-somos": {
+    title: "Quiénes somos", description: "Acurruco lo escriben padres de niños pequeños, en Madrid, cansados de listas de imprescindibles escritas por nadie.", h: "Quiénes somos",
+    body: [
+      "Acurruco nació en 2026 en Madrid, de una familia con dos niños pequeños que se hartó de buscar qué silla de coche comprar y encontrar solo listas de 25 productos sin autor, sin fecha y sin un solo dato.",
+      "Escribimos para madres y padres que están donde nosotros estábamos: con poco tiempo, mucha información contradictoria y ganas de acertar sin gastar de más.",
+      "Nos financiamos con enlaces de afiliado a Amazon y Carrefour. Puedes leer cómo funciona en la página 'Cómo elegimos'.",
+      "Si ves un error, un precio desfasado o un producto que deberíamos mirar, escríbenos a hola@acurruco.com.",
+    ],
+  },
+  contacto: {
+    title: "Contacto", description: "Escríbenos a hola@acurruco.com: errores, precios, productos que deberíamos mirar o propuestas de colaboración.", h: "Contacto",
+    body: [
+      "Escríbenos a hola@acurruco.com. Leemos todo y contestamos a casi todo, normalmente en un par de días.",
+      "Si eres una marca o una tienda: no hacemos reseñas pagadas ni aceptamos producto a cambio de aparecer. Si quieres que miremos algo, mándanos la ficha técnica y lo evaluaremos como cualquier otro.",
+      "Si ves un precio que no coincide con la tienda, dinos la página: los precios del catálogo se actualizan cada día, pero las comparativas se revisan a mano.",
+    ],
+  },
+  "aviso-legal": {
+    title: "Aviso legal", description: "Aviso legal de acurruco.com: titular del sitio, condiciones de uso, enlaces de afiliación con Amazon y Awin y propiedad del contenido.", h: "Aviso legal",
+    body: [
+      "Titular del sitio web acurruco.com: José María Castro Palacios, con domicilio en Alcobendas (Madrid, España). Contacto: hola@acurruco.com.",
+      "Este sitio ofrece contenido informativo sobre productos para bebés. No vende productos: los enlaces llevan a tiendas de terceros (Amazon, Carrefour y otras), que son las responsables de la venta, el envío, la garantía y las devoluciones.",
+      "Acurruco participa en el Programa de Afiliados de Amazon EU y en programas de afiliación gestionados por Awin. En calidad de Afiliado de Amazon, obtenemos ingresos por las compras adscritas que cumplen los requisitos aplicables. Los precios mostrados son orientativos y pueden no coincidir con el precio final en la tienda.",
+      "El contenido de este sitio no sustituye el consejo de un pediatra ni de un profesional sanitario.",
+      "Los textos y el diseño de Acurruco están protegidos por derechos de autor. Las imágenes de producto pertenecen a sus fabricantes y tiendas y se muestran con fines informativos a través de los programas de afiliación.",
+    ],
+  },
+  privacidad: {
+    title: "Política de privacidad", description: "Política de privacidad de acurruco.com: qué datos tratamos, con qué fin, durante cuánto tiempo y cómo ejercer tus derechos.", h: "Privacidad",
+    body: [
+      "Acurruco no pide registro ni recoge datos personales para usar la web. Si nos escribes por correo, usamos tu dirección solo para contestarte y no la cedemos a nadie.",
+      "La lista de nacimiento y las preferencias de la calculadora se guardan en tu propio navegador (localStorage) y no se envían a nuestros servidores.",
+      "Los enlaces de afiliado a Amazon y Carrefour (a través de Awin) permiten a esas empresas saber que vienes de Acurruco mediante una cookie en su dominio; sus políticas de privacidad explican el tratamiento. No recibimos datos personales tuyos de esas tiendas, solo estadísticas agregadas de ventas.",
+      "Responsable: José María Castro Palacios, hola@acurruco.com. Puedes ejercer tus derechos de acceso, rectificación y supresión escribiendo a esa dirección.",
+    ],
+  },
+  cookies: {
+    title: "Política de cookies", description: "Política de cookies de acurruco.com: cuáles usamos, para qué sirven las de afiliación y cómo desactivarlas desde el navegador.", h: "Cookies",
+    body: [
+      "Acurruco no usa cookies propias de seguimiento ni de publicidad. No cargamos redes publicitarias ni rastreadores de terceros en nuestras páginas.",
+      "Las únicas cookies que pueden instalarse son las de las tiendas de destino cuando haces clic en un enlace de afiliado (Amazon, Awin para Carrefour y otras), ya en su propio dominio y bajo su política.",
+      "Si en el futuro añadimos analítica, la elegiremos sin cookies o pediremos consentimiento antes de cargarla.",
+    ],
+  },
+  };
+  return Object.keys(pages).map((legal) => ({ params: { legal }, props: { page: pages[legal] } }));
+}
+const { page } = Astro.props;
+const { legal } = Astro.params;
+---
+<Base title={`${page.title} · Acurruco`} description={page.description} canonical={`https://acurruco.com/${legal}/`}>
+  <Header />
+  <main class="wrap text">
+    <h1 class="head">{page.h}</h1>
+    <div class="text__body">{page.body.map((p) => <p>{p}</p>)}</div>
+  </main>
+  <Footer />
+</Base>
+<style>
+  .text { padding-block: 2rem 0; display: grid; gap: 1.5rem; max-width: 72ch; }
+  .text__body { display: grid; gap: 1rem; }
+</style>

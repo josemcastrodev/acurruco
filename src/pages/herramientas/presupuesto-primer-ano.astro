@@ -1,0 +1,96 @@
+---
+import Base from "../../layouts/Base.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+
+/* Partidas del primer año con tres niveles de gasto. Cifras orientativas tomadas de nuestro catálogo y de las comparativas (Carrefour y Amazon, noviembre de 2026). */
+const partidas = [
+  { id: "coche", name: "Silla de coche", hint: "Portabebés 40–87 cm; la base Isofix va aparte", ahorro: 130, medio: 260, premium: 570, once: true, cat: "/catalogo/sillas-de-coche/" },
+  { id: "carrito", name: "Carrito", hint: "Dos o tres piezas con capazo", ahorro: 260, medio: 500, premium: 1300, once: true, cat: "/catalogo/carritos/" },
+  { id: "cuna", name: "Cuna de colecho o minicuna", hint: "Con colchón", ahorro: 95, medio: 240, premium: 460, once: true, cat: "/catalogo/cunas/" },
+  { id: "cuna2", name: "Cuna grande (a partir de 6 meses)", hint: "60×120 cm con colchón", ahorro: 150, medio: 300, premium: 600, once: true, cat: "/catalogo/cunas/" },
+  { id: "panales", name: "Pañales", hint: "Unos 2.500 al año", ahorro: 450, medio: 700, premium: 1000, once: false, cat: "/comparativas/panales/" },
+  { id: "toallitas", name: "Toallitas y cremas", hint: "", ahorro: 120, medio: 200, premium: 320, once: false, cat: "/comparativas/cremas-de-panal/" },
+  { id: "leche", name: "Leche de fórmula", hint: "Pon 0 si lactancia materna exclusiva", ahorro: 0, medio: 700, premium: 1100, once: false, cat: "/catalogo/alimentacion-infantil/" },
+  { id: "alimentacion", name: "Alimentación complementaria (6–12 m)", hint: "Cereales, potitos, bolsitas", ahorro: 150, medio: 300, premium: 500, once: false, cat: "/catalogo/alimentacion-infantil/" },
+  { id: "biberones", name: "Biberones, esterilizador y trona", hint: "", ahorro: 120, medio: 260, premium: 520, once: true, cat: "/catalogo/biberones-y-menaje/" },
+  { id: "ropa", name: "Ropa (tallas 0 a 12 meses)", hint: "Bodies, pijamas, calcetines, abrigo", ahorro: 200, medio: 450, premium: 900, once: false, cat: "/lista-de-nacimiento/" },
+  { id: "bano", name: "Bañera, cambiador y cuidado", hint: "", ahorro: 60, medio: 150, premium: 350, once: true, cat: "/catalogo/baneras-y-cambiadores/" },
+  { id: "porteo", name: "Portabebés", hint: "", ahorro: 40, medio: 100, premium: 200, once: true, cat: "/catalogo/portabebes/" },
+  { id: "casa", name: "Hamaca, parque y seguridad en casa", hint: "", ahorro: 80, medio: 220, premium: 500, once: true, cat: "/catalogo/hamacas-y-parques/" },
+  { id: "vigila", name: "Vigilabebés", hint: "Pon 0 si no lo necesitas", ahorro: 0, medio: 90, premium: 200, once: true, cat: "/catalogo/vigilabebes/" },
+  { id: "juguetes", name: "Juguetes y libros", hint: "Lo que no regalan", ahorro: 50, medio: 150, premium: 400, once: false, cat: "/regalos/" },
+];
+const sum = (k: "ahorro" | "medio" | "premium") => partidas.reduce((n, p) => n + p[k], 0);
+const eur = (n: number) => n.toLocaleString("es-ES", { maximumFractionDigits: 0 }) + " €";
+---
+<Base title="Cuánto cuesta un bebé el primer año: calculadora por partidas · Acurruco" description={`Entre ${eur(sum("ahorro"))} y ${eur(sum("premium"))} el primer año según cómo compres. Ajusta cada partida a tu caso y mira el total.`} canonical="https://acurruco.com/herramientas/presupuesto-primer-ano/">
+  <Header />
+  <main class="wrap bud">
+    <header class="bud__head">
+      <nav class="crumbs small" aria-label="Estás en"><a href="/">Inicio</a> › <a href="/herramientas/">Herramientas</a> › <span>Presupuesto</span></nav>
+      <h1 class="head">Cuánto cuesta un bebé el primer año</h1>
+      <p class="lead">Entre {eur(sum("ahorro"))} comprando con cabeza y {eur(sum("premium"))} si vas a lo mejor de cada cosa, sin contar guardería ni lo que te regalen. Elige un punto de partida y ajusta cada partida a tu caso.</p>
+    </header>
+    <form class="bud__form" id="bud">
+      <fieldset class="bud__levels">
+        <legend class="sr-only">Nivel de gasto</legend>
+        <label class="lvl"><input type="radio" name="nivel" value="ahorro" /> <span><strong>Ahorro</strong><small>{eur(sum("ahorro"))}</small></span></label>
+        <label class="lvl"><input type="radio" name="nivel" value="medio" checked /> <span><strong>Medio</strong><small>{eur(sum("medio"))}</small></span></label>
+        <label class="lvl"><input type="radio" name="nivel" value="premium" /> <span><strong>Premium</strong><small>{eur(sum("premium"))}</small></span></label>
+      </fieldset>
+      <div class="bud__total" aria-live="polite">
+        <span>Tu primer año</span>
+        <strong class="nums" id="total">{eur(sum("medio"))}</strong>
+        <span class="small muted nums" id="mes">unos {eur(Math.round(sum("medio") / 12))} al mes</span>
+      </div>
+      <ol class="rows" role="list">
+        {partidas.map((p) => (
+          <li class="row">
+            <div class="row__name"><strong>{p.name}</strong>{p.hint && <span class="small muted">{p.hint}</span>}</div>
+            <div class="row__in">
+              <input class="field nums" type="number" min="0" step="10" name={p.id} data-ahorro={p.ahorro} data-medio={p.medio} data-premium={p.premium} value={p.medio} aria-label={`${p.name}, euros`} />
+              <span class="row__eur">€</span>
+            </div>
+            <a class="row__go link-plain small" href={p.cat}>Ver opciones</a>
+          </li>
+        ))}
+      </ol>
+      <p class="small muted">Cifras orientativas tomadas de nuestro catálogo y comparativas en noviembre de 2026; cada familia gasta distinto. Lo que te regalen en la lista de nacimiento resta de aquí.</p>
+    </form>
+  </main>
+  <Footer />
+</Base>
+<style>
+  .bud { padding-block: 1.5rem 0; display: grid; gap: 2rem; }
+  .crumbs a { text-decoration: none; }
+  .bud__head { display: grid; gap: 1rem; max-width: 66ch; }
+  .bud__form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem; align-items: start; }
+  .bud__levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; border: 0; padding: 0; margin: 0; }
+  .lvl { display: block; cursor: pointer; }
+  .lvl input { position: absolute; opacity: 0; }
+  .lvl span { display: grid; gap: 0.15rem; padding: 0.9rem 1rem; background: #fff; border-radius: 12px; border: 2px solid transparent; }
+  .lvl small { color: var(--muted); font-size: var(--step-small); }
+  .lvl input:checked + span { border-color: var(--ink); }
+  .lvl input:focus-visible + span { outline: 3px solid var(--accent); }
+  .bud__total { display: grid; gap: 0.2rem; padding: 1rem 1.25rem; background: var(--accent); border-radius: 12px; justify-items: start; }
+  .bud__total strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 72; font-size: 2.6rem; line-height: 1; font-weight: 600; }
+  .rows { grid-column: 1 / -1; display: grid; gap: 6px; }
+  .row { display: grid; grid-template-columns: 1fr 10rem auto; gap: 1rem; align-items: center; background: #fff; border-radius: 12px; padding: 0.6rem 0.9rem 0.6rem 1.1rem; }
+  .row__name { display: grid; gap: 0.1rem; }
+  .row__in { display: flex; align-items: center; gap: 0.4rem; }
+  .row__in .field { min-height: 2.5rem; padding-block: 0.3rem; text-align: right; }
+  .row__go { white-space: nowrap; }
+  .bud__form > .small { grid-column: 1 / -1; }
+  @media (max-width: 760px) { .bud__form { grid-template-columns: 1fr; } .row { grid-template-columns: 1fr auto; } .row__go { grid-column: 1 / -1; } }
+</style>
+<script>
+  const form = document.getElementById("bud") as HTMLFormElement;
+  const total = document.getElementById("total")!, mes = document.getElementById("mes")!;
+  const inputs = [...form.querySelectorAll<HTMLInputElement>("input[type=number]")];
+  const eur = (n: number) => Math.round(n).toLocaleString("es-ES") + " €";
+  const paint = () => { const t = inputs.reduce((n, i) => n + (Number(i.value) || 0), 0); total.textContent = eur(t); mes.textContent = `unos ${eur(t / 12)} al mes`; };
+  form.querySelectorAll<HTMLInputElement>("input[name=nivel]").forEach((r) => r.addEventListener("change", () => { inputs.forEach((i) => { i.value = i.dataset[r.value] || "0"; }); paint(); }));
+  inputs.forEach((i) => i.addEventListener("input", paint));
+  paint();
+</script>

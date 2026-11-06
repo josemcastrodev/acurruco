@@ -1,0 +1,279 @@
+---
+import Base from "../../../layouts/Base.astro";
+import Header from "../../../components/Header.astro";
+import Footer from "../../../components/Footer.astro";
+import ProductCard from "../../../components/ProductCard.astro";
+import index from "../../../data/catalog/index.json";
+
+export async function getStaticPaths({ paginate }) {
+  const idx = (await import("../../../data/catalog/index.json")).default;
+  const all = import.meta.glob("../../../data/catalog/*.json", { eager: true });
+  return idx.flatMap((c) => {
+    const items = (all[`../../../data/catalog/${c.slug}.json`] as any).default;
+    return paginate(items, { params: { cat: c.slug }, pageSize: 48, props: { cat: c } });
+  });
+}
+const { page, cat } = Astro.props;
+const eur = (n: number) => n.toLocaleString("es-ES", { maximumFractionDigits: 0 }) + " €";
+const groups: Record<string, { name: string; photo: string }> = {
+  coche: { name: "Para el coche", photo: "/img/photos/cat-coche-43.jpg" }, paseo: { name: "Para pasear", photo: "/img/photos/cat-paseo-43.jpg" }, dormir: { name: "Para dormir", photo: "/img/photos/cat-dormir-43.jpg" },
+  casa: { name: "Para la casa", photo: "/img/photos/cat-jugar-43.jpg" }, comer: { name: "Para comer", photo: "/img/photos/cat-comer-43.jpg" }, jugar: { name: "Para jugar", photo: "/img/photos/juego-43.jpg" }, cuidado: { name: "Para el cuidado", photo: "/img/photos/cat-cuidado-43.jpg" },
+};
+const g = groups[cat.group];
+const siblings = index.filter((c) => c.group === cat.group && c.slug !== cat.slug);
+const guias: Record<string, [string, string]> = {
+  "sillas-de-coche": ["Antes de elegir: las mejores sillas i-Size según ADAC", "/comparativas/sillas-de-coche-i-size/"],
+  cunas: ["Antes de elegir: las mejores cunas de colecho", "/comparativas/cunas-de-colecho/"],
+  panales: ["Antes de elegir: precio por pañal, talla a talla", "/comparativas/panales/"],
+  cuidado: ["Antes de elegir: cremas para el culito, barrera o prevención", "/comparativas/cremas-de-panal/"],
+  juguetes: ["Antes de elegir: qué regalar según la edad", "/regalos/"],
+};
+const guia = guias[cat.slug];
+const pg = page.currentPage > 1 ? ` · página ${page.currentPage}` : "";
+const title = `${cat.title}: ${cat.count} productos${pg} · Acurruco`;
+const description = `${cat.count} ${cat.title.toLowerCase()} con precio actualizado cada día, filtrables por marca, tipo, precio y stock. Desde ${eur(cat.min)}${pg ? `. Página ${page.currentPage} de ${page.lastPage}` : ""}.`;
+const prev = page.url.prev, next = page.url.next;
+const tagLabel = cat.slug === "sillas-de-coche" ? "Tramo y tipo" : cat.slug === "panales" ? "Talla" : "Tipo";
+---
+<Base title={title} description={description} canonical={`https://acurruco.com/catalogo/${cat.slug}/${page.currentPage > 1 ? page.currentPage + "/" : ""}`} ogImage={`https://acurruco.com${g.photo}`}>
+  <Fragment slot="head">
+    {prev && <link rel="prev" href={prev} />}{next && <link rel="next" href={next} />}
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({ "@context": "https://schema.org", "@graph": [
+      { "@type": "CollectionPage", name: cat.title, description, url: `https://acurruco.com/catalogo/${cat.slug}/`, isPartOf: { "@type": "WebSite", name: "Acurruco", url: "https://acurruco.com/" } },
+      { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Inicio", item: "https://acurruco.com/" }, { "@type": "ListItem", position: 2, name: "Catálogo", item: "https://acurruco.com/catalogo/" }, { "@type": "ListItem", position: 3, name: cat.title }] },
+    ] })} />
+  </Fragment>
+  <Header />
+  <main class="cat" data-cat={cat.slug} data-size="48">
+    <header class="cat__hero">
+      <div class="cat__hero-in wrap">
+        <div class="cat__text">
+          <nav class="crumbs small" aria-label="Estás en"><a href="/">Inicio</a> › <a href="/catalogo/">Catálogo</a> › <span>{g.name}</span></nav>
+          <h1 class="cat__title">{cat.title}</h1>
+          <p class="lead">Todo lo que se vende hoy en Carrefour, con su precio del día, y la ficha de cada producto con el enlace a las tiendas.</p>
+          <dl class="cat__facts">
+            <div><dt>Productos</dt><dd class="nums">{cat.count}</dd></div>
+            <div><dt>Desde</dt><dd class="nums">{eur(cat.min)}</dd></div>
+            <div><dt>Marcas</dt><dd class="nums">{cat.brands.length}</dd></div>
+          </dl>
+          {guia && <a class="button" href={guia[1]}>{guia[0]}</a>}
+          {cat.tags.length > 1 && (
+            <ul class="cat__quick" role="list" aria-label="Atajos">
+              {cat.tags.slice(0, 5).map(([t, n]) => <li><a href={`?tipo=${encodeURIComponent(t)}`}>{t} <span class="nums">{n}</span></a></li>)}
+            </ul>
+          )}
+        </div>
+        <figure class="cat__photo"><img src={g.photo} alt="" width="960" height="720" fetchpriority="high" /></figure>
+      </div>
+    </header>
+
+    <div class="wrap layout">
+      <aside class="filters" aria-label="Filtros">
+        <form id="filters" class="filters__form">
+          <div class="f">
+            <label class="f__label" for="q">Buscar</label>
+            <input class="field" type="search" id="q" name="q" placeholder={`En ${cat.title.toLowerCase()}`} autocomplete="off" />
+          </div>
+          {cat.tags.length > 0 && (
+            <fieldset class="f">
+              <legend class="f__label">{tagLabel}</legend>
+              <div class="f__list">
+                {cat.tags.map(([t, n]) => <label class="chk"><input type="checkbox" name="tag" value={t} /> <span>{t}</span> <span class="muted nums">{n}</span></label>)}
+              </div>
+            </fieldset>
+          )}
+          <fieldset class="f">
+            <legend class="f__label">Precio</legend>
+            <div class="f__range">
+              <input class="field" type="number" id="pmin" name="pmin" placeholder="mín €" min="0" inputmode="numeric" />
+              <span>–</span>
+              <input class="field" type="number" id="pmax" name="pmax" placeholder="máx €" min="0" inputmode="numeric" />
+            </div>
+          </fieldset>
+          <fieldset class="f">
+            <legend class="f__label">Marca</legend>
+            <input class="field field--sm" type="search" id="bq" placeholder="Buscar marca" autocomplete="off" aria-label="Buscar marca" />
+            <div class="f__list f__list--brands" id="brands">
+              {cat.brands.map(([b, n]) => <label class="chk" data-brand={b.toLowerCase()}><input type="checkbox" name="brand" value={b} /> <span>{b}</span> <span class="muted nums">{n}</span></label>)}
+            </div>
+          </fieldset>
+          <div class="f">
+            <label class="chk"><input type="checkbox" id="stock" name="stock" /> <span>Solo en stock</span></label>
+            <label class="chk"><input type="checkbox" id="oferta" name="oferta" /> <span>Solo rebajados</span></label>
+          </div>
+          <button class="button button--ghost f__reset" type="reset">Quitar filtros</button>
+        </form>
+      </aside>
+
+      <section class="results" aria-live="polite">
+        <div class="results__bar">
+          <p class="nums" id="count"><strong>{page.total}</strong> productos</p>
+          <label class="small" for="orden">Ordenar <select class="field results__sel" id="orden" name="orden">
+            <option value="precio-asc">precio, de menor a mayor</option>
+            <option value="precio-desc">precio, de mayor a menor</option>
+            <option value="oferta">mayor descuento</option>
+            <option value="marca">marca</option>
+          </select></label>
+        </div>
+        <div class="grid" id="grid">
+          {page.data.map((p, i) => <ProductCard p={p} lazy={i > 7} />)}
+        </div>
+        <nav class="pager" id="pager" aria-label="Páginas">
+          {prev && <a class="button button--ghost" href={prev} rel="prev">Anterior</a>}
+          <span class="small nums">{page.start + 1}–{page.end + 1} de {page.total}</span>
+          {next && <a class="button button--ghost" href={next} rel="next">Siguiente</a>}
+        </nav>
+        <template id="card-tpl">
+          <article class="pc"><a class="pc__link" href=""><span class="pc__img"><img alt="" width="510" height="510" loading="lazy" decoding="async" /><span class="pc__off nums" hidden></span></span><span class="pc__body"><span class="pc__brand"></span><span class="pc__name"></span><span class="pc__row"><span class="pc__price nums"></span><s class="pc__old nums" hidden></s></span><span class="pc__cta">Ver ficha y precios</span></span></a></article>
+        </template>
+      </section>
+    </div>
+
+    {siblings.length > 0 && (
+      <section class="cat__more wrap">
+        <h2 class="lead">También en {g.name.toLowerCase()}</h2>
+        <ul role="list">{siblings.map((s) => <li><a href={`/catalogo/${s.slug}/`}><span>{s.title}</span><span class="muted nums">{s.count}</span></a></li>)}</ul>
+      </section>
+    )}
+  </main>
+  <Footer />
+</Base>
+
+<style is:global>
+  .pc { min-width: 0; }
+  .pc__link { display: grid; grid-template-rows: auto 1fr; height: 100%; text-decoration: none; color: inherit; background: #fff; border-radius: 12px; overflow: hidden; transition: transform var(--t-ui) var(--ease-out), box-shadow var(--t-ui) ease; }
+  .pc__img { position: relative; display: block; aspect-ratio: 1; padding: 10%; background: #fff; }
+  .pc__img img { width: 100%; height: 100%; object-fit: contain; transition: transform 600ms var(--ease-soft); }
+  .pc__off { position: absolute; top: 10px; left: 10px; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: var(--step-small); padding: 0.15rem 0.5rem; border-radius: 6px; }
+  .pc__body { display: grid; gap: 0.3rem; padding: 0.9rem 1rem 1.1rem; align-content: start; border-top: 1px solid var(--surface); }
+  .pc__brand { font-size: var(--step-small); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  .pc__name { font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .pc__row { display: flex; align-items: baseline; gap: 0.6rem; margin-top: 0.35rem; flex-wrap: wrap; }
+  .pc__price { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.35rem; font-weight: 600; white-space: nowrap; }
+  .pc__old { font-size: var(--step-small); color: var(--muted); white-space: nowrap; }
+  .pc__cta { font-size: var(--step-small); font-weight: 600; color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 0.2em; text-decoration-thickness: 2px; }
+  @media (hover: hover) and (pointer: fine) {
+    .pc__link:hover { transform: translateY(-3px); box-shadow: 0 16px 32px -20px rgba(59, 42, 60, 0.5); }
+    .pc__link:hover img { transform: scale(1.04); }
+  }
+</style>
+<style>
+  .cat { display: grid; gap: 2rem; }
+  .cat__hero { background: #fff; overflow: clip; }
+  .cat__hero-in { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 3rem; align-items: stretch; padding-block: 2rem 0; }
+  .cat__text { display: grid; gap: 1.1rem; justify-items: start; align-content: center; padding-bottom: 2rem; }
+  .cat__title { font-size: clamp(2.2rem, 1.4rem + 3vw, 3.75rem); line-height: 1; }
+  .crumbs a { text-decoration: none; }
+  .cat__facts { display: flex; gap: 2rem; }
+  .cat__facts div { display: grid; gap: 0.1rem; }
+  .cat__facts dt { font-size: var(--step-small); color: var(--muted); }
+  .cat__facts dd { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 72; font-size: 1.75rem; font-weight: 600; line-height: 1; }
+  .cat__quick { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cat__quick a { display: inline-block; padding: 0.45rem 0.85rem; background: var(--bg); border-radius: 8px; text-decoration: none; font-size: var(--step-small); font-weight: 600; }
+  .cat__quick a span { color: var(--muted); font-weight: 400; }
+  .cat__quick a:hover { background: var(--surface); }
+  .cat__photo { margin: 0 calc(var(--margin) * -1) 0 0; min-height: 320px; }
+  .cat__photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .layout { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; align-items: start; }
+  .filters { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow: auto; overscroll-behavior: contain; border-radius: 14px; }
+  .filters__form { display: grid; gap: 1.4rem; background: #fff; border-radius: 14px; padding: 1.4rem; }
+  .f { display: grid; gap: 0.6rem; border: 0; padding: 0; margin: 0; min-width: 0; }
+  .f__label { font-weight: 700; }
+  .f__range { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: center; }
+  .f__list { display: grid; gap: 0.15rem; }
+  .f__list--brands { max-height: 16rem; overflow: auto; padding-right: 0.25rem; }
+  .field--sm { min-height: 2.5rem; padding-block: 0.3rem; font-size: var(--step-small); }
+  .chk { display: grid; grid-template-columns: auto 1fr auto; gap: 0.6rem; align-items: center; padding: 0.35rem 0.4rem; border-radius: 8px; font-size: var(--step-small); cursor: pointer; line-height: 1.3; }
+  .chk:hover { background: var(--bg); }
+  .chk[hidden] { display: none; }
+  .f__reset { min-height: 2.5rem; }
+  .results { display: grid; gap: 1rem; min-width: 0; }
+  .results__bar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .results__sel { width: auto; min-height: 2.5rem; padding-block: 0.3rem; margin-left: 0.4rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+  .pager { display: flex; align-items: center; gap: 1rem; justify-content: center; padding-top: 1rem; }
+  .cat__more ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin-top: 0.75rem; }
+  .cat__more a { display: flex; justify-content: space-between; gap: 1rem; padding: 0.75rem 1rem; background: #fff; border-radius: 10px; text-decoration: none; font-weight: 600; }
+  @media (max-width: 900px) {
+    .cat__hero-in { grid-template-columns: 1fr; gap: 1.5rem; }
+    .cat__photo { margin: 0 calc(var(--margin) * -1); min-height: 0; aspect-ratio: 2 / 1; }
+    .layout { grid-template-columns: 1fr; }
+    .filters { position: static; max-height: none; }
+    .f__list--brands { max-height: 10rem; }
+  }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr 1fr; gap: 8px; } }
+</style>
+
+<script>
+  (() => {
+    const main = document.querySelector<HTMLElement>("main.cat")!;
+    const form = document.getElementById("filters") as HTMLFormElement;
+    const grid = document.getElementById("grid")!;
+    const pager = document.getElementById("pager")!;
+    const count = document.getElementById("count")!;
+    const sel = document.getElementById("orden") as HTMLSelectElement;
+    const tpl = document.getElementById("card-tpl") as HTMLTemplateElement;
+    const bq = document.getElementById("bq") as HTMLInputElement | null;
+    const SIZE = Number(main.dataset.size);
+    let all: any[] | null = null, shown = SIZE, loading: Promise<any> | null = null;
+    const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+    const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+    const load = () => {
+      if (all) return Promise.resolve(all);
+      if (!loading) loading = fetch(`/data/catalogo/${main.dataset.cat}.json`).then((r) => r.json()).then((rows) => (all = rows.map((a: any[]) => ({ id: a[0], name: a[1], brand: a[2], price: a[3], old: a[4], img: a[5], stock: !!a[6], tags: a[7] || [] }))));
+      return loading;
+    };
+    const card = (p: any) => {
+      const n = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      n.querySelector<HTMLAnchorElement>("a")!.href = `/p/${p.id}/`;
+      const im = n.querySelector("img")!; im.src = p.img; im.alt = p.name;
+      n.querySelector(".pc__brand")!.textContent = p.brand;
+      n.querySelector(".pc__name")!.textContent = p.name;
+      n.querySelector(".pc__price")!.textContent = eur(p.price);
+      const off = p.old > p.price ? Math.round((1 - p.price / p.old) * 100) : 0;
+      if (off > 0) { const o = n.querySelector<HTMLElement>(".pc__old")!; o.hidden = false; o.textContent = eur(p.old); }
+      if (off >= 10) { const b = n.querySelector<HTMLElement>(".pc__off")!; b.hidden = false; b.textContent = `−${off} %`; }
+      return n;
+    };
+    const apply = () => {
+      if (!all) return;
+      const fd = new FormData(form);
+      const q = norm(String(fd.get("q") || "")).trim();
+      const pmin = Number(fd.get("pmin") || 0), pmax = Number(fd.get("pmax") || 0);
+      const brands = new Set(fd.getAll("brand").map(String));
+      const tags = fd.getAll("tag").map(String);
+      const stock = !!fd.get("stock"), oferta = !!fd.get("oferta");
+      const list = all.filter((p) => (!q || norm(p.name + " " + p.brand).includes(q)) && (!pmin || p.price >= pmin) && (!pmax || p.price <= pmax) && (!brands.size || brands.has(p.brand)) && (!tags.length || tags.some((t) => p.tags.includes(t))) && (!stock || p.stock) && (!oferta || p.old > p.price));
+      const by = sel.value;
+      list.sort((a, b) => by === "marca" ? a.brand.localeCompare(b.brand, "es") : by === "oferta" ? ((b.old > b.price ? 1 - b.price / b.old : 0) - (a.old > a.price ? 1 - a.price / a.old : 0)) : (a.price - b.price) * (by === "precio-desc" ? -1 : 1));
+      count.innerHTML = `<strong>${list.length}</strong> ${list.length === 1 ? "producto" : "productos"}`;
+      grid.replaceChildren(...list.slice(0, shown).map(card));
+      pager.replaceChildren();
+      if (list.length > shown) {
+        const b = document.createElement("button"); b.className = "button button--ghost"; b.type = "button"; b.textContent = `Ver ${Math.min(SIZE, list.length - shown)} más`;
+        b.addEventListener("click", () => { shown += SIZE; apply(); });
+        pager.append(b);
+      }
+      const url = new URL(location.href); url.search = "";
+      if (q) url.searchParams.set("q", q); if (brands.size) url.searchParams.set("marca", [...brands].join(",")); if (tags.length) url.searchParams.set("tipo", tags.join("|")); if (pmin) url.searchParams.set("min", String(pmin)); if (pmax) url.searchParams.set("max", String(pmax));
+      history.replaceState(null, "", url);
+    };
+    const go = async () => { await load(); shown = SIZE; apply(); };
+    form.addEventListener("input", (e) => { if ((e.target as HTMLElement).id === "bq") return; go(); });
+    form.addEventListener("reset", () => setTimeout(go, 0));
+    sel.addEventListener("change", go);
+    bq?.addEventListener("input", () => { const v = norm(bq.value); form.querySelectorAll<HTMLElement>("[data-brand]").forEach((l) => { l.hidden = !!v && !norm(l.dataset.brand!).includes(v); }); });
+    const u = new URL(location.href);
+    if (u.search) {
+      (form.elements.namedItem("q") as HTMLInputElement).value = u.searchParams.get("q") || "";
+      (form.elements.namedItem("pmin") as HTMLInputElement).value = u.searchParams.get("min") || "";
+      (form.elements.namedItem("pmax") as HTMLInputElement).value = u.searchParams.get("max") || "";
+      const m = (u.searchParams.get("marca") || "").split(",").filter(Boolean);
+      const t = (u.searchParams.get("tipo") || "").split("|").filter(Boolean);
+      form.querySelectorAll<HTMLInputElement>("input[name=brand]").forEach((c) => { c.checked = m.includes(c.value); });
+      form.querySelectorAll<HTMLInputElement>("input[name=tag]").forEach((c) => { c.checked = t.includes(c.value); });
+      go();
+    }
+  })();
+</script>

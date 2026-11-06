@@ -1,0 +1,42 @@
+---
+/* Tarjeta de producto: lleva a la ficha propia; la tienda queda a un clic más. */
+interface Props { p: { id: string; name: string; brand: string; price: number; old?: number | null; img: string; link: string; stock?: boolean }; lazy?: boolean }
+const { p, lazy = true } = Astro.props;
+const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+const off = p.old && p.old > p.price ? Math.round((1 - p.price / p.old) * 100) : 0;
+---
+<article class="pc" data-reveal>
+  <a class="pc__link" href={`/p/${p.id}/`}>
+    <span class="pc__img">
+      <img src={p.img} alt={p.name} width="510" height="510" loading={lazy ? "lazy" : "eager"} decoding="async" />
+      {off >= 10 && <span class="pc__off nums">−{off} %</span>}
+    </span>
+    <span class="pc__body">
+      <span class="pc__brand">{p.brand}</span>
+      <span class="pc__name">{p.name}</span>
+      <span class="pc__row">
+        <span class="pc__price nums">{eur(p.price)}</span>
+        {off > 0 && <s class="pc__old nums">{eur(p.old!)}</s>}
+      </span>
+      <span class="pc__cta">Ver ficha y precios</span>
+    </span>
+  </a>
+</article>
+<style>
+  .pc { min-width: 0; }
+  .pc__link { display: grid; grid-template-rows: auto 1fr; height: 100%; text-decoration: none; color: inherit; background: #fff; border-radius: 12px; overflow: hidden; transition: transform var(--t-ui) var(--ease-out), box-shadow var(--t-ui) ease; }
+  .pc__img { position: relative; display: block; aspect-ratio: 1; padding: 10%; background: #fff; }
+  .pc__img img { width: 100%; height: 100%; object-fit: contain; transition: transform 600ms var(--ease-soft); }
+  .pc__off { position: absolute; top: 10px; left: 10px; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: var(--step-small); padding: 0.15rem 0.5rem; border-radius: 6px; }
+  .pc__body { display: grid; gap: 0.3rem; padding: 0.9rem 1rem 1.1rem; align-content: start; border-top: 1px solid var(--surface); }
+  .pc__brand { font-size: var(--step-small); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  .pc__name { font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .pc__row { display: flex; align-items: baseline; gap: 0.6rem; margin-top: 0.35rem; flex-wrap: wrap; }
+  .pc__price { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.35rem; font-weight: 600; white-space: nowrap; }
+  .pc__old { font-size: var(--step-small); color: var(--muted); white-space: nowrap; }
+  .pc__cta { font-size: var(--step-small); font-weight: 600; color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 0.2em; text-decoration-thickness: 2px; }
+  @media (hover: hover) and (pointer: fine) {
+    .pc__link:hover { transform: translateY(-3px); box-shadow: 0 16px 32px -20px rgba(59, 42, 60, 0.5); }
+    .pc__link:hover img { transform: scale(1.04); }
+  }
+</style>

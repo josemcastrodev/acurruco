@@ -1,0 +1,192 @@
+---
+import Base from "../../layouts/Base.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import ProductCard from "../../components/ProductCard.astro";
+import { edades } from "../../data/regalos-guia";
+import picks from "../../data/regalos.json";
+import amazonPicks from "../../data/regalos-amazon.json";
+import amazon from "../../data/amazon.json";
+
+export async function getStaticPaths() {
+  const all = import.meta.glob("../../data/catalog/*.json", { eager: true });
+  const byId = new Map<string, any>();
+  for (const k in all) if (!k.endsWith("index.json")) for (const p of (all[k] as any).default) byId.set(p.id, p);
+  return edades.map((e) => ({ params: { edad: e.slug }, props: { e, items: (picks as any)[e.slug].ids.map((id: string) => byId.get(id)).filter(Boolean) } }));
+}
+const { e, items } = Astro.props;
+const photos: Record<string, string> = { "recien-nacido": "/img/photos/regalo-rn-43.jpg", "3-6-meses": "/img/photos/regalo-3-6-43.jpg", "6-12-meses": "/img/photos/regalo-6-12-43.jpg", "1-ano": "/img/photos/regalo-1-2-43.jpg", navidad: "/img/photos/navidad-43.jpg" };
+const others = edades.filter((x) => x.slug !== e.slug);
+const description = `${e.intro.slice(0, 150)}…`;
+const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+const A = amazon as Record<string, { name: string; price: number | null }>;
+const cheap = ((amazonPicks as Record<string, [string, string][]>)[e.slug] || []).map(([asin, why]) => ({ asin, why, ...A[asin] }));
+const asinImg = (asin: string) => `https://images-na.ssl-images-amazon.com/images/P/${asin}.01._SCLZZZZZZZ_.jpg`;
+const bandas = [["De 25 a 60 €", (p: any) => p.price <= 60], ["Más de 60 €", (p: any) => p.price > 60]] as const;
+const whatOf = (label: string) => e.budget.find((b) => label.includes(b[0].replace("De ", "").replace("25 a 60", "25 a 60")) || b[0].includes(label.replace("De ", "")))?.[1];
+---
+<Base title={`${e.title} · ideas que se usan de verdad · Acurruco`} description={description} canonical={`https://acurruco.com/regalos/${e.slug}/`} ogImage={`https://acurruco.com${photos[e.slug]}`}>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      "@context": "https://schema.org", "@graph": [
+        { "@type": "Article", headline: e.h, description, datePublished: "2026-11-06", image: `https://acurruco.com${photos[e.slug]}`, inLanguage: "es-ES", author: { "@type": "Organization", name: "Acurruco" }, publisher: { "@type": "Organization", name: "Acurruco" }, dateModified: "2026-11-06", mainEntityOfPage: `https://acurruco.com/regalos/${e.slug}/` },
+        { "@type": "FAQPage", mainEntity: e.faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
+        { "@type": "ItemList", name: e.h, itemListElement: items.slice(0, 20).map((p: any, i: number) => ({ "@type": "ListItem", position: i + 1, url: `https://acurruco.com/p/${p.id}/`, name: p.name })) },
+        { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Inicio", item: "https://acurruco.com/" }, { "@type": "ListItem", position: 2, name: "Regalos", item: "https://acurruco.com/regalos/" }, { "@type": "ListItem", position: 3, name: e.short }] },
+      ],
+    })} />
+  </Fragment>
+  <Header />
+  <main class="gift">
+    <header class="gift__hero">
+      <div class="gift__hero-in wrap">
+        <div class="gift__text">
+          <nav class="crumbs small" aria-label="Estás en"><a href="/">Inicio</a> › <a href="/regalos/">Regalos</a> › <span>{e.short}</span></nav>
+          <h1 class="head">{e.h}</h1>
+          <p class="lead">{e.intro}</p>
+          <nav class="ages" aria-label="Por edad"><ul role="list">{edades.map((x) => <li><a class:list={[{ "is-on": x.slug === e.slug }]} href={`/regalos/${x.slug}/`}>{x.short}</a></li>)}</ul></nav>
+        </div>
+        <figure class="gift__photo"><img src={photos[e.slug]} alt="" width="960" height="720" fetchpriority="high" /></figure>
+      </div>
+    </header>
+
+    <div class="wrap gift__body">
+      <section class="advice" aria-label="Lo que funciona">
+        <div class="advice__col">
+          <h2>Lo que se usa de verdad</h2>
+          <p>{e.bullets[0]}</p>
+        </div>
+        <div class="advice__col advice__col--no">
+          <h2>Lo que acaba en un armario</h2>
+          <p>{e.bullets[1]}</p>
+        </div>
+        <div class="advice__col advice__col--tip">
+          <h2>Si no conoces bien a la familia</h2>
+          <p>{e.bullets[2]}</p>
+        </div>
+      </section>
+
+      {cheap.length > 0 && (
+        <section class="band" aria-label="Hasta 25 €">
+          <header class="band__head">
+            <h2 class="band__h nums">Hasta 25 €</h2>
+            <p class="band__what">{e.budget[0][1]}. Estos los tiene Amazon; Carrefour no vende juguetes tan baratos online.</p>
+          </header>
+          <ul class="acards" role="list">
+            {cheap.map((p) => (
+              <li>
+                <a class="acard" href={`https://www.amazon.es/dp/${p.asin}?tag=acurruco-21`} rel="sponsored nofollow noopener" target="_blank">
+                  <span class="acard__img"><img src={asinImg(p.asin)} alt="" width="300" height="300" loading="lazy" /></span>
+                  <strong class="acard__name">{p.name}</strong>
+                  <span class="acard__why">{p.why}</span>
+                  <span class="acard__price nums">{p.price ? eur(p.price) : "ver precio"} <small>en Amazon</small></span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {bandas.map(([label, test], bi) => {
+        const list = items.filter(test);
+        if (!list.length) return null;
+        const [first, ...rest] = list;
+        const what = e.budget[bi + 1]?.[1];
+        return (
+          <section class="band" aria-label={label}>
+            <header class="band__head">
+              <h2 class="band__h nums">{label}</h2>
+              {what && <p class="band__what">{what}</p>}
+            </header>
+            <div class="band__grid">
+              <a class="lead-pick" href={`/p/${first.id}/`}>
+                <span class="lead-pick__img"><img src={first.img} alt={first.name} width="510" height="510" loading="lazy" /></span>
+                <span class="lead-pick__body">
+                  <span class="lead-pick__tag">Nuestra elección</span>
+                  <strong class="lead-pick__name">{first.name}</strong>
+                  <span class="lead-pick__brand">{first.brand}</span>
+                  <span class="lead-pick__price nums">{eur(first.price)} <small>en Carrefour hoy</small></span>
+                  <span class="lead-pick__go">Ver ficha y precios</span>
+                </span>
+              </a>
+              <div class="band__rest">{rest.slice(0, 6).map((p: any) => <ProductCard p={p} />)}</div>
+            </div>
+          </section>
+        );
+      })}
+      <p class="small muted">Elegidas a mano del catálogo por edad y tipo; cada ficha de Carrefour tiene los precios de las tiendas. Precios del 6 de noviembre de 2026. Si compras desde nuestros enlaces nos llevamos una comisión y a ti no te cuesta más.</p>
+
+      <section class="gift__faq" aria-labelledby="faq-title">
+        <h2 id="faq-title" class="head">Dudas habituales</h2>
+        <div class="faq__list">{e.faq.map(([q, a]) => <details class="qa"><summary class="qa__q">{q}</summary><p class="qa__a">{a}</p></details>)}</div>
+      </section>
+      <section class="gift__more">
+        <h2 class="lead">Otras edades</h2>
+        <ul role="list">{others.map((x) => <li><a href={`/regalos/${x.slug}/`}><img src={photos[x.slug]} alt="" width="960" height="720" loading="lazy" /><span>{x.title}</span></a></li>)}</ul>
+      </section>
+    </div>
+  </main>
+  <Footer />
+</Base>
+<style>
+  .gift { display: grid; gap: 2.5rem; }
+  .gift__hero { background: #fff; }
+  .gift__hero-in { display: grid; grid-template-columns: 3fr 2fr; gap: var(--gutter); align-items: center; padding-block: 1.5rem; }
+  .gift__text { display: grid; gap: 1rem; max-width: 64ch; }
+  .crumbs a { text-decoration: none; }
+  .gift__photo { margin: 0; border-radius: 14px; overflow: hidden; aspect-ratio: 4 / 3; max-height: 360px; }
+  .gift__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .ages ul { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ages a { display: inline-block; padding: 0.5rem 1rem; background: var(--bg); border-radius: 10px; text-decoration: none; font-weight: 600; font-size: var(--step-small); }
+  .ages a.is-on { background: var(--ink); color: var(--field-ink); }
+  .gift__body { display: grid; gap: 3rem; }
+  /* tres columnas de consejo, sin cajas iguales: la primera manda */
+  .advice { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 12px; }
+  .advice__col { display: grid; gap: 0.5rem; align-content: start; padding: 1.4rem 1.5rem; border-radius: 14px; background: var(--field); color: var(--field-ink); }
+  .advice__col h2 { font-size: var(--step-lead); }
+  .advice__col p { font-size: var(--step-small); }
+  .advice__col--no { background: #fff; color: var(--ink); }
+  .advice__col--no p, .advice__col--tip p { color: var(--muted); }
+  .advice__col--tip { background: var(--accent); color: var(--accent-ink); }
+  .advice__col--tip p { color: var(--accent-ink); }
+  /* bandas por presupuesto: una elección grande y el resto pequeño */
+  .band { display: grid; gap: 1.25rem; }
+  .band__head { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; }
+  .band__h { font-size: var(--step-head); }
+  .band__what { color: var(--muted); max-width: 50ch; }
+  .band__grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 12px; align-items: start; }
+  .lead-pick { display: grid; grid-template-rows: auto 1fr; background: #fff; border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; height: 100%; }
+  .lead-pick__img { display: block; aspect-ratio: 4 / 3; padding: 6%; }
+  .lead-pick__img img { width: 100%; height: 100%; object-fit: contain; }
+  .lead-pick__body { display: grid; gap: 0.3rem; padding: 1rem 1.4rem 1.4rem; border-top: 1px solid var(--surface); }
+  .lead-pick__tag { font-size: var(--step-small); font-weight: 700; color: var(--accent-strong); }
+  .lead-pick__name { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.4rem; font-weight: 600; line-height: 1.15; }
+  .lead-pick__brand { font-size: var(--step-small); color: var(--muted); }
+  .lead-pick__price { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.6rem; font-weight: 600; margin-top: 0.3rem; }
+  .lead-pick__price small { font-family: var(--font-text); font-size: var(--step-small); font-weight: 400; color: var(--muted); }
+  .lead-pick__go { font-size: var(--step-small); font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 0.2em; margin-top: 0.3rem; }
+  .band__rest { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .acards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .acard { display: grid; gap: 0.3rem; align-content: start; height: 100%; background: #fff; border-radius: 14px; padding: 1rem 1.1rem 1.2rem; text-decoration: none; color: inherit; transition: transform var(--t-ui) var(--ease-out); }
+  .acard__img { display: block; aspect-ratio: 1; margin: -0.2rem 0 0.4rem; }
+  .acard__img img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+  .acard__name { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.05rem; font-weight: 600; line-height: 1.2; }
+  .acard__why { font-size: var(--step-small); color: var(--muted); }
+  .acard__price { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.3rem; font-weight: 600; margin-top: 0.2rem; }
+  .acard__price small { font-family: var(--font-text); font-size: var(--step-small); font-weight: 400; color: var(--muted); }
+  @media (hover: hover) and (pointer: fine) { .acard:hover { transform: translateY(-3px); } }
+  @media (max-width: 1000px) { .acards { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 600px) { .acards { grid-template-columns: 1fr 1fr; gap: 8px; } }
+  .gift__faq { display: grid; gap: 1rem; }
+  .faq__list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
+  .qa { background: #fff; border-radius: 12px; padding: 0 1.5rem; }
+  .qa__q { cursor: pointer; list-style: none; padding: 1rem 0; font-weight: 600; display: flex; justify-content: space-between; gap: 1rem; }
+  .qa__q::-webkit-details-marker { display: none; }
+  .qa__q::after { content: "+"; color: var(--muted); font-size: 1.4rem; line-height: 1; }
+  .qa[open] .qa__q::after { content: "–"; }
+  .qa__a { padding-bottom: 1.1rem; color: var(--muted); }
+  .gift__more ul { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 0.75rem; }
+  .gift__more a { display: grid; gap: 0.5rem; text-decoration: none; font-weight: 600; }
+  .gift__more img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 12px; }
+  @media (max-width: 900px) { .advice { grid-template-columns: 1fr; } .band__grid { grid-template-columns: 1fr; } .band__rest { grid-template-columns: 1fr 1fr; gap: 8px; } .faq__list { grid-template-columns: 1fr; } .gift__more ul { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 820px) { .gift__hero-in { grid-template-columns: 1fr; } .gift__photo { max-height: 220px; aspect-ratio: 3 / 1; } }
+</style>

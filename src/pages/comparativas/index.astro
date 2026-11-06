@@ -1,0 +1,62 @@
+---
+import Base from "../../layouts/Base.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { comparativas } from "../../data/comparativas";
+const fuente: Record<string, string> = { "sillas-de-coche-i-size": "Con las notas de ADAC, otoño 2025 y 2026", "cunas-de-colecho": "Con la norma UNE-EN 1130 y precios de hoy", panales: "Precio por pañal y test de la OCU", "cremas-de-panal": "Con el test de cremas de la OCU" };
+const proximas = ["Carritos de tres piezas", "Sillas de paseo ligeras", "Tronas", "Vigilabebés", "Portabebés", "Sillas de coche de 76 a 150 cm"];
+---
+<Base title="Comparativas de productos para bebé con tests independientes · Acurruco" description="Las mejores sillas de coche, cunas de colecho, pañales y cremas según los tests de ADAC y OCU, con tabla, precio de hoy y una recomendación clara por presupuesto." canonical="https://acurruco.com/comparativas/">
+  <Header />
+  <main class="toc wrap">
+    <header class="toc__head">
+      <h1 class="head">Comparativas</h1>
+      <p class="lead">Cada una empieza con el resumen, sigue con la tabla y termina con lo que mirar antes de comprar. Los datos salen de ADAC, OCU y los fabricantes; los precios, de las tiendas, hoy.</p>
+    </header>
+    <ol class="toc__list" role="list">
+      {comparativas.map((c, i) => (
+        <li class="entry">
+          <a class="entry__link" href={`/comparativas/${c.slug}/`}>
+            <figure class="entry__photo"><img src={c.photo} alt="" width="1800" height="1200" loading={i < 2 ? "eager" : "lazy"} /></figure>
+            <div class="entry__text">
+              <p class="entry__src">{fuente[c.slug]}</p>
+              <h2 class="entry__h">{c.h}</h2>
+              <p class="entry__sum">{c.tldr[0]}</p>
+              <p class="entry__meta"><span class="nums">{c.rows.length} modelos</span> · actualizado el {c.updated}</p>
+              <span class="entry__go">Leer la comparativa</span>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ol>
+    <section class="next">
+      <h2 class="lead">Las siguientes</h2>
+      <p>Estamos terminando estas, por este orden. Mientras tanto, cada categoría del catálogo está ordenada por precio y marca y tiene filtros.</p>
+      <ul class="next__list" role="list">{proximas.map((p) => <li>{p}</li>)}</ul>
+      <a class="link-plain" href="/catalogo/">Ir al catálogo</a>
+    </section>
+  </main>
+  <Footer />
+</Base>
+<style>
+  .toc { padding-block: 2rem 0; display: grid; gap: 2.5rem; }
+  .toc__head { display: grid; gap: 1rem; max-width: 66ch; }
+  .toc__list { display: grid; gap: 2px; }
+  .entry__link { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 2.5rem; align-items: center; text-decoration: none; color: inherit; padding: 1.75rem 0; border-top: 1px solid var(--surface-2); }
+  .entry:last-child .entry__link { border-bottom: 1px solid var(--surface-2); }
+  .entry:nth-child(even) .entry__link { direction: rtl; }
+  .entry:nth-child(even) .entry__link > * { direction: ltr; }
+  .entry__photo { margin: 0; border-radius: 14px; overflow: hidden; aspect-ratio: 3 / 2; }
+  .entry__photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 900ms var(--ease-soft); }
+  .entry__text { display: grid; gap: 0.6rem; }
+  .entry__src { font-size: var(--step-small); font-weight: 700; color: var(--accent-strong); }
+  .entry__h { font-size: clamp(1.6rem, 1.2rem + 1.8vw, 2.6rem); line-height: 1.05; }
+  .entry__sum { max-width: 54ch; }
+  .entry__meta { font-size: var(--step-small); color: var(--muted); }
+  .entry__go { font-weight: 700; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+  @media (hover: hover) and (pointer: fine) { .entry__link:hover img { transform: scale(1.04); } }
+  .next { display: grid; gap: 0.6rem; max-width: 72ch; background: #fff; border-radius: 14px; padding: 1.5rem 1.75rem; }
+  .next__list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .next__list li { padding: 0.35rem 0.8rem; background: var(--bg); border-radius: 8px; font-size: var(--step-small); font-weight: 600; }
+  @media (max-width: 760px) { .entry__link { grid-template-columns: 1fr; gap: 1rem; } .entry__photo { aspect-ratio: 2 / 1; } }
+</style>

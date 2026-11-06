@@ -1,0 +1,117 @@
+---
+import Base from "../../layouts/Base.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import ProductCard from "../../components/ProductCard.astro";
+import index from "../../data/catalog/index.json";
+
+export async function getStaticPaths() {
+  const all = import.meta.glob("../../data/catalog/*.json", { eager: true });
+  const idx = (await import("../../data/catalog/index.json")).default;
+  const paths = [];
+  for (const c of idx) {
+    const items = (all[`../../data/catalog/${c.slug}.json`] as any).default as any[];
+    for (const p of items) {
+      const same = items.filter((x) => x.id !== p.id && x.brand === p.brand).slice(0, 4);
+      const near = items.filter((x) => x.id !== p.id && !same.includes(x) && Math.abs(x.price - p.price) / p.price < 0.25).slice(0, 8 - same.length);
+      paths.push({ params: { id: p.id }, props: { p, cat: c, related: [...same, ...near] } });
+    }
+  }
+  return paths;
+}
+const { p, cat, related } = Astro.props;
+const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+const groups: Record<string, string> = { coche: "Para el coche", paseo: "Para pasear", dormir: "Para dormir", casa: "Para la casa", comer: "Para comer", jugar: "Para jugar", cuidado: "Para el cuidado" };
+const amazon = `https://www.amazon.es/s?k=${encodeURIComponent((p.brand + " " + p.name).slice(0, 80))}&tag=acurruco-21`;
+const img = p.img.startsWith("/") ? `https://acurruco.com${p.img}` : p.img;
+const cut = (s: string, n: number) => (s.length <= n ? s : s.slice(0, n).replace(/\s+\S*$/, "") + "…");
+const title = `${p.name} · Acurruco`;
+const description = cut(`${p.name}${p.name.toLowerCase().includes(p.brand.toLowerCase()) ? "" : ` de ${p.brand}`}: ${eur(p.price)} en Carrefour hoy, con ficha, características y enlace a Amazon para comparar. ${cat.title}.`, 158);
+const pageUrl = `https://acurruco.com/p/${p.id}/`;
+const ahorro = p.old && p.old > p.price ? Math.round((1 - p.price / p.old) * 100) : 0;
+---
+<Base title={title} description={description} canonical={`https://acurruco.com/p/${p.id}/`} ogImage={img}>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      "@context": "https://schema.org", "@type": "Product", name: p.name, description, sku: p.id, brand: { "@type": "Brand", name: p.brand }, image: img, url: pageUrl, gtin13: p.ean && /^\d{13}$/.test(p.ean) ? p.ean : undefined, category: cat.title,
+      offers: { "@type": "Offer", priceCurrency: "EUR", price: Number(p.price), itemCondition: "https://schema.org/NewCondition", availability: p.stock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", url: pageUrl, seller: { "@type": "Organization", name: "Carrefour" } },
+    })} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Inicio", item: "https://acurruco.com/" },
+        { "@type": "ListItem", position: 2, name: "Catálogo", item: "https://acurruco.com/catalogo/" },
+        { "@type": "ListItem", position: 3, name: cat.title, item: `https://acurruco.com/catalogo/${cat.slug}/` },
+        { "@type": "ListItem", position: 4, name: p.name },
+      ],
+    })} />
+  </Fragment>
+  <Header />
+  <main class="wrap prod">
+    <nav class="crumbs small" aria-label="Estás en"><a href="/">Inicio</a> › <a href="/catalogo/">Catálogo</a> › <a href={`/catalogo/${cat.slug}/`}>{cat.title}</a></nav>
+    <article class="prod__main">
+      <figure class="prod__img"><img src={p.img} alt={p.name} width="510" height="510" fetchpriority="high" /></figure>
+      <div class="prod__info">
+        <p class="prod__brand">{p.brand} · {cat.title}</p>
+        <h1 class="prod__name">{p.name}</h1>
+        <div class="offers">
+          <div class="offer offer--best">
+            <span class="offer__store">Carrefour</span>
+            <span class="offer__price nums">{eur(p.price)}</span>
+            {ahorro > 0 && <span class="offer__old nums">antes {eur(p.old)} · −{ahorro} %</span>}
+            <span class="offer__stock">{p.stock ? "En stock hoy" : "Sin stock ahora mismo"}</span>
+            <a class="button" href={p.link} rel="sponsored nofollow noopener" target="_blank">Ver en Carrefour</a>
+          </div>
+          <div class="offer">
+            <span class="offer__store">Amazon</span>
+            <span class="offer__price offer__price--na">Precio al abrir</span>
+            <span class="offer__stock">Estamos conectando el catálogo de Amazon; mientras tanto, te llevamos a la búsqueda exacta.</span>
+            <a class="button button--ghost" href={amazon} rel="sponsored nofollow noopener" target="_blank">Buscar en Amazon</a>
+          </div>
+        </div>
+        <p class="small muted">Precio de Carrefour actualizado cada día a partir de su catálogo. Si compras desde estos enlaces nos llevamos una comisión y a ti no te cuesta más.</p>
+        <dl class="specs">
+          <div><dt>Marca</dt><dd>{p.brand}</dd></div>
+          <div><dt>Categoría</dt><dd><a class="link-plain" href={`/catalogo/${cat.slug}/`}>{cat.title}</a> · {groups[cat.group]}</dd></div>
+          {p.ean && <div><dt>EAN</dt><dd class="nums">{p.ean}</dd></div>}
+        </dl>
+      </div>
+    </article>
+    <section class="prod__guide" aria-labelledby="guide-title">
+      <h2 id="guide-title" class="lead">Antes de comprar {cat.title.toLowerCase()}</h2>
+      <p>Lee primero la comparativa de la categoría: ahí explicamos qué mirar, qué dicen los tests independientes y cuáles son las tres compras que recomendamos por presupuesto. Esta ficha es solo el precio y el enlace.</p>
+      <a class="link-plain" href={`/catalogo/${cat.slug}/`}>Ver todos los {cat.title.toLowerCase()} ({cat.count})</a>
+    </section>
+    {related.length > 0 && (
+      <section class="related" aria-labelledby="rel-title">
+        <h2 id="rel-title" class="head">Parecidos</h2>
+        <div class="related__grid">{related.map((r) => <ProductCard p={r} />)}</div>
+      </section>
+    )}
+  </main>
+  <Footer />
+</Base>
+<style>
+  .prod { padding-block: 1.5rem 0; display: grid; gap: 3rem; }
+  .crumbs a { text-decoration: none; }
+  .prod__main { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gutter); align-items: start; }
+  .prod__img { margin: 0; background: #fff; border-radius: 14px; padding: 8%; aspect-ratio: 1; display: grid; place-items: center; }
+  .prod__img img { width: 100%; height: 100%; object-fit: contain; }
+  .prod__info { display: grid; gap: 1.25rem; }
+  .prod__brand { font-weight: 600; color: var(--muted); font-size: var(--step-small); text-transform: uppercase; letter-spacing: 0.04em; }
+  .prod__name { font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.5rem); line-height: 1.1; }
+  .offers { display: grid; gap: 10px; }
+  .offer { display: grid; gap: 0.35rem; padding: 1.25rem 1.5rem; background: #fff; border-radius: 12px; justify-items: start; }
+  .offer--best { outline: 3px solid var(--accent); }
+  .offer__store { font-weight: 700; }
+  .offer__price { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 72; font-size: 2rem; font-weight: 600; line-height: 1; }
+  .offer__price--na { font-size: 1.2rem; color: var(--muted); }
+  .offer__old { font-size: var(--step-small); color: var(--muted); }
+  .offer__stock { font-size: var(--step-small); color: var(--muted); }
+  .offer .button { margin-top: 0.5rem; }
+  .specs { display: grid; gap: 0.5rem; font-size: var(--step-small); }
+  .specs div { display: grid; grid-template-columns: 7rem 1fr; }
+  .specs dt { color: var(--muted); }
+  .prod__guide { background: #fff; border-radius: 14px; padding: 1.5rem; display: grid; gap: 0.5rem; max-width: 72ch; }
+  .related__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 1.5rem; }
+  @media (max-width: 760px) { .prod__main { grid-template-columns: 1fr; } }
+</style>

@@ -1,0 +1,164 @@
+---
+import Base from "../../layouts/Base.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { guias } from "../../data/guias";
+
+import amazon from "../../data/amazon.json";
+
+export function getStaticPaths() {
+  const all = import.meta.glob("../../data/catalog/*.json", { eager: true });
+  const byId = new Map<string, any>();
+  for (const k in all) if (!k.endsWith("index.json")) for (const p of (all[k] as any).default) byId.set(p.id, p);
+  const A = amazon as Record<string, { name: string; price: number | null }>;
+  return guias.map((g) => ({
+    params: { slug: g.slug },
+    props: { g, prods: (g.products || []).map((x) => x.id ? { ...x, p: byId.get(x.id) } : { ...x, a: A[x.asin!] }).filter((x: any) => x.p || x.a) },
+  }));
+}
+const { g, prods } = Astro.props;
+const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+const asinImg = (asin: string) => `https://images-na.ssl-images-amazon.com/images/P/${asin}.01._SCLZZZZZZZ_.jpg`;
+const others = guias.filter((x) => x.slug !== g.slug).sort((a, b) => a.order - b.order);
+const description = g.tldr[0] + " " + g.intro.slice(0, 110) + "…";
+---
+<Base title={`${g.title} · Acurruco`} description={description} canonical={`https://acurruco.com/guias/${g.slug}/`} ogImage={`https://acurruco.com${g.photo}`}>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      "@context": "https://schema.org", "@graph": [
+        { "@type": "Article", headline: g.title, description, datePublished: "2026-11-06", image: `https://acurruco.com${g.photo}`, inLanguage: "es-ES", dateModified: "2026-11-06", author: { "@type": "Organization", name: "Acurruco" }, publisher: { "@type": "Organization", name: "Acurruco", logo: { "@type": "ImageObject", url: "https://acurruco.com/img/logo.png" } }, mainEntityOfPage: `https://acurruco.com/guias/${g.slug}/` },
+        { "@type": "FAQPage", mainEntity: g.faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
+        { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Inicio", item: "https://acurruco.com/" }, { "@type": "ListItem", position: 2, name: "Guías", item: "https://acurruco.com/guias/" }, { "@type": "ListItem", position: 3, name: g.short }] },
+      ],
+    })} />
+  </Fragment>
+  <Header />
+  <main class="g">
+    <header class="g__hero">
+      <div class="g__hero-in wrap">
+        <div class="g__text">
+          <nav class="crumbs small" aria-label="Estás en"><a href="/">Inicio</a> › <a href="/guias/">Guías</a> › <span>{g.stage}</span></nav>
+          <h1 class="head">{g.h}</h1>
+          <p class="lead">{g.intro}</p>
+          <p class="small muted">Actualizado el {g.updated}.</p>
+        </div>
+        <figure class="g__photo"><img src={g.photo} alt="" width="960" height="720" fetchpriority="high" /></figure>
+      </div>
+    </header>
+    <div class="wrap g__body">
+      <aside class="g__side">
+        <div class="tldr">
+          <h2>En resumen</h2>
+          <ol role="list">{g.tldr.map((t) => <li>{t}</li>)}</ol>
+        </div>
+        <nav class="toc" aria-label="En esta guía">
+          <h2>En esta guía</h2>
+          <ol role="list">{g.sections.map((s, i) => <li><a href={`#s${i}`}>{s.h}</a></li>)}</ol>
+        </nav>
+      </aside>
+      <article class="g__art">
+        {g.sections.map((s, i) => (
+          <section class="g__sec" id={`s${i}`}>
+            <h2>{s.h}</h2>
+            {s.p.map((p) => <p>{p}</p>)}
+            {s.list && <ul class="g__list">{s.list.map((l) => <li>{l}</li>)}</ul>}
+          </section>
+        ))}
+        {prods.length > 0 && (
+          <section class="g__sec g__prods" id="productos">
+            <h2>Lo que compraríamos</h2>
+            <p>Elegidos del catálogo para esta guía, con el precio de hoy. Lo de Carrefour abre su ficha con los precios; lo de Amazon abre Amazon.</p>
+            <ol class="prods" role="list">
+              {prods.map((x: any) => x.p ? (
+                <li class="prod">
+                  <a class="prod__a" href={`/p/${x.p.id}/`}>
+                    <span class="prod__img"><img src={x.p.img} alt="" width="200" height="200" loading="lazy" /></span>
+                    <span class="prod__body">
+                      <span class="prod__brand">{x.p.brand}</span>
+                      <strong class="prod__name">{x.p.name}</strong>
+                      <span class="prod__why">{x.why}</span>
+                      <span class="prod__price nums">{eur(x.p.price)} <small>en Carrefour</small></span>
+                    </span>
+                  </a>
+                </li>
+              ) : (
+                <li class="prod">
+                  <a class="prod__a" href={`https://www.amazon.es/dp/${x.asin}?tag=acurruco-21`} rel="sponsored nofollow noopener" target="_blank">
+                    <span class="prod__img"><img src={asinImg(x.asin)} alt="" width="200" height="200" loading="lazy" /></span>
+                    <span class="prod__body">
+                      <span class="prod__brand">Amazon</span>
+                      <strong class="prod__name">{x.a.name}</strong>
+                      <span class="prod__why">{x.why}</span>
+                      <span class="prod__price nums">{x.a.price ? eur(x.a.price) : "ver precio"} <small>en Amazon</small></span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+        <section class="g__sec g__links">
+          <h2>Para seguir</h2>
+          <ul role="list">{g.links.map(([t, h]) => <li><a href={h}>{t}</a></li>)}</ul>
+        </section>
+        <section class="g__sec">
+          <h2>Dudas habituales</h2>
+          <div class="faq__list">{g.faq.map(([q, a]) => <details class="qa"><summary class="qa__q">{q}</summary><p class="qa__a">{a}</p></details>)}</div>
+        </section>
+        <section class="g__sec g__more">
+          <h2>Otras guías</h2>
+          <ul role="list">{others.map((o) => <li><a href={`/guias/${o.slug}/`}><span class="small muted">{o.stage}</span><strong>{o.h}</strong></a></li>)}</ul>
+        </section>
+      </article>
+    </div>
+  </main>
+  <Footer />
+</Base>
+<style>
+  .g { display: grid; gap: 2.5rem; }
+  .g__hero { background: #fff; }
+  .g__hero-in { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 3rem; align-items: center; padding-block: 1.5rem; }
+  .g__text { display: grid; gap: 1rem; max-width: 66ch; }
+  .crumbs a { text-decoration: none; }
+  .g__photo { margin: 0; border-radius: 14px; overflow: hidden; aspect-ratio: 4 / 3; max-height: 360px; }
+  .g__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .g__body { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 3rem; align-items: start; }
+  .g__side { position: sticky; top: 1.5rem; display: grid; gap: 1rem; }
+  .tldr { background: var(--field); color: var(--field-ink); border-radius: 14px; padding: 1.25rem 1.4rem; display: grid; gap: 0.75rem; }
+  .tldr h2, .toc h2 { font-size: var(--step-lead); }
+  .tldr ol { display: grid; gap: 0.6rem; font-size: var(--step-small); counter-reset: n; }
+  .tldr li { position: relative; padding-left: 1.6rem; }
+  .tldr li::before { counter-increment: n; content: counter(n); position: absolute; left: 0; top: 0.1rem; width: 1.15rem; height: 1.15rem; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 0.75rem; font-weight: 700; display: grid; place-items: center; }
+  .toc { background: #fff; border-radius: 14px; padding: 1.25rem 1.4rem; display: grid; gap: 0.6rem; }
+  .toc ol { display: grid; gap: 0.35rem; font-size: var(--step-small); font-weight: 600; }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+  .g__art { display: grid; gap: 2.5rem; max-width: 72ch; }
+  .g__sec { display: grid; gap: 0.9rem; }
+  .g__sec h2 { font-size: var(--step-head); line-height: 1.05; margin-bottom: 0.25rem; }
+  .g__sec p { font-size: var(--step-body); line-height: 1.6; }
+  .g__list { display: grid; gap: 0.4rem; padding: 1rem 1.25rem 1rem 2.5rem; background: #fff; border-radius: 12px; list-style: disc; }
+  .prods { display: grid; gap: 8px; margin-top: 0.5rem; }
+  .prod__a { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 1.1rem; align-items: center; background: #fff; border-radius: 12px; padding: 0.8rem 1.1rem 0.8rem 0.8rem; text-decoration: none; color: inherit; transition: transform var(--t-ui) var(--ease-out); }
+  .prod__img { display: block; aspect-ratio: 1; }
+  .prod__img img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+  .prod__body { display: grid; gap: 0.15rem; }
+  .prod__brand { font-size: var(--step-small); color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.72rem; }
+  .prod__name { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.1rem; font-weight: 600; line-height: 1.2; }
+  .prod__why { font-size: var(--step-small); color: var(--muted); }
+  .prod__price { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.25rem; font-weight: 600; margin-top: 0.2rem; }
+  .prod__price small { font-family: var(--font-text); font-size: var(--step-small); font-weight: 400; color: var(--muted); }
+  @media (hover: hover) and (pointer: fine) { .prod__a:hover { transform: translateX(4px); } }
+  .g__links ul { display: grid; gap: 0.4rem; }
+  .g__links a { font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+  .faq__list { display: grid; gap: 8px; }
+  .qa { background: #fff; border-radius: 12px; padding: 0 1.5rem; }
+  .qa__q { cursor: pointer; list-style: none; padding: 1rem 0; font-weight: 600; display: flex; justify-content: space-between; gap: 1rem; }
+  .qa__q::-webkit-details-marker { display: none; }
+  .qa__q::after { content: "+"; color: var(--muted); font-size: 1.4rem; line-height: 1; }
+  .qa[open] .qa__q::after { content: "–"; }
+  .qa__a { padding-bottom: 1.1rem; color: var(--muted); }
+  .g__more ul { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .g__more a { display: grid; gap: 0.15rem; padding: 0.9rem 1.1rem; background: #fff; border-radius: 12px; text-decoration: none; }
+  @media (max-width: 900px) { .g__hero-in { grid-template-columns: 1fr; } .g__photo { max-height: 240px; aspect-ratio: 2 / 1; } .g__body { grid-template-columns: 1fr; } .g__side { position: static; } .g__more ul { grid-template-columns: 1fr; } }
+</style>

@@ -1,0 +1,82 @@
+---
+import Base from "../../layouts/Base.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import index from "../../data/catalog/index.json";
+
+const all = import.meta.glob("../../data/catalog/*.json", { eager: true });
+const thumb = (slug: string) => {
+  const items = (all[`../../data/catalog/${slug}.json`] as any)?.default as any[] | undefined;
+  const p = items?.find((x) => x.stock && x.img);
+  return p?.img ?? "";
+};
+const groups = [
+  { id: "coche", name: "Para el coche", photo: "/img/photos/cat-coche-43.jpg", text: "La silla es la compra más importante del primer año: aquí van por tramos de altura, con las bases y los accesorios aparte." },
+  { id: "paseo", name: "Para pasear", photo: "/img/photos/cat-paseo-43.jpg", text: "Carritos de dos y tres piezas para empezar, sillas ligeras para cuando ya se sienta y portabebés para las manos libres." },
+  { id: "dormir", name: "Para dormir", photo: "/img/photos/cat-dormir-43.jpg", text: "Cunas de colecho y minicunas para los primeros meses, colchones firmes y la ropa de cuna justa." },
+  { id: "comer", name: "Para comer", photo: "/img/photos/cat-comer-43.jpg", text: "De la lactancia a la trona: biberones, esterilizadores, tronas y la alimentación infantil del súper." },
+  { id: "cuidado", name: "Para el cuidado", photo: "/img/photos/cat-cuidado-43.jpg", text: "Pañales y toallitas con precio por unidad, cremas, bañeras y cambiadores." },
+  { id: "casa", name: "Para la casa", photo: "/img/photos/cat-jugar-43.jpg", text: "Hamacas y parques para tenerlo cerca, vigilabebés, seguridad y los primeros pasos." },
+  { id: "jugar", name: "Para jugar", photo: "/img/photos/juego-43.jpg", text: "Juguetes para bebés por edad, desde el primer sonajero hasta los bloques de madera." },
+];
+const total = index.reduce((n, c) => n + c.count, 0);
+const eur = (n: number) => n.toLocaleString("es-ES", { maximumFractionDigits: 0 }) + " €";
+---
+<Base title="Catálogo de productos para bebé, por necesidad · Acurruco" description={`${total.toLocaleString("es-ES")} productos para bebé ordenados por necesidad, con precio actualizado cada día y ficha propia con los precios de las tiendas.`} canonical="https://acurruco.com/catalogo/">
+  <Header />
+  <main class="cat">
+    <header class="cat__head wrap">
+      <h1 class="head">El catálogo</h1>
+      <p class="lead">{total.toLocaleString("es-ES")} productos, ordenados como los necesitas y con el precio de hoy. Entra en una categoría para filtrar por tipo, marca y precio.</p>
+      <nav class="cat__jump" aria-label="Ir a"><ul role="list">{groups.map((g) => <li><a href={`#${g.id}`}>{g.name}</a></li>)}</ul></nav>
+    </header>
+    {groups.map((g, i) => (
+      <section class:list={["grp", { "grp--alt": i % 2 === 1 }]} id={g.id} aria-labelledby={`g-${g.id}`}>
+        <div class="grp__in wrap">
+          <figure class="grp__photo"><img src={g.photo} alt="" width="960" height="720" loading={i < 1 ? "eager" : "lazy"} /></figure>
+          <div class="grp__text">
+            <h2 id={`g-${g.id}`} class="grp__name">{g.name}</h2>
+            <p>{g.text}</p>
+            <ul class="grp__list" role="list">
+              {index.filter((c) => c.group === g.id).map((c) => (
+                <li>
+                  <a class="tile" href={`/catalogo/${c.slug}/`}>
+                    <span class="tile__img"><img src={thumb(c.slug)} alt="" width="120" height="120" loading="lazy" /></span>
+                    <span class="tile__body"><strong>{c.title}</strong><span class="muted nums">{c.count} productos · desde {eur(c.min)}</span></span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+    ))}
+  </main>
+  <Footer />
+</Base>
+<style>
+  .cat { display: grid; }
+  .cat__head { display: grid; gap: 1rem; max-width: 70ch; padding-block: 2rem 2.5rem; }
+  .cat__jump ul { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cat__jump a { display: inline-block; padding: 0.45rem 0.9rem; background: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: var(--step-small); }
+  .grp--alt { background: #fff; }
+  .grp__in { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 2.5rem; align-items: center; padding-block: 3rem; }
+  .grp--alt .grp__in { direction: rtl; }
+  .grp--alt .grp__in > * { direction: ltr; }
+  .grp__photo { margin: 0; border-radius: 14px; overflow: hidden; aspect-ratio: 4 / 3; }
+  .grp__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .grp__text { display: grid; gap: 0.75rem; }
+  .grp__name { font-size: var(--step-head); }
+  .grp__text > p { color: var(--muted); max-width: 52ch; }
+  .grp__list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 0.5rem; }
+  .tile { display: grid; grid-template-columns: 64px 1fr; gap: 0.8rem; align-items: center; padding: 0.6rem; background: var(--bg); border-radius: 12px; text-decoration: none; transition: background-color var(--t-hover) ease, transform var(--t-press) var(--ease-out); }
+  .grp--alt .tile { background: var(--bg); }
+  .grp:not(.grp--alt) .tile { background: #fff; }
+  .tile__img { width: 64px; height: 64px; background: #fff; border-radius: 8px; padding: 6px; display: grid; place-items: center; }
+  .tile__img img { width: 100%; height: 100%; object-fit: contain; }
+  .tile__body { display: grid; gap: 0.1rem; min-width: 0; }
+  .tile__body strong { font-size: var(--step-body); line-height: 1.2; }
+  .tile__body span { font-size: 0.875rem; }
+  @media (hover: hover) and (pointer: fine) { .tile:hover { background: var(--surface); } }
+  @media (max-width: 820px) { .grp__in { grid-template-columns: 1fr; gap: 1.25rem; padding-block: 2rem; } .grp__photo { aspect-ratio: 2 / 1; } .grp__list { grid-template-columns: 1fr; } }
+</style>

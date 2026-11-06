@@ -1,0 +1,85 @@
+---
+import Base from "../../layouts/Base.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { guias } from "../../data/guias";
+import { comparativas } from "../../data/comparativas";
+import { edades } from "../../data/regalos-guia";
+
+/* El camino: las guías colocadas en el orden en que hacen falta, del embarazo a los dos años. */
+const camino = [
+  { stage: "Embarazo", when: "Semanas 30 a 40", items: [
+    { h: "La lista de nacimiento", t: "31 cosas; 19 imprescindibles y el resto puede esperar.", href: "/lista-de-nacimiento/", photo: "/img/photos/lista-43.jpg" },
+    { h: "La bolsa del hospital", t: "Qué llevar para el parto y los primeros días, y qué pone el hospital.", href: "/guias/bolsa-del-hospital/", photo: "/img/photos/bolsa-43.jpg" },
+    { h: "Elegir la silla de coche", t: "Qué es i-Size, qué mide ADAC y cuál comprar según tu coche.", href: "/comparativas/sillas-de-coche-i-size/", photo: "/img/photos/cmp-sillas-43.jpg" },
+    { h: "Cómo elegir el carrito", t: "Dúo, trío o silla ligera, según dónde vas a vivir con él.", href: "/guias/elegir-carrito/", photo: "/img/photos/carrito-43.jpg" },
+    { h: "Cuna, minicuna o colecho", t: "Qué dice la norma, cuánto dura cada una y cuáles merecen la pena.", href: "/comparativas/cunas-de-colecho/", photo: "/img/photos/cmp-cunas-43.jpg" },
+  ] },
+  { stage: "0 a 3 meses", when: "Recién nacido", items: [
+    { h: "Qué necesita un recién nacido", t: "Dormir, comer y cambiar: lo mínimo de cada cosa, y qué no comprar aún.", href: "/guias/que-necesita-un-recien-nacido/", photo: "/img/photos/dormir-43.jpg" },
+    { h: "Pañales: cuál y cuántos", t: "Precio por pañal talla a talla y lo que dice la OCU de la marca blanca.", href: "/comparativas/panales/", photo: "/img/photos/cmp-panales-43.jpg" },
+    { h: "Cremas para el culito", t: "Barrera o prevención: cuál usar y cuándo ir al pediatra.", href: "/comparativas/cremas-de-panal/", photo: "/img/photos/cremas-43.jpg" },
+    { h: "Qué regalar a un recién nacido", t: "Lo que se agradece y lo que acaba en un armario.", href: "/regalos/recien-nacido/", photo: "/img/photos/regalo-rn-43.jpg" },
+  ] },
+  { stage: "3 a 6 meses", when: "Empieza a mirar el mundo", items: [
+    { h: "Juguetes sensoriales por edad", t: "Qué son de verdad, cuáles usa un bebé y cuáles son marketing.", href: "/guias/juguetes-sensoriales/", photo: "/img/photos/sensorial-43.jpg" },
+    { h: "Regalos de 3 a 6 meses", t: "Gimnasio, mordedores, hamaca: por presupuesto.", href: "/regalos/3-6-meses/", photo: "/img/photos/regalo-3-6-43.jpg" },
+  ] },
+  { stage: "6 a 12 meses", when: "Se sienta y come", items: [
+    { h: "Juguetes Montessori", t: "Los que tienen sentido de 0 a 2 años y los que son sólo madera cara.", href: "/guias/juguetes-montessori/", photo: "/img/photos/montessori-43.jpg" },
+    { h: "Regalos de 6 a 12 meses", t: "Apilables, bloques, correpasillos y la trona.", href: "/regalos/6-12-meses/", photo: "/img/photos/regalo-6-12-43.jpg" },
+  ] },
+  { stage: "1 a 2 años", when: "Anda, habla, trepa", items: [
+    { h: "Regalos de 1 a 2 años", t: "Imitación, movimiento y puzles de pocas piezas.", href: "/regalos/1-ano/", photo: "/img/photos/regalo-1-2-43.jpg" },
+    { h: "Cuánto cuesta un bebé el primer año", t: "Entre 1.900 y 8.900 € según cómo compres, partida por partida.", href: "/herramientas/presupuesto-primer-ano/", photo: "/img/photos/presupuesto-43.jpg" },
+  ] },
+];
+---
+<Base title="Guías para padres recientes, en el orden en que hacen falta · Acurruco" description="Del embarazo a los dos años: qué necesita un recién nacido, la bolsa del hospital, elegir carrito y silla, pañales, juguetes sensoriales y Montessori, regalos por edad. Escritas por padres, con datos." canonical="https://acurruco.com/guias/">
+  <Header />
+  <main class="path wrap">
+    <header class="path__head">
+      <h1 class="head">Guías, en el orden en que hacen falta</h1>
+      <p class="lead">Del embarazo a los dos años. Cada guía explica qué mirar, enlaza a su comparativa y al catálogo, y dice qué puede esperar. Empieza por donde estés.</p>
+      <nav class="path__jump" aria-label="Ir a la etapa"><ul role="list">{camino.map((c, i) => <li><a href={`#e${i}`}>{c.stage}</a></li>)}</ul></nav>
+    </header>
+    <ol class="path__line" role="list">
+      {camino.map((c, i) => (
+        <li class="era" id={`e${i}`}>
+          <div class="era__mark"><span class="era__stage">{c.stage}</span><span class="era__when">{c.when}</span></div>
+          <ol class="era__items" role="list">
+            {c.items.map((it) => (
+              <li><a class="gcard" href={it.href}>
+                <img src={it.photo} alt="" width="960" height="720" loading="lazy" />
+                <span class="gcard__body"><strong>{it.h}</strong><span>{it.t}</span></span>
+              </a></li>
+            ))}
+          </ol>
+        </li>
+      ))}
+    </ol>
+  </main>
+  <Footer />
+</Base>
+<style>
+  .path { padding-block: 2rem 0; display: grid; gap: 2.5rem; }
+  .path__head { display: grid; gap: 1rem; max-width: 66ch; }
+  .path__jump ul { display: flex; flex-wrap: wrap; gap: 8px; }
+  .path__jump a { display: inline-block; padding: 0.45rem 0.9rem; background: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: var(--step-small); }
+  .path__line { display: grid; gap: 0; position: relative; }
+  .path__line::before { content: ""; position: absolute; left: 11px; top: 1rem; bottom: 1rem; width: 2px; background: var(--surface-2); }
+  .era { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 2rem; padding-block: 2rem; position: relative; }
+  .era::before { content: ""; position: absolute; left: 4px; top: 2.5rem; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--bg); }
+  .era__mark { padding-left: 2.25rem; display: grid; gap: 0.2rem; align-content: start; position: sticky; top: 1.5rem; }
+  .era__stage { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.6rem; font-weight: 600; line-height: 1.1; }
+  .era__when { font-size: var(--step-small); color: var(--muted); }
+  .era__items { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .gcard { display: grid; grid-template-rows: auto 1fr; background: #fff; border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; height: 100%; transition: transform var(--t-ui) var(--ease-out); }
+  .gcard img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+  .gcard__body { display: grid; gap: 0.3rem; padding: 0.9rem 1.1rem 1.2rem; align-content: start; }
+  .gcard__body strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.2rem; font-weight: 600; line-height: 1.15; }
+  .gcard__body span { font-size: var(--step-small); color: var(--muted); }
+  @media (hover: hover) and (pointer: fine) { .gcard:hover { transform: translateY(-4px); } }
+  @media (max-width: 820px) { .era { grid-template-columns: 1fr; gap: 1rem; } .era__mark { position: static; } .era__items { grid-template-columns: 1fr 1fr; gap: 8px; } }
+  @media (max-width: 520px) { .era__items { grid-template-columns: 1fr; } }
+</style>

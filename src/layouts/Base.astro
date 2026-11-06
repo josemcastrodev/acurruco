@@ -1,0 +1,61 @@
+---
+import "../styles/global.css";
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  ogImage?: string;
+}
+const props = Astro.props;
+const clamp = (s: string, n: number) => (s.length <= n ? s : s.slice(0, n).replace(/\s+\S*$/, "") + "…");
+const title = props.title;
+const description = clamp(props.description, 158);
+const canonical = props.canonical ?? "https://acurruco.com/";
+const ogImage = props.ogImage ?? "https://acurruco.com/og.jpg";
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Acurruco" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content="es_ES" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#3b2a3c" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..600,100&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet" />
+    <script is:inline>document.documentElement.classList.add('js')</script>
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+    <script>
+      // Entradas: cada [data-reveal] llega una vez, en orden de lectura; sin JS o con reduced-motion, todo está visible.
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); }
+      }, { rootMargin: "0px 0px 22% 0px", threshold: 0 });
+      document.querySelectorAll("[data-reveal]").forEach((el, i) => {
+        if (!el.style.getPropertyValue("--i")) {
+          // los hermanos consecutivos se escalonan solos
+          const sibs = el.parentElement ? [...el.parentElement.children].filter((c) => c.hasAttribute("data-reveal")) : [];
+          el.style.setProperty("--i", String(Math.min(sibs.indexOf(el), 8)));
+        }
+        io.observe(el);
+      });
+      // Secciones enteras: cabecera, texto, figura
+      document.querySelectorAll("main > section").forEach((s) => {
+        [...s.children].forEach((c, i) => { if (!c.hasAttribute("data-reveal") && !c.querySelector("[data-reveal]")) { c.setAttribute("data-reveal", ""); c.style.setProperty("--i", String(Math.min(i, 6))); io.observe(c); } });
+      });
+    </script>
+  </body>
+</html>
