@@ -5,12 +5,13 @@ import Footer from "../components/Footer.astro";
 import index from "../data/catalog/index.json";
 import carrefour from "../data/carrefour.json";
 import amazon from "../data/amazon.json";
+import ProductArt from "../components/ProductArt.astro";
+import { fichaAmazon } from "../data/amazon-products";
 
 const P = Object.fromEntries(carrefour.map((p) => [p.slug, p]));
 const total = index.reduce((n, c) => n + c.count, 0);
 const count = (slug: string) => index.find((c) => c.slug === slug)?.count ?? 0;
 const eur = (n: number | string) => Number(n).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
-const amzImg = (asin: string) => `https://images-na.ssl-images-amazon.com/images/P/${asin}.01._SCLZZZZZZZ_.jpg`;
 const amzUrl = (asin: string) => `https://www.amazon.es/dp/${asin}?tag=acurruco-21`;
 const A = amazon as Record<string, { price: number | null; carrefour?: string }>;
 
@@ -46,9 +47,9 @@ const necesidades = [
 const sillas = [
   { name: "Chicco Kory Essential i-Size", cm: "40–80 cm", adac: null, why: "La más vendida en Carrefour: portabebés ligero (3,5 kg) que va con cinturón o con base Isofix aparte.", pick: "La más vendida", img: "/img/products/chicco-kory-essential.jpg", carrefour: P["chicco-kory-essential"], asin: "B0C6KXB9LL" },
   { name: "Maxi-Cosi CabrioFix i-Size", cm: "40–75 cm", adac: "buena", why: "Compatible con casi todos los carritos; con la base FamilyFix 360 gira hacia la puerta.", pick: "Compatible con todo", img: "/img/products/maxicosi-cabriofix.jpg", carrefour: P["maxicosi-cabriofix"], asin: "B09LVKQMBQ" },
-  { name: "Cybex Cloud G3 Plus", cm: "40–87 cm", adac: "2,2", why: "Nota 'buena' en el test de otoño de 2026 y la única que se tumba del todo fuera del coche.", pick: "Para viajes largos", img: amzImg("B0GLQBTWC2"), asin: "B0GLQBTWC2" },
-  { name: "Maxi-Cosi Pebble 360 Pro²", cm: "40–87 cm", adac: "buena", why: "Giratoria con su base: el bebé entra de cara a la puerta. Segunda generación, sin el problema de contaminantes de la primera.", pick: "Giratoria", img: amzImg("B000MOZ39C"), asin: "B000MOZ39C" },
-  { name: "Kinderkraft i-Lite con base", cm: "40–87 cm", adac: "2,7", why: "La barata con nota 'buena' en ADAC (otoño 2025). Pesa 3,3 kg.", pick: "Nota buena, precio bajo", img: amzImg("B0F143C7BR"), asin: "B0F143C7BR" },
+  { name: "Cybex Cloud G3 Plus", cm: "40–87 cm", adac: "2,2", why: "Nota 'buena' en el test de otoño de 2026 y la única que se tumba del todo fuera del coche.", pick: "Para viajes largos", asin: "B0GLQBTWC2" },
+  { name: "Maxi-Cosi Pebble 360 Pro²", cm: "40–87 cm", adac: "buena", why: "Giratoria con su base: el bebé entra de cara a la puerta. Segunda generación, sin el problema de contaminantes de la primera.", pick: "Giratoria", asin: "B000MOZ39C" },
+  { name: "Kinderkraft i-Lite con base", cm: "40–87 cm", adac: "2,7", why: "La barata con nota 'buena' en ADAC (otoño 2025). Pesa 3,3 kg.", pick: "Nota buena, precio bajo", asin: "B0F143C7BR" },
 ];
 
 const faqs = [
@@ -155,10 +156,10 @@ const description = "Qué necesita tu bebé en cada etapa y cuál comprar: silla
           const cf = s.carrefour, am = A[s.asin];
           return (
             <li class="prow__item">
-              <a class="prow__img" href={cf ? `/p/${cf.id}/` : amzUrl(s.asin)} rel={cf ? undefined : "sponsored nofollow noopener"} target={cf ? undefined : "_blank"} tabindex="-1" aria-hidden="true"><img src={s.img} alt="" width="160" height="160" loading="lazy" /></a>
+              <a class="prow__img" href={cf ? `/p/${cf.id}/` : fichaAmazon(s.asin)} tabindex="-1" aria-hidden="true">{s.img ? <img src={s.img} alt="" width="160" height="160" loading="lazy" /> : <ProductArt kind="silla" />}</a>
               <div class="prow__body">
                 <p class="prow__pick">{s.pick}</p>
-                <h3 class="prow__name">{cf ? <a href={`/p/${cf.id}/`}>{s.name}</a> : <a href={amzUrl(s.asin)} rel="sponsored nofollow noopener" target="_blank">{s.name}</a>}</h3>
+                <h3 class="prow__name"><a href={cf ? `/p/${cf.id}/` : fichaAmazon(s.asin)}>{s.name}</a></h3>
                 <p class="prow__why">{s.why}</p>
                 <p class="prow__meta nums">{s.cm}{s.adac && <span> · ADAC <strong>{s.adac}</strong></span>}</p>
               </div>
@@ -332,7 +333,7 @@ const description = "Qué necesita tu bebé en cada etapa y cuál comprar: silla
   /* ---------- sillas: filas de producto ---------- */
   .prow { display: grid; gap: 10px; }
   .prow__item { display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 1.5rem; align-items: center; background: #fff; border-radius: 14px; padding: 1rem 1.25rem 1rem 1rem; }
-  .prow__img { display: block; width: 150px; height: 150px; background: #fff; border-radius: 10px; }
+  .prow__img { display: block; width: 150px; height: 150px; background: #fff; border-radius: 10px; overflow: hidden; }
   .prow__img img { width: 100%; height: 100%; object-fit: contain; }
   .prow__body { display: grid; gap: 0.3rem; min-width: 0; }
   .prow__pick { font-size: var(--step-small); font-weight: 700; color: var(--accent-strong); }

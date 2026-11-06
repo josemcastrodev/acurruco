@@ -3,6 +3,8 @@ import Base from "../../layouts/Base.astro";
 import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
 import { guias } from "../../data/guias";
+import ProductArt from "../../components/ProductArt.astro";
+import { fichaAmazon } from "../../data/amazon-products";
 
 import amazon from "../../data/amazon.json";
 
@@ -18,7 +20,6 @@ export function getStaticPaths() {
 }
 const { g, prods } = Astro.props;
 const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
-const asinImg = (asin: string) => `https://images-na.ssl-images-amazon.com/images/P/${asin}.01._SCLZZZZZZZ_.jpg`;
 const others = guias.filter((x) => x.slug !== g.slug).sort((a, b) => a.order - b.order);
 const description = g.tldr[0] + " " + g.intro.slice(0, 110) + "…";
 ---
@@ -67,7 +68,7 @@ const description = g.tldr[0] + " " + g.intro.slice(0, 110) + "…";
         {prods.length > 0 && (
           <section class="g__sec g__prods" id="productos">
             <h2>Lo que compraríamos</h2>
-            <p>Elegidos del catálogo para esta guía, con el precio de hoy. Lo de Carrefour abre su ficha con los precios; lo de Amazon abre Amazon.</p>
+            <p>Elegidos del catálogo para esta guía, con el precio de hoy. Cada uno abre su ficha, con el enlace a la tienda.</p>
             <ol class="prods" role="list">
               {prods.map((x: any) => x.p ? (
                 <li class="prod">
@@ -83,10 +84,10 @@ const description = g.tldr[0] + " " + g.intro.slice(0, 110) + "…";
                 </li>
               ) : (
                 <li class="prod">
-                  <a class="prod__a" href={`https://www.amazon.es/dp/${x.asin}?tag=acurruco-21`} rel="sponsored nofollow noopener" target="_blank">
-                    <span class="prod__img"><img src={asinImg(x.asin)} alt="" width="200" height="200" loading="lazy" /></span>
+                  <a class="prod__a" href={fichaAmazon(x.asin)}>
+                    <span class="prod__img prod__img--art"><ProductArt kind={x.a.kind} /></span>
                     <span class="prod__body">
-                      <span class="prod__brand">Amazon</span>
+                      <span class="prod__brand">{x.a.brand || "Amazon"}</span>
                       <strong class="prod__name">{x.a.name}</strong>
                       <span class="prod__why">{x.why}</span>
                       <span class="prod__price nums">{x.a.price ? eur(x.a.price) : "ver precio"} <small>en Amazon</small></span>
@@ -142,6 +143,7 @@ const description = g.tldr[0] + " " + g.intro.slice(0, 110) + "…";
   .prod__a { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 1.1rem; align-items: center; background: #fff; border-radius: 12px; padding: 0.8rem 1.1rem 0.8rem 0.8rem; text-decoration: none; color: inherit; transition: transform var(--t-ui) var(--ease-out); }
   .prod__img { display: block; aspect-ratio: 1; }
   .prod__img img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+  .prod__img :global(.art) { border-radius: 10px; }
   .prod__body { display: grid; gap: 0.15rem; }
   .prod__brand { font-size: var(--step-small); color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.72rem; }
   .prod__name { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.1rem; font-weight: 600; line-height: 1.2; }

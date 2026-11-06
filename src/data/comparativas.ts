@@ -1,7 +1,6 @@
 /* Las comparativas: datos de tests independientes (ADAC, OCU) cruzados con precios de hoy.
    Cada fila puede llevar el id de Carrefour (ficha propia) y/o una búsqueda en Amazon. */
 export type Row = { name: string; sub?: string; cells: string[]; grade?: string; carrefour?: string; amazon?: string; asin?: string; pick?: string };
-export const asinImg = (asin: string) => `https://images-na.ssl-images-amazon.com/images/P/${asin}.01._SCLZZZZZZZ_.jpg`;
 export type Comparativa = {
   slug: string; title: string; h: string; short: string; group: string; updated: string; photo: string;
   intro: string; tldr: string[]; columns: string[]; rows: Row[]; how: string[]; faq: [string, string][]; catalog: string;

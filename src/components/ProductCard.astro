@@ -8,7 +8,7 @@ const off = p.old && p.old > p.price ? Math.round((1 - p.price / p.old) * 100) :
 <article class="pc" data-reveal>
   <a class="pc__link" href={`/p/${p.id}/`}>
     <span class="pc__img">
-      <img src={p.img} alt={p.name} width="510" height="510" loading={lazy ? "lazy" : "eager"} decoding="async" />
+      <img src={p.img} alt={p.name} width="510" height="510" loading={lazy ? "lazy" : "eager"} decoding="async" onerror="this.onerror=null;this.src='/img/sin-foto.svg'" />
       {off >= 10 && <span class="pc__off nums">−{off} %</span>}
     </span>
     <span class="pc__body">

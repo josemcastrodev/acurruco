@@ -3,6 +3,7 @@ import Base from "../../layouts/Base.astro";
 import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
 import ProductCard from "../../components/ProductCard.astro";
+import AmazonCard from "../../components/AmazonCard.astro";
 import { edades } from "../../data/regalos-guia";
 import picks from "../../data/regalos.json";
 import amazonPicks from "../../data/regalos-amazon.json";
@@ -21,7 +22,6 @@ const description = `${e.intro.slice(0, 150)}…`;
 const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 const A = amazon as Record<string, { name: string; price: number | null }>;
 const cheap = ((amazonPicks as Record<string, [string, string][]>)[e.slug] || []).map(([asin, why]) => ({ asin, why, ...A[asin] }));
-const asinImg = (asin: string) => `https://images-na.ssl-images-amazon.com/images/P/${asin}.01._SCLZZZZZZZ_.jpg`;
 const bandas = [["De 25 a 60 €", (p: any) => p.price <= 60], ["Más de 60 €", (p: any) => p.price > 60]] as const;
 const whatOf = (label: string) => e.budget.find((b) => label.includes(b[0].replace("De ", "").replace("25 a 60", "25 a 60")) || b[0].includes(label.replace("De ", "")))?.[1];
 ---
@@ -72,18 +72,7 @@ const whatOf = (label: string) => e.budget.find((b) => label.includes(b[0].repla
             <h2 class="band__h nums">Hasta 25 €</h2>
             <p class="band__what">{e.budget[0][1]}. Estos los tiene Amazon; Carrefour no vende juguetes tan baratos online.</p>
           </header>
-          <ul class="acards" role="list">
-            {cheap.map((p) => (
-              <li>
-                <a class="acard" href={`https://www.amazon.es/dp/${p.asin}?tag=acurruco-21`} rel="sponsored nofollow noopener" target="_blank">
-                  <span class="acard__img"><img src={asinImg(p.asin)} alt="" width="300" height="300" loading="lazy" /></span>
-                  <strong class="acard__name">{p.name}</strong>
-                  <span class="acard__why">{p.why}</span>
-                  <span class="acard__price nums">{p.price ? eur(p.price) : "ver precio"} <small>en Amazon</small></span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          <div class="acards">{cheap.map((p) => <AmazonCard asin={p.asin} why={p.why} />)}</div>
         </section>
       )}
       {bandas.map(([label, test], bi) => {
@@ -99,7 +88,7 @@ const whatOf = (label: string) => e.budget.find((b) => label.includes(b[0].repla
             </header>
             <div class="band__grid">
               <a class="lead-pick" href={`/p/${first.id}/`}>
-                <span class="lead-pick__img"><img src={first.img} alt={first.name} width="510" height="510" loading="lazy" /></span>
+                <span class="lead-pick__img"><img src={first.img} alt={first.name} width="510" height="510" loading="lazy" onerror="this.onerror=null;this.src='/img/sin-foto.svg'" /></span>
                 <span class="lead-pick__body">
                   <span class="lead-pick__tag">Nuestra elección</span>
                   <strong class="lead-pick__name">{first.name}</strong>
@@ -166,14 +155,6 @@ const whatOf = (label: string) => e.budget.find((b) => label.includes(b[0].repla
   .lead-pick__go { font-size: var(--step-small); font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 0.2em; margin-top: 0.3rem; }
   .band__rest { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   .acards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-  .acard { display: grid; gap: 0.3rem; align-content: start; height: 100%; background: #fff; border-radius: 14px; padding: 1rem 1.1rem 1.2rem; text-decoration: none; color: inherit; transition: transform var(--t-ui) var(--ease-out); }
-  .acard__img { display: block; aspect-ratio: 1; margin: -0.2rem 0 0.4rem; }
-  .acard__img img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
-  .acard__name { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.05rem; font-weight: 600; line-height: 1.2; }
-  .acard__why { font-size: var(--step-small); color: var(--muted); }
-  .acard__price { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.3rem; font-weight: 600; margin-top: 0.2rem; }
-  .acard__price small { font-family: var(--font-text); font-size: var(--step-small); font-weight: 400; color: var(--muted); }
-  @media (hover: hover) and (pointer: fine) { .acard:hover { transform: translateY(-3px); } }
   @media (max-width: 1000px) { .acards { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 600px) { .acards { grid-template-columns: 1fr 1fr; gap: 8px; } }
   .gift__faq { display: grid; gap: 1rem; }

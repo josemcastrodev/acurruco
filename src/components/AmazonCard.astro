@@ -1,0 +1,33 @@
+---
+/* Tarjeta de un producto de Amazon: lleva a su ficha en Acurruco, como las de Carrefour. */
+import ProductArt from "./ProductArt.astro";
+import { amazonByAsin, fichaAmazon } from "../data/amazon-products";
+interface Props { asin: string; why?: string }
+const { asin, why } = Astro.props;
+const a = amazonByAsin.get(asin)!;
+---
+<article class="ac">
+  <a class="ac__link" href={fichaAmazon(asin)}>
+    <span class="ac__img"><ProductArt kind={a.kind} /></span>
+    <span class="ac__body">
+      {a.brand && <span class="ac__brand">{a.brand}</span>}
+      <span class="ac__name">{a.name}</span>
+      {why && <span class="ac__why">{why}</span>}
+      <span class="ac__price">ver precio <small>en Amazon</small></span>
+      <span class="ac__cta">Ver ficha y precios</span>
+    </span>
+  </a>
+</article>
+<style>
+  .ac { min-width: 0; }
+  .ac__link { display: grid; grid-template-rows: auto 1fr; height: 100%; text-decoration: none; color: inherit; background: #fff; border-radius: 12px; overflow: hidden; transition: transform var(--t-ui) var(--ease-out); }
+  .ac__img { display: block; aspect-ratio: 1; }
+  .ac__body { display: grid; gap: 0.3rem; align-content: start; padding: 0.9rem 1rem 1.1rem; }
+  .ac__brand { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .ac__name { font-weight: 600; line-height: 1.25; }
+  .ac__why { font-size: var(--step-small); color: var(--muted); }
+  .ac__price { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.15rem; font-weight: 600; margin-top: 0.2rem; }
+  .ac__price small { font-family: var(--font-text); font-size: var(--step-small); font-weight: 400; color: var(--muted); }
+  .ac__cta { font-size: var(--step-small); font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+  @media (hover: hover) and (pointer: fine) { .ac__link:hover { transform: translateY(-3px); } }
+</style>

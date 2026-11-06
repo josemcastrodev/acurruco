@@ -3,7 +3,9 @@ import Base from "../../layouts/Base.astro";
 import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
 import ProductCard from "../../components/ProductCard.astro";
-import { comparativas, asinImg } from "../../data/comparativas";
+import { comparativas } from "../../data/comparativas";
+import ProductArt from "../../components/ProductArt.astro";
+import { amazonByAsin, fichaAmazon } from "../../data/amazon-products";
 import amazon from "../../data/amazon.json";
 const A = amazon as Record<string, { price: number | null }>;
 const eurN = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
@@ -57,8 +59,8 @@ const description = c.tldr[0] + " " + c.intro.slice(0, 120) + "…";
           <tbody>
             {c.rows.map((r) => (
               <tr>
-                <td class="cmp__img">{(r.carrefour && products[r.carrefour]) ? <img src={products[r.carrefour].img} alt="" width="72" height="72" loading="lazy" /> : r.asin ? <img src={asinImg(r.asin)} alt="" width="72" height="72" loading="lazy" /> : <span class="cmp__noimg" aria-hidden="true"></span>}</td>
-                <td><strong>{r.name}</strong>{r.pick && <span class="pick">{r.pick}</span>}{r.sub && <span class="cmp__sub">{r.sub}</span>}</td>
+                <td class="cmp__img">{(r.carrefour && products[r.carrefour]) ? <img src={products[r.carrefour].img} alt="" width="72" height="72" loading="lazy" /> : r.asin ? <a class="cmp__art" href={fichaAmazon(r.asin)} tabindex="-1" aria-hidden="true"><ProductArt kind={amazonByAsin.get(r.asin)?.kind} /></a> : <span class="cmp__noimg" aria-hidden="true"></span>}</td>
+                <td><strong>{r.asin && !(r.carrefour && products[r.carrefour]) ? <a class="cmp__name" href={fichaAmazon(r.asin)}>{r.name}</a> : (r.carrefour && products[r.carrefour]) ? <a class="cmp__name" href={`/p/${r.carrefour}/`}>{r.name}</a> : r.name}</strong>{r.pick && <span class="pick">{r.pick}</span>}{r.sub && <span class="cmp__sub">{r.sub}</span>}</td>
                 {r.cells.map((cell, i) => <td class="nums">{c.columns[i + 1] === "Nota ADAC" ? <span class:list={["grade", { "grade--good": r.grade && Number(r.grade.replace(",", ".")) <= 2.5, "grade--none": /sin test/i.test(cell) }]}>{cell}</span> : cell}</td>)}
                 <td class="cmp__where">
                   {r.carrefour && products[r.carrefour] && <a class="offer offer--cf" href={`/p/${r.carrefour}/`}><span>Carrefour</span><strong class="nums">{eurN(products[r.carrefour].price)}</strong></a>}
@@ -116,6 +118,8 @@ const description = c.tldr[0] + " " + c.intro.slice(0, 120) + "…";
   .cmp__img { width: 88px; }
   .cmp__img img { width: 72px; height: 72px; object-fit: contain; background: #fff; border-radius: 8px; }
   .cmp__noimg { display: none; }
+  .cmp__art { display: block; width: 72px; height: 72px; border-radius: 8px; overflow: hidden; }
+  .cmp__name { color: inherit; text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
   .cmp th { text-align: left; font-size: var(--step-small); color: var(--muted); font-weight: 600; padding: 1rem 1.25rem; background: var(--surface); }
   .cmp td { padding: 1rem 1.25rem; vertical-align: top; border-top: 1px solid var(--surface); }
   .cmp__sub { display: block; font-size: var(--step-small); color: var(--muted); max-width: 30ch; margin-top: 0.2rem; }
