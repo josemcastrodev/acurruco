@@ -1,8 +1,9 @@
 # Selección a mano de regalos por edad desde el catálogo de Carrefour.
 # Cada entrada es un id o una expresión regular (primer producto en stock, el más barato).
 import json, glob, re, os
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 byid = {}
-for f in glob.glob('C:/bebes/site/src/data/catalog/*.json'):
+for f in glob.glob(os.path.join(ROOT, 'src', 'data', 'catalog', '*.json')):
     if f.endswith('index.json'): continue
     for p in json.load(open(f, encoding='utf-8')): byid[p['id']] = p
 instock = [p for p in byid.values() if p.get('stock', True)]
@@ -73,7 +74,7 @@ PICKS = {
     ],
 }
 
-out_path = 'C:/bebes/site/src/data/regalos.json'
+out_path = os.path.join(ROOT, 'src', 'data', 'regalos.json')
 R = json.load(open(out_path, encoding='utf-8')) if os.path.exists(out_path) else {}
 for slug, wants in PICKS.items():
     ids = []
