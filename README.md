@@ -1,6 +1,14 @@
+<p align="center">
+  <img src="docs/cover.jpg" alt="Acurruco · Guías y catálogo para el primer año del bebé · Astro, TypeScript, Python, GitHub Actions, Cloudflare Pages" width="100%">
+</p>
+
 # Acurruco
 
 Guías, comparativas y catálogo para el primer año del bebé. Sitio estático hecho con Astro y publicado en Cloudflare Pages en https://acurruco.com.
+
+<p align="center">
+  <a href="https://acurruco.com"><img src="docs/screenshot.jpg" alt="Portada de acurruco.com" width="100%"></a>
+</p>
 
 ## Desarrollo
 
