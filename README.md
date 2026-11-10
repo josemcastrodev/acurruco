@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/cover.jpg" alt="Acurruco · Guías y catálogo para el primer año del bebé · Astro, TypeScript, Python, GitHub Actions, Cloudflare Pages" width="100%">
+  <img src="docs/portada.jpg" alt="Acurruco · Guías y catálogo para el primer año del bebé · Astro, TypeScript, Python, GitHub Actions, Cloudflare Pages" width="100%">
 </p>
 
 # Acurruco
