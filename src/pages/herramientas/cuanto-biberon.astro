@@ -5,6 +5,18 @@ const t = byHref("/herramientas/cuanto-biberon/");
 const all = import.meta.glob("../../data/catalog/*.json", { eager: true });
 const byId = new Map<string, any>(); for (const k in all) if (!k.endsWith("index.json")) for (const p of (all[k] as any).default) byId.set(p.id, p);
 const picks = ["42395281061", "44415325438", "35556769831", "45391647463", "45391648081"].map((id) => byId.get(id)).filter((p) => p && p.stock);
+import oms from "../../data/oms.json";
+/* Tabla por edad con la misma regla que la calculadora (150 ml/kg, tope 1 litro, menos desde los 6 meses) y el peso mediano de la OMS. */
+const pesoMed = (m: number) => { const med = (t: number[][]) => { const i = Math.floor(m), f = m - i; return t[i][1] + (t[i + 1][1] - t[i][1]) * f; }; return (med(oms.peso.m) + med(oms.peso.f)) / 2; };
+const rango = (x: number) => { const lo = Math.floor(x / 30) * 30, hi = lo + 30; return x - lo <= 5 ? `${lo}` : hi - x <= 5 ? `${hi}` : `${lo}–${hi}`; };
+const tabla = [
+  { edad: "1 a 3 días", kg: "—", toma: "10–30", n: "8–12", dia: "—" },
+  { edad: "4 a 7 días", kg: "—", toma: "30–60", n: "8–9", dia: "—" },
+  ...[[0.5, "2 a 4 semanas", 8], [1, "1 mes", 7], [2, "2 meses", 6], [3, "3 meses", 6], [4, "4 meses", 5], [5, "5 meses", 5], [6, "6 a 8 meses", 4], [9, "9 a 12 meses", 3]].map(([m, edad, n]) => {
+    const kg = pesoMed(m as number); let dia = Math.min(1000, kg * 150); if ((m as number) >= 6) dia = Math.min(dia, (m as number) >= 9 ? 600 : 800);
+    return { edad: edad as string, kg: kg.toFixed(1).replace(".", ","), toma: rango(dia / (n as number)), n: String(n), dia: String(Math.round(dia / 10) * 10).replace(/\B(?=(\d{3})+(?!\d))/g, ".") };
+  }),
+];
 const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 ---
 <ToolPage tool={t}>
@@ -30,6 +42,14 @@ const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2,
     <p class="muted small" id="b-txt"></p>
     <p class="muted small">Regla de 150 ml por kilo y día (margen de 120 a 180), tope de un litro, y menos a partir de los 6 meses con la alimentación complementaria. Con leche materna extraída, de 90 a 150 ml por kilo. Son cantidades orientativas: manda el hambre del bebé y lo que diga tu pediatra.</p>
   </form>
+  <section class="panel" aria-labelledby="tabla-t">
+    <h2 id="tabla-t">Tabla de biberón por edad</h2>
+    <div class="bibt-wrap"><table class="bibt nums">
+      <thead><tr><th scope="col">Edad</th><th scope="col">Peso típico</th><th scope="col">ml por toma</th><th scope="col">Tomas al día</th><th scope="col">ml al día</th></tr></thead>
+      <tbody>{tabla.map((r) => <tr><th scope="row">{r.edad}</th><td>{r.kg === "—" ? "—" : `${r.kg} kg`}</td><td><strong>{r.toma} ml</strong></td><td>{r.n}</td><td>{r.dia === "—" ? "—" : `${r.dia} ml`}</td></tr>)}</tbody>
+    </table></div>
+    <p class="note">Leche de fórmula, con el peso mediano de la OMS para cada edad (media de niños y niñas). Si tu bebé pesa más o menos, la calculadora de arriba lo ajusta a su peso. A partir de los 6 meses la leche baja porque entra la alimentación complementaria.</p>
+  </section>
   {picks.length > 0 && (
     <section class="panel" aria-labelledby="picks-t">
       <h2 id="picks-t">Lo que hace falta para prepararlo</h2>
@@ -43,6 +63,13 @@ const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2,
   .bib .f, .bib .f > span:first-child { color: var(--field-ink); } .bib .field { color: var(--ink); min-height: 2.8rem; }
   .bib .seg { background: rgba(255,255,255,0.08); } .bib .seg input:checked + span { background: var(--accent); color: var(--accent-ink); }
   .bib__sum { display: grid; grid-template-columns: minmax(12rem, 1fr) 2fr; gap: 1rem; }
+  .bibt-wrap { overflow-x: auto; max-width: 100%; }
+  .bibt { width: 100%; border-collapse: collapse; min-width: 30rem; }
+  .bibt th, .bibt td { text-align: left; padding: 0.65rem 0.9rem; border-top: 1px solid var(--bg); font-size: var(--step-small); }
+  .bibt thead th { border-top: 0; color: var(--muted); font-weight: 600; }
+  .bibt tbody th { font-weight: 600; }
+  .bibt td { white-space: nowrap; }
+  .bibt strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.1rem; font-weight: 600; }
   @media (max-width: 700px) { .bib__in, .bib__sum { grid-template-columns: 1fr; } }
 </style>
 <script>

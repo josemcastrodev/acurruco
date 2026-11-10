@@ -23,6 +23,8 @@ export async function getStaticPaths() {
 const { p, cat, related } = Astro.props;
 const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 const groups: Record<string, string> = { coche: "Para el coche", paseo: "Para pasear", dormir: "Para dormir", casa: "Para la casa", comer: "Para comer", jugar: "Para jugar", cuidado: "Para el cuidado" };
+/* Marca los clics de acurruco.com en Awin (la cuenta de publisher la comparte con otra web): clickref=acurruco. */
+const awinLink = (u: string) => /awin1\.com/.test(u) && !/[?&]clickref=/.test(u) ? `${u}${u.includes("?") ? "&" : "?"}clickref=acurruco` : u;
 const twin = amazonItems.find((a) => a.carrefour === p.id);
 const amazon = twin ? amazonLink(twin.asin) : null;
 const img = p.img.startsWith("/") ? `https://acurruco.com${p.img}` : p.img;
@@ -61,7 +63,7 @@ const ahorro = p.old && p.old > p.price ? Math.round((1 - p.price / p.old) * 100
             <span class="offer__price nums">{eur(p.price)}</span>
             {ahorro > 0 && <span class="offer__old nums">antes {eur(p.old)} · −{ahorro} %</span>}
             <span class="offer__stock">{p.stock ? "En stock hoy" : "Sin stock ahora mismo"}</span>
-            <a class="button" href={p.link} rel="sponsored nofollow noopener" target="_blank">Ver en Carrefour</a>
+            <a class="button" href={awinLink(p.link)} rel="sponsored nofollow noopener" target="_blank">Ver en Carrefour</a>
           </div>
           {twin && <div class="offer">
             <span class="offer__store">Amazon</span>

@@ -10,6 +10,8 @@ import amazon from "../../data/amazon.json";
 const A = amazon as Record<string, { price: number | null }>;
 const eurN = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 import index from "../../data/catalog/index.json";
+import { porMarca, panalesPrimerAno, miles } from "../../data/panales-precios";
+const hoy = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
 
 export async function getStaticPaths() {
   const all = import.meta.glob("../../data/catalog/*.json", { eager: true });
@@ -21,6 +23,7 @@ const { c, products } = Astro.props;
 const cat = index.find((x) => x.slug === c.catalog);
 const others = comparativas.filter((x) => x.slug !== c.slug);
 const picks = c.rows.filter((r) => r.carrefour && products[r.carrefour]).map((r) => products[r.carrefour!]);
+const cfMarca = porMarca.find((m) => m.name === "Carrefour Baby"), dodot = porMarca.find((m) => m.name === "Dodot");
 const description = c.tldr[0] + " " + c.intro.slice(0, 120) + "…";
 ---
 <Base title={`${c.title} · Acurruco`} description={description} canonical={`https://acurruco.com/comparativas/${c.slug}/`} ogImage={`https://acurruco.com${c.photo}`}>
@@ -44,6 +47,34 @@ const description = c.tldr[0] + " " + c.intro.slice(0, 120) + "…";
       </div>
       <figure class="cmpp__photo"><img src={c.photo} alt="" width="1800" height="1200" fetchpriority="high" /></figure>
     </header>
+
+    {c.slug === "panales" && (
+      <section class="year" aria-labelledby="year-title">
+        <h2 id="year-title" class="year__h">El primer año, en números</h2>
+        <div class="year__facts nums">
+          <div class="year__big"><strong>{miles(Math.round(panalesPrimerAno / 100) * 100)}</strong><span>pañales el primer año (hasta 2.500 en algunos bebés)</span></div>
+          {cfMarca?.ano && <div><strong>{miles(cfMarca.ano)} €</strong><span>con Carrefour Baby</span></div>}
+          {dodot?.ano && <div><strong>{miles(dodot.ano)} €</strong><span>con Dodot</span></div>}
+          {cfMarca?.ano && dodot?.ano && <div><strong>{miles(dodot.ano - cfMarca.ano)} €</strong><span>de diferencia en un año</span></div>}
+        </div>
+        <div class="table-wrap">
+          <table class="cmp brands-t">
+            <caption class="sr-only">Precio por pañal por marca y talla, y coste del primer año</caption>
+            <thead><tr><th>Marca</th><th>Talla 1</th><th>Talla 2</th><th>Talla 3</th><th>Talla 4</th><th>Primer año</th></tr></thead>
+            <tbody>
+              {porMarca.map((m) => (
+                <tr class:list={{ "is-cf": m.name === "Carrefour Baby" }}>
+                  <th scope="row">{m.href ? <a class="cmp__name" href={m.href}>{m.name}</a> : m.name}{m.nota && <span class="cmp__sub">{m.nota}</span>}</th>
+                  {m.precio.slice(0, 4).map((u) => <td class="nums">{u ? eurN(u) : "—"}</td>)}
+                  <td class="nums"><strong>{m.ano ? `${miles(m.ano)} €` : "—"}</strong></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="small muted">Precio por pañal: mediana de los paquetes en stock en carrefour.es el {hoy}; Deliplus, precio de Mercadona. Primer año: 8 pañales al día el primer mes, 7 hasta los tres meses, 6 hasta los seis y 5 hasta el año. Sin precio de una talla no se puede calcular el año (—). Para tu caso, la <a class="link-plain" href="/herramientas/calculadora-de-panales/">calculadora de pañales</a>.</p>
+      </section>
+    )}
 
     <section class="tldr" aria-labelledby="tldr-title">
       <h2 id="tldr-title">En resumen</h2>
@@ -148,4 +179,18 @@ const description = c.tldr[0] + " " + c.intro.slice(0, 120) + "…";
   .more { display: grid; gap: 1rem; }
   .more ul { display: grid; gap: 0.4rem; }
   @media (max-width: 820px) { .cmpp__head { grid-template-columns: 1fr; } .cmpp__photo { aspect-ratio: 3 / 2; } .grid { grid-template-columns: 1fr 1fr; gap: 8px; } }
+  .year { display: grid; gap: 1rem; }
+  .year__h { font-size: var(--step-head); line-height: 1.05; }
+  .year__facts { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 8px; }
+  .year__facts > div { display: grid; gap: 0.2rem; align-content: start; padding: 1rem 1.2rem; background: #fff; border-radius: 12px; }
+  .year__facts strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 72; font-size: clamp(1.6rem, 1.2rem + 1.5vw, 2.2rem); line-height: 1; font-weight: 600; }
+  .year__facts span { font-size: var(--step-small); color: var(--muted); }
+  .year__facts .year__big { background: var(--accent); }
+  .year__facts .year__big span { color: var(--accent-ink); }
+  .year__facts .year__big strong { font-size: clamp(2.2rem, 1.6rem + 2.5vw, 3.4rem); }
+  .brands-t { min-width: 560px; }
+  .brands-t td { white-space: nowrap; }
+  .brands-t th[scope=row] { text-align: left; font-weight: 600; background: none; color: var(--ink); font-size: var(--step-body); padding: 1rem 1.25rem; border-top: 1px solid var(--surface); }
+  .brands-t tr.is-cf th, .brands-t tr.is-cf td { background: var(--bg); }
+  @media (max-width: 820px) { .year__facts { grid-template-columns: repeat(3, minmax(0, 1fr)); } .year__facts .year__big { grid-column: 1 / -1; } .year__facts > div { padding: 0.8rem 0.9rem; } .year__facts strong { font-size: 1.45rem; } }
 </style>

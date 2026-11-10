@@ -1,5 +1,8 @@
 /* Las comparativas: datos de tests independientes (ADAC, OCU) cruzados con precios de hoy.
    Cada fila lleva el id de Carrefour o el ASIN de Amazon: todo producto tiene ficha propia; sin ficha no entra en la tabla. */
+import { porMarca, panalesPrimerAno, miles } from "./panales-precios";
+const cfAno = porMarca.find((m) => m.name === "Carrefour Baby")?.ano, dodotAno = porMarca.find((m) => m.name === "Dodot")?.ano;
+const nPanales = miles(Math.round(panalesPrimerAno / 100) * 100);
 export type Row = { name: string; sub?: string; cells: string[]; grade?: string; carrefour?: string; asin?: string; pick?: string };
 export type Comparativa = {
   slug: string; title: string; h: string; short: string; group: string; updated: string; photo: string;
@@ -41,8 +44,8 @@ export const comparativas: Comparativa[] = [
     catalog: "cunas",
   },
   {
-    slug: "panales", title: "Mejores pañales para recién nacido: comparativa de precio por pañal", h: "Pañales: cuál y cuántos", short: "Pañales", group: "cuidado", updated: "6 de noviembre de 2026", photo: "/img/photos/cmp-panales.jpg",
-    intro: "Un bebé gasta unos 2.500 pañales el primer año. La diferencia entre la marca más cara y la marca blanca son 400–500 € al año, y en absorción diurna casi no se nota. Aquí tienes el precio por pañal de hoy en Carrefour, talla a talla, y lo que dicen los tests de la OCU.",
+    slug: "panales", title: "Mejores pañales para recién nacido: comparativa de precio por pañal", h: "Pañales: cuál y cuántos", short: "Pañales", group: "cuidado", updated: "10 de noviembre de 2026", photo: "/img/photos/cmp-panales.jpg",
+    intro: `Un bebé gasta entre 2.200 y 2.500 pañales el primer año. Con la marca Carrefour Baby salen por unos ${cfAno} €; con Dodot, por unos ${dodotAno} €. En absorción de día casi no se nota la diferencia. Aquí tienes el precio por pañal de hoy, marca a marca y talla a talla, y lo que dicen los tests de la OCU.`,
     tldr: ["Para el día: la marca blanca de Carrefour (ultra dry o soft&protect) o Deliplus de Mercadona, a 0,15–0,23 € el pañal.", "Para la noche y el hospital: Dodot Sensitive, el que mejor ajusta al recién nacido, a 0,35–0,40 €.", "Compra paquetes grandes solo cuando sepas la talla: la 1 dura dos o tres semanas.", "La OCU pone a Lupilu (Lidl) y a Carrefour eco en el podio de su último test."],
     columns: ["Pañal", "Talla y peso", "Formato", "Precio por pañal", "Precio hoy"],
     rows: [
@@ -56,7 +59,7 @@ export const comparativas: Comparativa[] = [
       { name: "Moltex Nature No1", sub: "ecológico", cells: ["T1 · 2–6 kg", "6 × 23 ud.", "0,21 €", "en Amazon"], asin: "B0DDV1RYTG" },
     ],
     how: ["El precio por pañal es lo único que vale para comparar: el mismo Dodot cuesta 0,22 o 0,41 € según el paquete.", "La talla va por peso, pero cada marca ajusta distinto. Si hay escapes por la espalda, sube de talla; si deja marcas en los muslos, también.", "Los indicadores de humedad y el hueco para el cordón son útiles las dos primeras semanas; después dan igual.", "La OCU y Stiftung Warentest no encuentran diferencias de irritación entre marcas: la crema y los cambios frecuentes importan más que el pañal."],
-    faq: [["¿Cuántos pañales de talla 1 compro antes de nacer?", "Un paquete grande (80–90) y otro de talla 2. Un recién nacido de 3,5 kg pasa a la talla 2 en unas tres semanas."], ["¿Pañales de tela?", "Ahorran dinero y residuos, pero son 20–25 pañales, dos lavadoras extra a la semana y entre 300 y 500 € de inversión inicial. Muchas familias los combinan con desechables para la noche."], ["¿Y las toallitas?", "Las de agua (WaterWipes o las de Carrefour 99 % agua) para el primer mes; después, cualquiera sin perfume."]],
+    faq: [["¿Cuántos pañales usa un bebé el primer año?", `Unos ${nPanales}: 8 al día el primer mes, 7 hasta los tres meses, 6 hasta los seis y 5 hasta el año. Hay bebés que llegan a 2.500, sobre todo si el primer mes se cambian cada dos horas.`], ["¿Cuánto cuestan los pañales el primer año?", `Con la marca Carrefour Baby, unos ${cfAno} €; con Dodot Sensitive, unos ${dodotAno} €. La marca blanca sale entre 0,15 y 0,23 € el pañal y Dodot entre 0,35 y 0,50 €, según la talla.`], ["¿Cuántos pañales de talla 1 compro antes de nacer?", "Un paquete grande (80–90) y otro de talla 2. Un recién nacido de 3,5 kg pasa a la talla 2 en unas tres semanas."], ["¿Pañales de tela?", "Ahorran dinero y residuos, pero son 20–25 pañales, dos lavadoras extra a la semana y entre 300 y 500 € de inversión inicial. Muchas familias los combinan con desechables para la noche."], ["¿Y las toallitas?", "Las de agua (WaterWipes o las de Carrefour 99 % agua) para el primer mes; después, cualquiera sin perfume."]],
     catalog: "panales",
   },
   {

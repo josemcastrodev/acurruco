@@ -1,17 +1,8 @@
 ---
 import ToolPage from "../../components/ToolPage.astro";
 import { byHref } from "../../data/herramientas";
-import panales from "../../data/catalog/panales.json";
+import { precios, tramos, panalesPrimerAno, miles } from "../../data/panales-precios";
 const t = byHref("/herramientas/calculadora-de-panales/");
-/* Precio por pañal de hoy en Carrefour, por marca y talla, a partir del catálogo (unidades en el nombre). */
-const perUnit = (p: any) => { const m = p.name.match(/(\d{2,3})\s*(?:unidades|uds?|pañales|u\b)/i); return m ? p.price / Number(m[1]) : null; };
-const talla = (p: any) => Number((p.tags.find((x: string) => /^Talla \d/.test(x)) || "").replace("Talla ", "")) || null;
-const marcas: Record<string, Record<number, number[]>> = {};
-for (const p of panales as any[]) { const u = perUnit(p), t = talla(p); if (!u || !t || !p.stock || /pants|bañador|pijama|ninjamas/i.test(p.name)) continue; const b = /dodot/i.test(p.brand) ? "Dodot" : p.brand === "Carrefour Baby" ? "Carrefour Baby" : /huggies/i.test(p.brand) ? "Huggies" : /pampers/i.test(p.brand) ? "Pampers" : null; if (!b) continue; ((marcas[b] ||= {})[t] ||= []).push(u); }
-const med = (a: number[]) => a.sort((x, y) => x - y)[Math.floor(a.length / 2)];
-const precios = Object.entries(marcas).map(([name, by]) => ({ name, href: `/catalogo/panales/?marca=${encodeURIComponent(name === "Carrefour Baby" ? "Carrefour Baby" : name)}`, precio: [1, 2, 3, 4, 5, 6].map((t) => by[t] ? Number(med(by[t]).toFixed(3)) : null) }));
-// Referencias de otros supermercados que no están en el catálogo (precio por pañal, noviembre de 2026)
-precios.push({ name: "Deliplus (Mercadona)", href: "/comparativas/panales/", precio: [0.22, 0.16, 0.15, 0.15, 0.17, 0.19] });
 const hoy = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
 ---
 <ToolPage tool={t}>
@@ -25,7 +16,7 @@ const hoy = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "lon
       <div><strong id="c-dia">8</strong><span>pañales al día</span></div>
       <div><strong id="c-mes">240</strong><span>al mes</span></div>
       <div><strong id="c-talla">1</strong><span>talla aproximada</span></div>
-      <div><strong id="c-ano">2.500</strong><span>el primer año</span></div>
+      <div><strong id="c-ano">{miles(Math.round(panalesPrimerAno / 100) * 100)}</strong><span>el primer año</span></div>
     </div>
     <ol class="bars" role="list" id="bars"></ol>
     <p class="muted small" id="ahorro"></p>
@@ -39,17 +30,16 @@ const hoy = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "lon
   .calc input[type=range] { accent-color: var(--accent); }
   .bars { display: grid; gap: 8px; }
   .bars .bar { display: grid; grid-template-columns: minmax(9rem, 14rem) 1fr auto; gap: 1rem; align-items: center; }
-  .bars .bar a { color: var(--field-ink); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 0.18em; font-weight: 600; font-size: var(--step-small); }
+  .bars .bar a, .bars .bar > span:first-child { color: var(--field-ink); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 0.18em; font-weight: 600; font-size: var(--step-small); }
   .bars .bar__track { height: 1.1rem; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
   .bars .bar__fill { height: 100%; background: var(--field-muted); border-radius: 6px; transition: width 400ms var(--ease-out); }
   .bars .bar--best .bar__fill { background: var(--accent); }
   .bars .bar strong { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 36; font-size: 1.2rem; white-space: nowrap; }
   @media (max-width: 640px) { .bars .bar { grid-template-columns: 1fr auto; } .bars .bar__track { grid-column: 1 / -1; } }
 </style>
-<script define:vars={{ precios }}>
+<script define:vars={{ precios, tramos }}>
   const range = document.getElementById("edad"), out = document.getElementById("edad-out"), bars = document.getElementById("bars"), ahorro = document.getElementById("ahorro");
   const $ = (id) => document.getElementById(id);
-  const tramos = [{ hasta: 1, dia: 8, talla: 1 }, { hasta: 3, dia: 7, talla: 2 }, { hasta: 6, dia: 6, talla: 3 }, { hasta: 12, dia: 5, talla: 4 }, { hasta: 18, dia: 4.5, talla: 5 }, { hasta: 24, dia: 4, talla: 6 }];
   const eur = (n) => Math.round(n).toLocaleString("es-ES") + " €";
   const paint = () => {
     const m = Number(range.value);
@@ -61,7 +51,7 @@ const hoy = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "lon
     const max = rows[rows.length - 1].coste;
     bars.replaceChildren(...rows.map((r, i) => {
       const li = document.createElement("li"); li.className = "bar" + (i === 0 ? " bar--best" : "");
-      const a = document.createElement("a"); a.href = r.href; a.textContent = r.name;
+      const a = document.createElement(r.href ? "a" : "span"); if (r.href) a.href = r.href; a.textContent = r.name;
       const track = document.createElement("div"); track.className = "bar__track";
       const fill = document.createElement("div"); fill.className = "bar__fill"; fill.style.width = Math.round((r.coste / max) * 100) + "%"; track.append(fill);
       const st = document.createElement("strong"); st.className = "nums"; st.textContent = eur(r.coste) + "/mes";

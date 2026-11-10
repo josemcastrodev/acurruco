@@ -109,8 +109,8 @@ export const tools: Tool[] = [
   {
     slug: "cuanto-biberon", href: "/herramientas/cuanto-biberon/",
     name: "Cuánto biberón", h1: "Cuánto biberón le toca",
-    title: "Calculadora de biberón: cuántos ml por toma y cuántas tomas al día · Acurruco",
-    description: "Peso y edad del bebé y te decimos cuántos ml de leche al día, cuántas tomas y cuánto por biberón, con la regla de 150 ml por kilo que usan los pediatras.",
+    title: "Cuánto biberón toma un bebé: tabla de ml por edad y peso",
+    description: "60–90 ml a las 2 semanas, 90 al mes, 150 a los 3 meses y 180–210 desde los 4. Tabla por edad y calculadora con el peso de tu bebé: ml por toma y tomas al día.",
     lead: "Peso y edad. Te decimos cuánta leche al día, en cuántas tomas y cuánto por biberón, con la regla que usan los pediatras: unos 150 ml por kilo y día.",
     teaser: "ml por toma y tomas al día según peso y edad.",
     photo: "/img/photos/biberon.jpg", alt: "Biberón con medidas visibles junto a un bote de leche de fórmula y una cuchara dosificadora",
