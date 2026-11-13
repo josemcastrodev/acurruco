@@ -41,7 +41,7 @@
   "name": "Chicco Next2Me Magic Evo",
   "price": null,
   "date": "2026-11-06",
-  "carrefour": "41813544486",
+  "carrefour": "39302160850",
   "brand": "Chicco",
   "kind": "cuna"
  },
@@ -49,7 +49,7 @@
   "name": "Chicco Next2Me Essential",
   "price": null,
   "date": "2026-11-06",
-  "carrefour": "40931925729",
+  "carrefour": "45295368231",
   "brand": "Chicco",
   "kind": "cuna"
  },
@@ -58,7 +58,8 @@
   "price": null,
   "date": "2026-11-06",
   "brand": "Chicco",
-  "kind": "cuna"
+  "kind": "cuna",
+  "carrefour": "45957264498"
  },
  "B0FD3SCK73": {
   "name": "Kinderkraft Nestee Up 2",
@@ -242,6 +243,6 @@
   "date": "2026-11-06",
   "brand": "Chicco",
   "kind": "cuna",
-  "carrefour": "40931925729"
+  "carrefour": "45295368231"
  }
 }

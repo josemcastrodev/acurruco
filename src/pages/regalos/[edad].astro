@@ -18,18 +18,18 @@ export async function getStaticPaths() {
 const { e, items } = Astro.props;
 const photos: Record<string, string> = { "recien-nacido": "/img/photos/regalo-rn-43.jpg", "3-6-meses": "/img/photos/regalo-3-6-43.jpg", "6-12-meses": "/img/photos/regalo-6-12-43.jpg", "1-ano": "/img/photos/regalo-1-2-43.jpg", navidad: "/img/photos/navidad-43.jpg" };
 const others = edades.filter((x) => x.slug !== e.slug);
-const description = `${e.intro.slice(0, 150)}…`;
+const description = e.desc ?? `${e.intro.slice(0, 150)}…`;
 const eur = (n: number) => n.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 const A = amazon as Record<string, { name: string; price: number | null }>;
 const cheap = ((amazonPicks as Record<string, [string, string][]>)[e.slug] || []).map(([asin, why]) => ({ asin, why, ...A[asin] }));
 const bandas = [["De 25 a 60 €", (p: any) => p.price <= 60], ["Más de 60 €", (p: any) => p.price > 60]] as const;
 const whatOf = (label: string) => e.budget.find((b) => label.includes(b[0].replace("De ", "").replace("25 a 60", "25 a 60")) || b[0].includes(label.replace("De ", "")))?.[1];
 ---
-<Base title={`${e.title} · ideas que se usan de verdad · Acurruco`} description={description} canonical={`https://acurruco.com/regalos/${e.slug}/`} ogImage={`https://acurruco.com${photos[e.slug]}`}>
+<Base title={e.seo ?? `${e.title} · ideas que se usan de verdad · Acurruco`} description={description} canonical={`https://acurruco.com/regalos/${e.slug}/`} ogImage={`https://acurruco.com${photos[e.slug]}`}>
   <Fragment slot="head">
     <script type="application/ld+json" is:inline set:html={JSON.stringify({
       "@context": "https://schema.org", "@graph": [
-        { "@type": "Article", headline: e.h, description, datePublished: "2026-11-06", image: `https://acurruco.com${photos[e.slug]}`, inLanguage: "es-ES", author: { "@type": "Organization", name: "Acurruco" }, publisher: { "@type": "Organization", name: "Acurruco" }, dateModified: "2026-11-06", mainEntityOfPage: `https://acurruco.com/regalos/${e.slug}/` },
+        { "@type": "Article", headline: e.h, description, datePublished: "2026-11-06", image: `https://acurruco.com${photos[e.slug]}`, inLanguage: "es-ES", author: { "@type": "Organization", name: "Acurruco" }, publisher: { "@type": "Organization", name: "Acurruco" }, dateModified: e.modified ?? "2026-11-06", mainEntityOfPage: `https://acurruco.com/regalos/${e.slug}/` },
         { "@type": "FAQPage", mainEntity: e.faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
         { "@type": "ItemList", name: e.h, itemListElement: items.slice(0, 20).map((p: any, i: number) => ({ "@type": "ListItem", position: i + 1, url: `https://acurruco.com/p/${p.id}/`, name: p.name })) },
         { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Inicio", item: "https://acurruco.com/" }, { "@type": "ListItem", position: 2, name: "Regalos", item: "https://acurruco.com/regalos/" }, { "@type": "ListItem", position: 3, name: e.short }] },
@@ -65,6 +65,21 @@ const whatOf = (label: string) => e.budget.find((b) => label.includes(b[0].repla
           <p>{e.bullets[2]}</p>
         </div>
       </section>
+
+      {e.months && (
+        <section class="months" aria-labelledby="months-title">
+          <h2 id="months-title" class="head months__h">Mes a mes: qué hace y qué regalarle</h2>
+          <ol class="months__list" role="list">
+            {e.months.map((x) => (
+              <li class="month">
+                <h3 class="month__m">{x.m}</h3>
+                <p class="month__hace">{x.hace}</p>
+                <p class="month__regalo"><strong>Qué regalarle:</strong> {x.regalo}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       {cheap.length > 0 && (
         <section class="band" aria-label="Hasta 25 €">
@@ -124,6 +139,16 @@ const whatOf = (label: string) => e.budget.find((b) => label.includes(b[0].repla
   .advice__col--no p, .advice__col--tip p { color: var(--muted); }
   .advice__col--tip { background: var(--accent); color: var(--accent-ink); }
   .advice__col--tip p { color: var(--accent-ink); }
+  /* mes a mes */
+  .months { display: grid; gap: 1.25rem; }
+  .months__h { font-size: var(--step-head); }
+  .months__list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .month { display: grid; gap: 0.6rem; align-content: start; padding: 1.3rem 1.4rem; background: #fff; border-radius: 14px; }
+  .month__m { font-family: var(--font-display); font-variation-settings: "SOFT" 100, "opsz" 72; font-size: 1.7rem; line-height: 1; font-weight: 600; }
+  .month__hace { font-size: var(--step-small); color: var(--muted); }
+  .month__regalo { font-size: var(--step-small); }
+  @media (max-width: 1000px) { .months__list { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .months__list { grid-template-columns: 1fr; gap: 8px; } }
   /* bandas por presupuesto: una elección grande y el resto pequeño */
   .band { display: grid; gap: 1.25rem; }
   .band__head { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; }
