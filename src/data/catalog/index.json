@@ -3,12 +3,12 @@
   "slug": "sillas-de-coche",
   "title": "Sillas de coche",
   "group": "coche",
-  "count": 589,
+  "count": 587,
   "min": 51.95,
   "brands": [
    [
     "Lorelli",
-    108
+    106
    ],
    [
     "Chipolino",
@@ -194,23 +194,23 @@
   "tags": [
    [
     "i-Size (R129)",
-    448
+    446
    ],
    [
     "Evolutiva desde nacimiento (40–105/150 cm)",
-    304
+    303
    ],
    [
     "Isofix",
-    233
+    232
    ],
    [
     "De 76/100 a 150 cm (3 a 12 años)",
-    199
+    198
    ],
    [
     "Giratoria",
-    163
+    162
    ],
    [
     "Portabebés (40–87 cm)",
@@ -226,7 +226,7 @@
   "slug": "accesorios-coche",
   "title": "Accesorios para el coche",
   "group": "coche",
-  "count": 18,
+  "count": 19,
   "min": 62.0,
   "brands": [
    [
@@ -258,6 +258,10 @@
     1
    ],
    [
+    "Babyline",
+    1
+   ],
+   [
     "Lorelli",
     1
    ],
@@ -272,12 +276,12 @@
   "slug": "carritos",
   "title": "Carritos de bebé",
   "group": "paseo",
-  "count": 423,
+  "count": 422,
   "min": 54.23,
   "brands": [
    [
     "Chipolino",
-    75
+    74
    ],
    [
     "Lorelli",
@@ -447,7 +451,7 @@
    ],
    [
     "Dúo (2 piezas)",
-    102
+    101
    ],
    [
     "Gemelar",
@@ -598,7 +602,7 @@
   "slug": "accesorios-paseo",
   "title": "Accesorios de paseo",
   "group": "paseo",
-  "count": 215,
+  "count": 213,
   "min": 50.24,
   "brands": [
    [
@@ -762,10 +766,6 @@
     1
    ],
    [
-    "Britax Römer",
-    1
-   ],
-   [
     "Bumbo",
     1
    ],
@@ -799,10 +799,6 @@
    ],
    [
     "Interbaby",
-    1
-   ],
-   [
-    "Jané",
     1
    ],
    [
@@ -1411,7 +1407,7 @@
   "slug": "ropa-de-cuna",
   "title": "Ropa de cuna",
   "group": "dormir",
-  "count": 104,
+  "count": 107,
   "min": 50.0,
   "brands": [
    [
@@ -1435,7 +1431,15 @@
     5
    ],
    [
+    "Babymatex",
+    4
+   ],
+   [
     "Bimbidreams",
+    4
+   ],
+   [
+    "Domiva",
     4
    ],
    [
@@ -1443,15 +1447,7 @@
     3
    ],
    [
-    "Babymatex",
-    3
-   ],
-   [
     "Chipolino",
-    3
-   ],
-   [
-    "Domiva",
     3
    ],
    [
@@ -1464,6 +1460,10 @@
    ],
    [
     "Defieltro",
+    2
+   ],
+   [
+    "Planeta Huerto B2c",
     2
    ],
    [
@@ -1500,10 +1500,6 @@
    ],
    [
     "Petit Praia",
-    1
-   ],
-   [
-    "Planeta Huerto B2c",
     1
    ],
    [
@@ -1833,7 +1829,7 @@
   "slug": "tronas",
   "title": "Tronas",
   "group": "comer",
-  "count": 318,
+  "count": 317,
   "min": 51.65,
   "brands": [
    [
@@ -1901,10 +1897,6 @@
     4
    ],
    [
-    "Safetots",
-    4
-   ],
-   [
     "Hauck",
     3
    ],
@@ -1914,6 +1906,10 @@
    ],
    [
     "Lionelo",
+    3
+   ],
+   [
+    "Safetots",
     3
    ],
    [
@@ -2153,12 +2149,12 @@
   "slug": "seguridad",
   "title": "Seguridad en casa",
   "group": "casa",
-  "count": 130,
-  "min": 50.4,
+  "count": 128,
+  "min": 51.41,
   "brands": [
    [
     "Safetots",
-    35
+    34
    ],
    [
     "Bettacare",
@@ -2225,10 +2221,6 @@
     2
    ],
    [
-    "Reer",
-    2
-   ],
-   [
     "Scoot And Ride",
     2
    ],
@@ -2286,6 +2278,10 @@
    ],
    [
     "Nukido",
+    1
+   ],
+   [
+    "Reer",
     1
    ]
   ],
@@ -2409,12 +2405,12 @@
   "slug": "juguetes",
   "title": "Juguetes para bebés",
   "group": "jugar",
-  "count": 264,
+  "count": 265,
   "min": 50.0,
   "brands": [
    [
     "Milly Mally",
-    33
+    32
    ],
    [
     "Tiny Love",
@@ -2429,11 +2425,11 @@
     13
    ],
    [
-    "Joyz",
-    9
+    "Quercetti",
+    10
    ],
    [
-    "Quercetti",
+    "Joyz",
     9
    ],
    [
@@ -2462,6 +2458,10 @@
    ],
    [
     "Clementoni",
+    4
+   ],
+   [
+    "Hape",
     4
    ],
    [
@@ -2497,19 +2497,11 @@
     3
    ],
    [
-    "Hape",
-    3
-   ],
-   [
     "Kikka Boo",
     3
    ],
    [
     "Kinderkraft",
-    3
-   ],
-   [
-    "Lamaze",
     3
    ],
    [
@@ -2529,6 +2521,10 @@
     3
    ],
    [
+    "Viga",
+    3
+   ],
+   [
     "Babyono",
     2
    ],
@@ -2542,6 +2538,10 @@
    ],
    [
     "Karactermania",
+    2
+   ],
+   [
+    "Lamaze",
     2
    ],
    [
@@ -2590,10 +2590,6 @@
    ],
    [
     "Tineo",
-    2
-   ],
-   [
-    "Viga",
     2
    ],
    [
@@ -2784,7 +2780,7 @@
   "title": "Bañeras y cambiadores",
   "group": "cuidado",
   "count": 117,
-  "min": 50.44,
+  "min": 50.1,
   "brands": [
    [
     "At4",
@@ -2949,8 +2945,8 @@
   "slug": "bano",
   "title": "Accesorios de baño",
   "group": "cuidado",
-  "count": 59,
-  "min": 50.74,
+  "count": 58,
+  "min": 50.57,
   "brands": [
    [
     "Interbaby",
@@ -2970,10 +2966,6 @@
    ],
    [
     "Chipolino",
-    2
-   ],
-   [
-    "Keeeper",
     2
    ],
    [
@@ -3038,6 +3030,10 @@
    ],
    [
     "Innogio",
+    1
+   ],
+   [
+    "Keeeper",
     1
    ],
    [
@@ -3398,7 +3394,7 @@
   "slug": "lactancia",
   "title": "Lactancia",
   "group": "comer",
-  "count": 48,
+  "count": 47,
   "min": 50.32,
   "brands": [
    [
@@ -3422,15 +3418,15 @@
     4
    ],
    [
-    "Babyono",
-    3
-   ],
-   [
     "Sleepee",
     3
    ],
    [
     "Babymatex",
+    2
+   ],
+   [
+    "Babyono",
     2
    ],
    [
@@ -3772,7 +3768,7 @@
   "slug": "biberones-y-menaje",
   "title": "Biberones, chupetes y menaje",
   "group": "comer",
-  "count": 96,
+  "count": 95,
   "min": 7.69,
   "brands": [
    [
@@ -3881,10 +3877,6 @@
    ],
    [
     "Sodastream",
-    1
-   ],
-   [
-    "Tommee Tippee",
     1
    ],
    [
