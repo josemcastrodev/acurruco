@@ -475,7 +475,7 @@
   "slug": "sillas-de-paseo",
   "title": "Sillas de paseo",
   "group": "paseo",
-  "count": 233,
+  "count": 231,
   "min": 54.99,
   "brands": [
    [
@@ -484,11 +484,11 @@
    ],
    [
     "Lorelli",
-    34
+    33
    ],
    [
     "Chipolino",
-    29
+    28
    ],
    [
     "Chicco",
@@ -602,11 +602,11 @@
   "tags": [
    [
     "Compacta",
-    31
+    30
    ],
    [
     "Gemelar",
-    8
+    7
    ],
    [
     "Dúo (2 piezas)",
@@ -618,7 +618,7 @@
   "slug": "accesorios-paseo",
   "title": "Accesorios de paseo",
   "group": "paseo",
-  "count": 209,
+  "count": 208,
   "min": 50.03,
   "brands": [
    [
@@ -626,12 +626,12 @@
     41
    ],
    [
-    "Nora Baby Bags",
+    "Petite&mars",
     16
    ],
    [
-    "Petite&mars",
-    16
+    "Nora Baby Bags",
+    15
    ],
    [
     "Kikka Boo",
@@ -946,7 +946,7 @@
   "slug": "cunas",
   "title": "Cunas y minicunas",
   "group": "dormir",
-  "count": 560,
+  "count": 559,
   "min": 50.55,
   "brands": [
    [
@@ -975,7 +975,7 @@
    ],
    [
     "Asalvo",
-    21
+    20
    ],
    [
     "Babygo",
@@ -1177,7 +1177,7 @@
   "tags": [
    [
     "De viaje",
-    221
+    220
    ],
    [
     "Colecho",
@@ -1201,7 +1201,7 @@
   "slug": "colchones",
   "title": "Colchones y almohadas",
   "group": "dormir",
-  "count": 1509,
+  "count": 1508,
   "min": 50.92,
   "brands": [
    [
@@ -1250,7 +1250,7 @@
    ],
    [
     "Interbaby",
-    9
+    8
    ],
    [
     "Comfort Sleep",
@@ -1419,7 +1419,7 @@
   "slug": "ropa-de-cuna",
   "title": "Ropa de cuna",
   "group": "dormir",
-  "count": 101,
+  "count": 102,
   "min": 50.0,
   "brands": [
    [
@@ -1443,6 +1443,10 @@
     5
    ],
    [
+    "Babymatex",
+    4
+   ],
+   [
     "Bimbidreams",
     4
    ],
@@ -1452,10 +1456,6 @@
    ],
    [
     "BabyBjörn",
-    3
-   ],
-   [
-    "Babymatex",
     3
    ],
    [
@@ -2417,7 +2417,7 @@
   "slug": "juguetes",
   "title": "Juguetes para bebés",
   "group": "jugar",
-  "count": 245,
+  "count": 247,
   "min": 50.0,
   "brands": [
    [
@@ -2445,6 +2445,10 @@
     8
    ],
    [
+    "Quercetti",
+    7
+   ],
+   [
     "Rastar",
     6
    ],
@@ -2454,10 +2458,6 @@
    ],
    [
     "Janod",
-    5
-   ],
-   [
-    "Quercetti",
     5
    ],
    [
@@ -2941,7 +2941,7 @@
   "slug": "bano",
   "title": "Accesorios de baño",
   "group": "cuidado",
-  "count": 53,
+  "count": 54,
   "min": 50.17,
   "brands": [
    [
@@ -3054,6 +3054,10 @@
    ],
    [
     "Nattou",
+    1
+   ],
+   [
+    "Nettlife",
     1
    ],
    [
